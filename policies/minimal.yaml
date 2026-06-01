@@ -1,0 +1,18 @@
+# Minimal example policy for testing and quickstart.
+
+version: "1.0"
+name: "minimal"
+
+agents:
+  default:
+    input_guard:
+      pii_detection: true
+      pii_entities: [aadhaar, pan, upi_id, credit_card, ssn, email, phone, secret]
+      jailbreak_detection: true
+    output_guard:
+      hallucination_check: false   # disabled for minimal setup (no context needed)
+      hallucination_provider: openai
+      hallucination_model: gpt-4o-mini
+      pii_detection: true
+    cost:
+      per_session_limit: 1.00
