@@ -2,6 +2,22 @@
 
 > This document is the **single source of truth** for every component, library, function, API endpoint, data model, and design decision in Guardian Runtime. Read this before writing a single line of code.
 
+### Product scope
+
+**Audience:** Global — developers and enterprises in any region. **Differentiator:** local-first runtime blocking + broad PII (GDPR/HIPAA/CCPA) with deeper India identifiers (Aadhaar, PAN, UPI) than typical Western-only guardrail packs.
+
+### Implementation status (Jun 2026)
+
+| Component | Status |
+|-----------|--------|
+| PII + secret detectors (`pii.py`) | ✅ Shipped |
+| Policy engine (`policy.py`) | ✅ Shipped |
+| `scan_pii` / `scan_secrets` | ✅ Shipped |
+| Input/Output guards, `GuardianEngine` | ✅ Shipped (v0.2 dev) |
+| Jailbreak, finops, storage, license, CLI | ✅ Shipped |
+| JSONL logging | ✅ Shipped |
+| Portal + license API (Unit 2–3) | 📅 Aug–Sep per [PLAN.md](./PLAN.md) |
+
 ---
 
 ## Table of Contents

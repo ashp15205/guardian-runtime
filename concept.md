@@ -3,6 +3,10 @@
 > **Purpose:** This document prepares you for a deep conceptual + technical discussion with an expert.
 > Each question is answered the way you'd explain it in a real expert interview — concisely, honestly, and with depth.
 
+> **Live today:** [guardian-runtime 0.1.1 on PyPI](https://pypi.org/project/guardian-runtime/) — PII/secret scanners + policy schema. **v1.0 target:** Jun 30, 2026 — see [V1_LAUNCH_PLAN.md](./V1_LAUNCH_PLAN.md).
+
+> **Market:** Global — any developer, firm, or enterprise shipping LLM apps. India/DPDP depth is a **wedge**, not the boundary. Pitch: local-first runtime block + worldwide PII (GDPR/HIPAA/CCPA) + best-in-class India identifiers.
+
 ---
 
 ## 1. What is your product? Explain it.
@@ -68,8 +72,8 @@ This is the most important question, and the honest answer is: **Guardian occupi
 ### 1. Local-First by Architecture, Not by Policy
 Every competitor requires your prompts to travel to their servers. Guardian never does. This is not a setting you configure — it is how the architecture works. There is no "send data to Guardian cloud" code path.
 
-### 2. India-First PII Detection
-No other tool natively detects **Aadhaar, PAN cards, or UPI IDs**. These are India-specific identifier formats under the DPDP Act 2023. Guardrails AI detects SSN and credit cards — Western-centric. We built for the Indian market first, with UPI suffix-gated detection (so `user@gmail.com` is never a false positive, but `user@ybl` is caught immediately).
+### 2. Global PII + India Depth (not India-only)
+Guardian targets **every** production LLM team: SSN, cards, email, phone, passport (GDPR/HIPAA/CCPA) plus identifiers most US/EU tools skip — **Aadhaar, PAN, UPI** under DPDP. Competitors are often Western-centric on regex packs; we ship one policy for worldwide apps, with UPI suffix-gated detection (so `user@gmail.com` is not a false positive, but `user@ybl` is caught).
 
 ### 3. Runtime Blocking, Not Logging
 Guardian intercepts calls synchronously. If a jailbreak is detected, the prompt is blocked **before it reaches the LLM**. No other tool in the observability category does this.
@@ -455,7 +459,7 @@ Every single one of these interventions is automatically logged to a local `~/.g
 
 ## Summary: The One-Sentence Pitch
 
-> **Guardian Runtime is the enforcement layer that every AI team is missing — a local-first, zero-data-upload SDK that blocks PII leaks, secrets, jailbreaks, hallucinations, runaway costs, and unauthorized tool calls before they happen, governed by a single YAML file, with native India DPDP Act compliance.**
+> **Guardian Runtime is the enforcement layer that every AI team is missing — a local-first, zero-data-upload SDK that blocks PII leaks, secrets, jailbreaks, hallucinations, runaway costs, and unauthorized tool calls before they happen, governed by a single YAML file, for developers and enterprises worldwide (GDPR, HIPAA, CCPA, DPDP, and more).**
 
 ---
 

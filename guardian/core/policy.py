@@ -51,6 +51,18 @@ class HallucinationProvider(str, Enum):
     GEMINI = "gemini"
 
 
+class LLMProvider(str, Enum):
+    """Runtime LLM provider for Guardian.complete()."""
+    OPENAI = "openai"
+    GEMINI = "gemini"
+
+
+class LLMConfig(BaseModel):
+    """Per-agent LLM provider settings."""
+    provider: LLMProvider = LLMProvider.OPENAI
+    default_model: Optional[str] = None
+
+
 class LoopAction(str, Enum):
     """Action to take when a prompt loop is detected."""
     BLOCK = "block"
@@ -143,6 +155,11 @@ class CostConfig(BaseModel):
     daily_budget: float = Field(default=10.00, ge=0.0)
     monthly_budget: Optional[float] = Field(default=None, ge=0.0)
     per_session_limit: float = Field(default=0.50, ge=0.0)
+    max_input_tokens: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description="Block LLM call when input exceeds this token count.",
+    )
     currency: str = "USD"
     auto_downgrade: Optional[AutoDowngradeConfig] = None
     loop_detection: Optional[LoopConfig] = None
@@ -196,6 +213,7 @@ class ComplianceConfig(BaseModel):
 
 class AgentPolicy(BaseModel):
     """Complete policy for a single agent."""
+    llm: Optional[LLMConfig] = None
     input_guard: Optional[InputGuardConfig] = None
     output_guard: Optional[OutputGuardConfig] = None
     cost: Optional[CostConfig] = None

@@ -10,10 +10,20 @@ Usage:
 from __future__ import annotations  # Python 3.9 compatibility
 
 from guardian.core.engine import GuardianEngine
+from guardian.core.models import GuardianBlockedError, GuardianResponse, Violation
 from guardian.core.policy import load_policy
 
-__version__ = "0.1.1"
-__all__ = ["Guardian", "scan_pii", "scan_secrets", "ScanResult"]
+__version__ = "0.2.0"
+__all__ = [
+    "Guardian",
+    "GuardianBlockedError",
+    "GuardianResponse",
+    "Violation",
+    "scan_pii",
+    "scan_secrets",
+    "ScanResult",
+    "load_policy",
+]
 
 
 class Guardian:
@@ -31,10 +41,11 @@ class Guardian:
 
     def complete(
         self,
-        model: str,
-        messages: list,
+        model: str | None = None,
+        messages: list | None = None,
         agent_id: str = "default",
         session_id: str | None = None,
+        provider: str | None = None,
         **kwargs,
     ):
         """Wrap an LLM call with full Guardian governance."""
@@ -43,6 +54,7 @@ class Guardian:
             messages=messages,
             agent_id=agent_id,
             session_id=session_id,
+            provider=provider,
             **kwargs,
         )
 

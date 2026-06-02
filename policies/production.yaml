@@ -1,0 +1,37 @@
+# Production-oriented Guardian policy.
+
+version: "1.0"
+name: "production"
+environment: "production"
+
+agents:
+  default:
+    llm:
+      provider: openai
+      default_model: gpt-4o-mini
+    input_guard:
+      pii_detection: true
+      pii_entities:
+        - aadhaar
+        - pan
+        - upi_id
+        - credit_card
+        - ssn
+        - email
+        - phone
+        - passport
+        - secret
+      pii_action: block
+      jailbreak_detection: true
+    output_guard:
+      pii_detection: true
+      hallucination_check: false
+    cost:
+      daily_budget: 50.00
+      per_session_limit: 2.00
+      max_input_tokens: 8000
+
+logging:
+  sink: jsonl
+  log_level: VIOLATIONS_ONLY
+  retention_days: 90
