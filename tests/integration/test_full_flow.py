@@ -107,3 +107,22 @@ def test_gemini_policy_uses_gemini_provider(mock_count_msgs, mock_count_tok, tmp
     assert response.blocked is False
     assert response.provider == "gemini"
     assert mock.calls == 1
+
+def test_optimizer_reduces_tokens_in_pipeline(engine, tmp_path):
+    # Enable optimizer in policy
+    from guardian.core.policy import OptimizerConfig
+    engine.policy.agents["default"].optimizer = OptimizerConfig(
+        enabled=True,
+        whitespace_normalization=True
+    )
+    
+    # Send messy text
+    messages = [{"role": "user", "content": "Clean   \n\n\n\n text"}]
+    response = engine.complete(messages=messages)
+    
+    assert response.blocked is False
+    assert response.optimization is not None
+    assert "whitespace_normalization" in response.optimization["actions_taken"]
+    # Ensure it updated the LLM call properly (though mock just accepts it)
+    assert engine._providers["openai"].client.chat.completions.create.called
+

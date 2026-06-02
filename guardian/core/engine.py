@@ -12,6 +12,7 @@ from guardian.finops.token_counter import count_messages_tokens, count_tokens, m
 from guardian.guards.input_guard import InputGuard
 from guardian.guards.output_guard import OutputGuard
 from guardian.logging.local import LocalLogger
+from guardian.optimizer.input_optimizer import InputOptimizer
 from guardian.providers import default_model, get_provider
 from guardian.providers.base import ChatProvider
 
@@ -81,6 +82,26 @@ class GuardianEngine:
             return response
 
         input_tokens = count_messages_tokens(messages, model_name)
+        
+        # --- Optimizer Step ---
+        optimization_meta = None
+        if agent_policy.optimizer and agent_policy.optimizer.enabled:
+            optimizer = InputOptimizer(agent_policy.optimizer)
+            opt_result = optimizer.optimize(messages, model_name)
+            messages = opt_result.optimized_messages
+            input_tokens = opt_result.optimized_tokens
+            optimization_meta = {
+                "original_tokens": opt_result.original_tokens,
+                "optimized_tokens": opt_result.optimized_tokens,
+                "savings_pct": opt_result.savings_pct,
+                "actions_taken": opt_result.actions_taken,
+                "estimated_cost_saved": opt_result.estimated_cost_saved,
+                "guidance": opt_result.guidance,
+            }
+            if opt_result.guidance:
+                for g in opt_result.guidance:
+                    self.logger.log_event("optimizer_guidance", agent_id, session_id, [], {"message": g})
+                    
         cost_config = agent_policy.cost
         max_input = cost_config.max_input_tokens if cost_config else None
         if max_input is not None and input_tokens > max_input:
@@ -159,6 +180,7 @@ class GuardianEngine:
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 estimated_cost_usd=estimated_cost,
+                optimization=optimization_meta,
                 raw_response=result.raw_response,
             )
             self._finalize(response, agent_id, session_id)
@@ -175,6 +197,7 @@ class GuardianEngine:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             estimated_cost_usd=estimated_cost,
+            optimization=optimization_meta,
             raw_response=result.raw_response,
         )
         self._finalize(response, agent_id, session_id)

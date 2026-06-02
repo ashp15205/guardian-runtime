@@ -37,6 +37,9 @@ class GuardianResponse:
     input_tokens: int = 0
     output_tokens: int = 0
     estimated_cost_usd: float = 0.0
+    
+    # Optimizer metadata
+    optimization: dict | None = None
     raw_response: Any = None
 
 

@@ -1,0 +1,26 @@
+# Optimized Guardian policy with MarkItDown and Prompt Compression.
+
+version: "1.0"
+name: "optimized"
+
+agents:
+  default:
+    llm:
+      provider: openai
+      default_model: gpt-4o-mini
+    input_guard:
+      pii_detection: true
+      jailbreak_detection: true
+    output_guard:
+      pii_detection: true
+    optimizer:
+      enabled: true
+      whitespace_normalization: true
+      max_history_messages: 10
+      deduplicate_system_prompts: true
+      remove_empty_messages: true
+      document_conversion: true
+      warn_at_token_pct: 0.80
+    cost:
+      max_input_tokens: 8000
+      per_session_limit: 1.00

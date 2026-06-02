@@ -207,6 +207,23 @@ class ComplianceConfig(BaseModel):
     frameworks: List[str] = Field(default_factory=list)  # e.g. ["dpdp", "gdpr"]
 
 
+class OptimizerConfig(BaseModel):
+    """Input optimization settings."""
+    enabled: bool = False
+    whitespace_normalization: bool = True
+    max_history_messages: Optional[int] = Field(
+        default=None, ge=1,
+        description="Keep only the last N user/assistant turns. System prompt always kept."
+    )
+    deduplicate_system_prompts: bool = True
+    remove_empty_messages: bool = True
+    document_conversion: bool = True  # auto-convert if markitdown installed
+    warn_at_token_pct: float = Field(
+        default=0.80, ge=0.0, le=1.0,
+        description="Warn when input tokens reach this % of max_input_tokens"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Agent-level policy
 # ---------------------------------------------------------------------------
@@ -218,6 +235,7 @@ class AgentPolicy(BaseModel):
     output_guard: Optional[OutputGuardConfig] = None
     cost: Optional[CostConfig] = None
     tools: Optional[ToolConfig] = None
+    optimizer: Optional[OptimizerConfig] = None
 
 
 # ---------------------------------------------------------------------------

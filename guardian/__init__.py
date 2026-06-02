@@ -10,19 +10,24 @@ Usage:
 from __future__ import annotations  # Python 3.9 compatibility
 
 from guardian.core.engine import GuardianEngine
-from guardian.core.models import GuardianBlockedError, GuardianResponse, Violation
-from guardian.core.policy import load_policy
+from guardian.core.models import GuardianBlockedError, GuardCheckResult, GuardianResponse, Violation
+from guardian.core.policy import load_policy, OptimizerConfig
+from guardian.optimizer import DocumentConverter, InputOptimizer, OptimizeResult, ConversionResult
 
+# Version matches pyproject.toml
 __version__ = "0.2.0"
 __all__ = [
     "Guardian",
+    "GuardianEngine",
     "GuardianBlockedError",
     "GuardianResponse",
     "Violation",
+    "GuardCheckResult",
     "scan_pii",
     "scan_secrets",
-    "ScanResult",
-    "load_policy",
+    "optimize_input",
+    "convert_document",
+    "__version__",
 ]
 
 
@@ -109,3 +114,16 @@ def scan_secrets(text: str) -> ScanResult:
             severity=severity
         )
     return ScanResult(blocked=False, type="NONE", severity="NONE")
+
+
+def optimize_input(messages: list[dict], config: OptimizerConfig | None = None, model: str = "gpt-4o") -> OptimizeResult:
+    """Convenience function: optimize prompts to reduce tokens."""
+    cfg = config or OptimizerConfig(enabled=True)
+    optimizer = InputOptimizer(cfg)
+    return optimizer.optimize(messages, model)
+
+def convert_document(path: str) -> ConversionResult:
+    """Convenience function: convert PDF/DOCX to Markdown for token savings."""
+    converter = DocumentConverter()
+    return converter.convert(path)
+
