@@ -90,6 +90,27 @@ def test_blocks_output_pii(engine):
     assert any(v.type == "output_pii" for v in response.violations)
 
 
+@patch("guardian.optimizer.input_optimizer.count_messages_tokens", return_value=10)
+@patch("guardian.core.engine.count_tokens", return_value=5)
+@patch("guardian.core.engine.count_messages_tokens", return_value=10)
+def test_anthropic_policy_uses_anthropic_provider(mock_count_msgs, mock_count_tok, mock_opt_count, tmp_path):
+    policy = load_policy("policies/anthropic.yaml")
+    mock = MockChatProvider()
+    mock.name = "anthropic"
+    storage = LocalStorage(base_dir=tmp_path / "guardian")
+    logger = LocalLogger(logs_dir=tmp_path / "logs")
+    eng = GuardianEngine(
+        policy, storage=storage, logger=logger, providers={"anthropic": mock}
+    )
+
+    response = eng.complete(
+        messages=[{"role": "user", "content": "Hello"}],
+    )
+    assert response.blocked is False
+    assert response.provider == "anthropic"
+    assert mock.calls == 1
+
+
 @patch("guardian.core.engine.count_tokens", return_value=5)
 @patch("guardian.core.engine.count_messages_tokens", return_value=10)
 def test_gemini_policy_uses_gemini_provider(mock_count_msgs, mock_count_tok, tmp_path):

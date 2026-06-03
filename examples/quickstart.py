@@ -1,4 +1,4 @@
-"""Guardian quickstart — use Gemini (free) or OpenAI."""
+"""Guardian quickstart — Gemini (free), Anthropic, or OpenAI."""
 
 import os
 
@@ -6,37 +6,30 @@ from guardian import Guardian, scan_pii
 
 
 def main() -> None:
-    # Always works without an API key
     result = scan_pii("My Aadhaar is 2345 6789 0123")
     print(f"Scanner: blocked={result.blocked} type={result.type}")
 
-    # --- Option A: Google Gemini (free tier) ---
-    # export GEMINI_API_KEY=your_key  # https://aistudio.google.com/apikey
-    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
-        guardian = Guardian.from_policy("policies/gemini.yaml")
-        response = guardian.complete(
-            messages=[{"role": "user", "content": "Say hello in one word."}],
-        )
-        if response.blocked:
-            print("Blocked:", response.violations)
-        else:
-            print(f"Gemini ({response.model}):", response.content)
-        return
+    providers = [
+        ("GEMINI_API_KEY", "GOOGLE_API_KEY", "policies/gemini.yaml", "Gemini"),
+        ("ANTHROPIC_API_KEY", None, "policies/anthropic.yaml", "Claude"),
+        ("OPENAI_API_KEY", None, "policies/minimal.yaml", "OpenAI"),
+    ]
 
-    # --- Option B: OpenAI (paid) ---
-    # export OPENAI_API_KEY=sk-...
-    if os.environ.get("OPENAI_API_KEY"):
-        guardian = Guardian.from_policy("policies/minimal.yaml")
-        response = guardian.complete(
-            messages=[{"role": "user", "content": "Say hello in one word."}],
-        )
-        if response.blocked:
-            print("Blocked:", response.violations)
-        else:
-            print(f"OpenAI ({response.model}):", response.content)
-        return
+    for primary, fallback, policy_path, label in providers:
+        if os.environ.get(primary) or (fallback and os.environ.get(fallback)):
+            guardian = Guardian.from_policy(policy_path)
+            response = guardian.complete(
+                messages=[{"role": "user", "content": "Say hello in one word."}],
+            )
+            if response.blocked:
+                print(f"{label} blocked:", response.violations)
+            else:
+                print(f"{label} ({response.provider}/{response.model}):", response.content)
+                if response.optimization:
+                    print(f"  Token savings: {response.optimization['savings_pct']:.0%}")
+            return
 
-    print("Set GEMINI_API_KEY (free) or OPENAI_API_KEY to run a live LLM test.")
+    print("Set one of: GEMINI_API_KEY (free), ANTHROPIC_API_KEY, OPENAI_API_KEY")
 
 
 if __name__ == "__main__":

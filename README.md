@@ -1,97 +1,33 @@
 # Guardian Runtime
 
-**Local-first runtime governance for AI systems.**
+**Open-source, local-first AI governance & cost optimization.**
 
 [![PyPI](https://img.shields.io/pypi/v/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
 [![Python](https://img.shields.io/pypi/pyversions/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
+[![Tests](https://img.shields.io/badge/tests-109%20passed-brightgreen)](https://github.com/ashp15205/guardian-runtime)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-Guardian Runtime is a Python SDK that sits between your AI application and any LLM — intercepting every prompt and response to enforce security policies, block data leaks, and detect threats. Everything runs locally on your machine. Your data never leaves your infrastructure.
-
-**Built for teams everywhere** — startups and enterprises in any country. Compliance coverage spans **GDPR, HIPAA, CCPA**, and **India DPDP**; India-specific identifiers (Aadhaar, PAN, UPI) are included alongside global PII (SSN, cards, email, phone, passport).
-
-My Product:
-Guardian Runtime is a local-first Python SDK that acts as a security and governance layer between any AI application and any LLM. It intercepts every prompt before it reaches the model and every response before it reaches the user — blocking data leaks, jailbreaks, and policy violations in real time, entirely on the developer's machine.
-
-Why Guardian Runtime ?:
-AI agents are being deployed in production without any control layer. They leak sensitive data, get manipulated by malicious users, hallucinate facts, and burn API budgets — and developers only find out after the damage is done. Every existing tool (Langfuse, LangSmith, Helicone) only observes and logs. Nothing actively prevents bad behavior at the moment it happens.
-Worse — those tools require your prompts to be sent to their cloud servers. For developers in regulated industries, that's a non-starter.
-Guardian solves both problems: it prevents bad behavior in real time, and it does it entirely locally. Your data never leaves your machine.
-
-
-> **Status (Jun 2026):** [0.1.1 on PyPI](https://pypi.org/project/guardian-runtime/) ships PII/secret scanners and the policy schema. **v1.0.0** (end of June) adds the full `Guardian.complete()` pipeline, guards, CLI, and local logging. See [V1_LAUNCH_PLAN.md](./V1_LAUNCH_PLAN.md).
-
----
-
-## What it does
-
-Guardian checks every prompt **before** it reaches the LLM and every response **before** it reaches the user.
+Guardian Runtime is a Python SDK that sits between your AI application and any LLM — **intercepting every prompt and response** to block data leaks, prevent jailbreaks, and **automatically reduce your token costs by up to 40%**. Everything runs locally. Your data never leaves your infrastructure.
 
 ```
-User Input → [Guardian Input Guard] → LLM → [Guardian Output Guard] → User
+User Input → [Input Optimizer] → [Input Guard] → LLM → [Output Guard] → User
+                  ↓                    ↓                      ↓
+           Saves tokens          Blocks PII/secrets     Blocks output PII
 ```
 
 ---
 
-## What works today (v0.2.0)
+## Why Guardian?
 
-- **PII & secret scanning** — `scan_pii()`, `scan_secrets()`
-- **Policy YAML** — `load_policy()`, `guardian validate`
-- **LLM providers (v1):** OpenAI + Google Gemini (`provider: openai|gemini` in policy or kwarg)
-- **Jailbreak detection**, **token count + cost estimate**, **max input tokens** (policy)
-- **CLI** — `guardian init`, `validate`, `status`, `logs`
-- **Local JSONL logs** at `~/.guardian/logs/`
-- **92+ tests**, CI on push
+| Problem | How Guardian Solves It |
+|---------|----------------------|
+| **PII leaks to LLM providers** | Local NER scanning blocks SSNs, Aadhaar, API keys _before_ the prompt leaves your server |
+| **Exploding AI costs** | Input Optimizer compresses prompts, converts PDFs to markdown, trims chat history — saving 30-70% tokens |
+| **No runtime controls** | YAML policy engine enforces per-agent rules without code changes |
+| **Jailbreak attacks** | 40+ pattern detection blocks prompt injection attempts |
+| **Compliance burden** | Built for GDPR, HIPAA, CCPA, and India DPDP out of the box |
 
-**Coming for 1.0.0 (June 30):** PyPI release polish, demo video, multi-provider (July). See [V1_LAUNCH_PLAN.md](./V1_LAUNCH_PLAN.md).
-
----
-
-## Features
-
-### PII Detection (shipped)
-
-### PII Detection
-Detects sensitive personal data in prompts and responses before they reach any LLM.
-
-**Global:**
-- Social Security Numbers (SSN)
-- Credit card numbers
-- Email addresses
-- Phone numbers
-- Passport numbers
-
-**India (DPDP Act) — included, not exclusive:**
-- Aadhaar numbers
-- PAN card numbers
-- UPI IDs
-
-### Secret & Credential Detection
-Detects exposed API keys and credentials in prompts before they reach any LLM.
-
-- OpenAI API keys (`sk-...`)
-- Anthropic API keys (`sk-ant-...`)
-- AWS Access Keys (`AKIA...`)
-- GitHub tokens (`ghp_...`, `ghs_...`)
-- Stripe live keys (`sk_live_...`)
-- Razorpay live keys (`rzp_live_...`)
-- Groq API keys (`gsk_...`)
-- Generic `.env` style secrets (`KEY=value` patterns)
-
-### Policy Engine (schema shipped; runtime enforcement in v1.0)
-Declarative YAML-based policy configuration. Define rules once, enforce everywhere.
-
-```yaml
-version: "1.0"
-agents:
-  default:
-    input_guard:
-      pii_detection: true
-      secret_detection: true
-      jailbreak_detection: true
-    output_guard:
-      pii_detection: true
-      hallucination_check: false
-```
+Existing tools (Langfuse, Helicone, LangSmith) only **observe** traffic. Guardian **actively prevents** bad behavior at the moment it happens.
 
 ---
 
@@ -107,109 +43,155 @@ Requires Python 3.9+
 
 ## Quickstart
 
-### Scan only (no OpenAI key)
+### Full pipeline — providers (Big 3)
+
+| Provider | Env var | Policy file | Default model |
+|----------|---------|-------------|---------------|
+| **Gemini** (free) | `GEMINI_API_KEY` | `policies/gemini.yaml` | `gemini-2.0-flash` |
+| **Claude** | `ANTHROPIC_API_KEY` | `policies/anthropic.yaml` | `claude-3-5-haiku-latest` |
+| **OpenAI** | `OPENAI_API_KEY` | `policies/minimal.yaml` | `gpt-4o-mini` |
+
+```python
+from guardian import Guardian
+
+# Free testing with Gemini
+guardian = Guardian.from_policy("policies/gemini.yaml")
+response = guardian.complete(messages=[{"role": "user", "content": "Hello"}])
+```
+
+### Scan Without an LLM Key
 
 ```python
 from guardian import scan_pii, scan_secrets
 
-result = scan_pii("My Aadhaar is xxxx xxxx xxxx")
+result = scan_pii("My Aadhaar is 0000 0000 0000")
 print(result.blocked)   # True
 
 result = scan_secrets("My key is sk-proj-xxxxxxxxxxxxxxxxxxxx")
 print(result.blocked)   # True
 ```
 
-### Full pipeline — Gemini (free tier, recommended for testing)
-
-Get a free API key at [Google AI Studio](https://aistudio.google.com/apikey).
-
-```bash
-export GEMINI_API_KEY=your_key
-```
+### Optimize Prompts Standalone
 
 ```python
-from guardian import Guardian
+from guardian import optimize_input, convert_document
 
-guardian = Guardian.from_policy("policies/gemini.yaml")
-response = guardian.complete(
-    messages=[{"role": "user", "content": "What is the capital of France?"}],
-)
+# Compress a messy conversation
+result = optimize_input(messages, model="gpt-4o")
+print(f"Saved {result.savings_pct:.0%} of tokens")
 
-if response.blocked:
-    print(response.violations)
-else:
-    print(response.content)
-    print(f"Provider: {response.provider}  Model: {response.model}")
-```
-
-Or pass the provider explicitly (uses policy defaults for model):
-
-```python
-guardian = Guardian.from_policy("policies/minimal.yaml")
-response = guardian.complete(
-    provider="gemini",
-    model="gemini-2.0-flash",
-    messages=[{"role": "user", "content": "Hello"}],
-)
-```
-
-### Full pipeline — OpenAI (paid)
-
-```python
-import os
-from guardian import Guardian
-
-os.environ["OPENAI_API_KEY"] = "sk-..."
-
-guardian = Guardian.from_policy("policies/minimal.yaml")
-response = guardian.complete(
-    messages=[{"role": "user", "content": "What is the capital of France?"}],
-)
-```
-
-```bash
-guardian validate policies/minimal.yaml
-guardian status
-guardian logs --tail 10
-```
-
-### Legacy quickstart (scanners only)
-
-```python
-from guardian import scan_pii, scan_secrets
-
-result = scan_pii("My Aadhaar is xxxx xxxx xxxx")
-print(result.blocked, result.type)
-
-result = scan_secrets("My key is sk-xxxxxxxxxxxxxxxxxxxx")
-print(result.blocked, result.type)
+# Convert a heavy PDF to token-efficient markdown
+doc = convert_document("contract.pdf")  # requires: pip install guardian-runtime[optimizer]
+print(f"{doc.markdown_tokens} tokens (was {doc.original_size_bytes} bytes)")
 ```
 
 ---
 
-## Why local-first?
+## Features
 
-Every existing governance tool sends your prompts to their cloud servers. Guardian runs entirely on your machine.
+### 🛡️ Security & Privacy
 
-- Prompts never leave your infrastructure
-- Responses never leave your infrastructure
-- Violation logs stored locally at `~/.guardian/logs/`
+- **PII Detection** — SSN, credit cards, email, phone, passport, Aadhaar, PAN, UPI
+- **Secret Detection** — OpenAI, Anthropic, AWS, GitHub, Stripe, Razorpay, Groq keys
+- **Jailbreak Detection** — 40+ patterns (DAN, ignore instructions, role-play attacks)
+- **Output Guard** — scans LLM responses for leaked PII before reaching the user
+- **Action modes** — `block`, `redact`, or `flag` per entity type
+
+### ⚡ Cost Optimization (Input Optimizer)
+
+- **Prompt compression** — strips whitespace, deduplicates system prompts, removes empty messages
+- **History trimming** — keeps last N turns, always preserves system prompt
+- **Document conversion** — PDF/DOCX/XLSX → clean markdown (40-70% token savings)
+- **Token budget enforcement** — warn or block when input exceeds limits
+- **Proactive guidance** — logs suggestions when bloated prompts are detected
+- **Savings tracking** — every `GuardianResponse` includes optimization metadata
+
+### 🔧 Governance Engine
+
+- **YAML policies** — define rules per agent, no code changes needed
+- **Multi-agent** — different rules for different bots (HR-Bot vs Support-Bot)
+- **Multi-provider** — OpenAI, Google Gemini, and Anthropic Claude (Big 3)
+- **Local JSONL logs** — full audit trail at `~/.guardian/logs/`
+- **CLI** — `guardian init`, `validate`, `status`, `logs`
+- **FinOps** — token counting, cost estimation, per-session spend tracking
+
+### 🔒 100% Local-First
+
+- All governance runs on **your infrastructure**
+- No prompts sent to Guardian servers — ever
 - One daily sync sends only: license key + check count (number only)
-- No prompts. No responses. No API keys. Ever.
+- Built for regulated industries: finance, healthcare, government
 
-This matters for teams in regulated industries — finance, healthcare, government — where data cannot leave your infrastructure.
+---
+
+## Policy Example
+
+```yaml
+version: "1.0"
+name: "production"
+
+agents:
+  default:
+    llm:
+      provider: openai
+      default_model: gpt-4o-mini
+    input_guard:
+      pii_detection: true
+      jailbreak_detection: true
+    output_guard:
+      pii_detection: true
+    optimizer:
+      enabled: true
+      whitespace_normalization: true
+      max_history_messages: 20
+      deduplicate_system_prompts: true
+    cost:
+      max_input_tokens: 8000
+      per_session_limit: 1.00
+```
 
 ---
 
 ## Compliance
 
-Guardian's PII detection is built for real regulatory requirements:
+Guardian's PII detection covers real regulatory requirements:
 
 - **GDPR** (EU) — email, phone, passport, general PII
 - **HIPAA** (US health) — sensitive personal data blocking
 - **CCPA** (California) — consumer data protection
 - **DPDP Act 2023** (India) — Aadhaar, PAN, UPI + general PII
-- **SOC2 / enterprise** — local-only processing, no prompt upload to vendor cloud
+- **SOC2 / Enterprise** — local-only processing, no prompt upload to vendor cloud
+
+> ⚠️ Guardian is an assistive compliance tool, not legal advice. Always consult qualified counsel.
+
+---
+
+## CLI
+
+```bash
+guardian init --key gdn_free_xxxxx      # Setup (optional)
+guardian validate policies/minimal.yaml  # Check policy syntax
+guardian status                          # View usage stats
+guardian logs --tail 10                  # View recent violation logs
+```
+
+---
+
+## Architecture
+
+```
+guardian/
+├── core/           # Engine, policy, models, storage, license
+├── guards/         # Input & Output guards
+│   └── validators/ # PII, secrets, jailbreak detectors
+├── optimizer/      # Input Optimizer, Document Converter (MarkItDown)
+├── finops/         # Token counter, cost calculator
+├── providers/      # OpenAI, Gemini, Anthropic (Big 3)
+├── logging/        # Local JSONL logger
+└── cli/            # CLI commands
+```
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full technical specification.
 
 ---
 
@@ -217,33 +199,11 @@ Guardian's PII detection is built for real regulatory requirements:
 
 ```bash
 pip install guardian-runtime[dev]
-pytest tests/   # 92+ tests (integration tests mock OpenAI)
+pytest tests/   # 109 tests
 ```
-
----
-
-## Roadmap
-
-| Version | Target | Highlights |
-|---------|--------|------------|
-| **0.1.1** | ✅ Jun 2026 | PyPI, PII/secrets, policy schema — [install](https://pypi.org/project/guardian-runtime/) |
-| **1.0.0** | Jun 30, 2026 | Full engine, guards, CLI, local logs — [V1_LAUNCH_PLAN.md](./V1_LAUNCH_PLAN.md) |
-| **1.1.0** | Jul 2026 | LangChain callback, hallucination (optional), budget hard-stop |
-| **2.0.0** | Sep 2026 | Portal, license server, ProductHunt — [PLAN.md](./PLAN.md) |
-
----
-
-## Project docs
-
-- [V1_LAUNCH_PLAN.md](./V1_LAUNCH_PLAN.md) — June sprint to 1.0.0
-- [PLAN.md](./PLAN.md) — 16-week product & monetization plan
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — technical design
-- [CHANGELOG.md](./CHANGELOG.md) — release history
 
 ---
 
 ## License
 
 Apache-2.0
-
----

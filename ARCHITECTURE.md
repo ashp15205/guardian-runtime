@@ -13,10 +13,13 @@
 | PII + secret detectors (`pii.py`) | ✅ Shipped |
 | Policy engine (`policy.py`) | ✅ Shipped |
 | `scan_pii` / `scan_secrets` | ✅ Shipped |
-| Input/Output guards, `GuardianEngine` | ✅ Shipped (v0.2 dev) |
+| Input/Output guards, `GuardianEngine` | ✅ Shipped |
+| Input Optimizer (prompt compression) | ✅ Shipped (v0.2.0) |
+| Document Converter (MarkItDown) | ✅ Shipped (v0.2.0) |
 | Jailbreak, finops, storage, license, CLI | ✅ Shipped |
 | JSONL logging | ✅ Shipped |
-| Portal + license API (Unit 2–3) | 📅 Aug–Sep per [PLAN.md](./PLAN.md) |
+| OpenAI + Gemini + Anthropic providers | ✅ Shipped (Big 3) |
+| Portal + license API | 📅 Aug–Sep per [PLAN.md](./PLAN.md) |
 
 ---
 

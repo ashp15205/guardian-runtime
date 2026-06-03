@@ -1,5 +1,6 @@
 """LLM provider registry for Guardian Runtime."""
 
+from guardian.providers.anthropic_provider import AnthropicProvider
 from guardian.providers.base import DEFAULT_MODELS, ChatProvider, ProviderResult
 from guardian.providers.gemini_provider import GeminiProvider
 from guardian.providers.openai_provider import OpenAIProvider
@@ -7,11 +8,12 @@ from guardian.providers.openai_provider import OpenAIProvider
 _PROVIDERS: dict[str, type] = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
+    "anthropic": AnthropicProvider,
 }
 
 
 def get_provider(name: str, **kwargs) -> ChatProvider:
-    """Return a provider instance by name (`openai` or `gemini`)."""
+    """Return a provider instance by name (`openai`, `gemini`, or `anthropic`)."""
     key = name.lower().strip()
     if key not in _PROVIDERS:
         raise ValueError(f"Unknown provider {name!r}. Supported: {sorted(_PROVIDERS)}")
@@ -26,12 +28,18 @@ def default_model(provider: str) -> str:
     return DEFAULT_MODELS[key]
 
 
+def supported_providers() -> list[str]:
+    return sorted(_PROVIDERS.keys())
+
+
 __all__ = [
     "ChatProvider",
     "ProviderResult",
     "OpenAIProvider",
     "GeminiProvider",
+    "AnthropicProvider",
     "get_provider",
     "default_model",
+    "supported_providers",
     "DEFAULT_MODELS",
 ]

@@ -32,4 +32,5 @@ class ChatProvider(Protocol):
 DEFAULT_MODELS: dict[str, str] = {
     "openai": "gpt-4o-mini",
     "gemini": "gemini-2.0-flash",
+    "anthropic": "claude-3-5-haiku-latest",
 }

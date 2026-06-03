@@ -55,6 +55,7 @@ class LLMProvider(str, Enum):
     """Runtime LLM provider for Guardian.complete()."""
     OPENAI = "openai"
     GEMINI = "gemini"
+    ANTHROPIC = "anthropic"
 
 
 class LLMConfig(BaseModel):

@@ -8,6 +8,7 @@ MODEL_COST_PER_1K: dict[str, dict[str, float]] = {
     "gpt-4-turbo": {"input": 0.01, "output": 0.03},
     "gpt-4": {"input": 0.03, "output": 0.06},
     "gpt-3.5-turbo": {"input": 0.0005, "output": 0.0015},
+    "claude-3-5-haiku": {"input": 0.0008, "output": 0.004},
     "claude-3-5-sonnet": {"input": 0.003, "output": 0.015},
     "claude-3-opus": {"input": 0.015, "output": 0.075},
     "claude-3-haiku": {"input": 0.00025, "output": 0.00125},

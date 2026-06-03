@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from pathlib import Path
 from typing import BinaryIO
 
@@ -16,12 +17,14 @@ from guardian.finops.token_counter import count_tokens
 
 
 class DocumentConverter:
-    """Converts files to Markdown to save LLM tokens using MarkItDown."""
+    """Converts PDF/DOCX/XLSX and other files to Markdown to save LLM tokens."""
+
+    SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".pptx", ".xlsx", ".xls", ".html", ".htm", ".txt", ".md"}
 
     def __init__(self) -> None:
         if not MARKITDOWN_AVAILABLE:
             raise ImportError(
-                "markitdown is not installed. Please install guardian-runtime with markitdown dependency."
+                "markitdown is not installed. Run: pip install guardian-runtime[optimizer]"
             )
         self.md = MarkItDown()
 
@@ -30,15 +33,14 @@ class DocumentConverter:
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path}")
-        
+
         size = path.stat().st_size
         extension = path.suffix.lower().lstrip(".")
-        
+
         try:
             result = self.md.convert(str(path))
             content = result.text_content
         except Exception as e:
-            # Fallback if markitdown fails
             raise RuntimeError(f"MarkItDown conversion failed: {e}") from e
 
         tokens = count_tokens(content)
@@ -47,9 +49,18 @@ class DocumentConverter:
             original_size_bytes=size,
             markdown_tokens=tokens,
             format_detected=extension,
-            warnings=[]
+            warnings=[],
         )
 
     def convert_stream(self, stream: BinaryIO, filename: str) -> ConversionResult:
-        """Convert from an open file stream."""
-        raise NotImplementedError("Stream conversion via markitdown requires writing to a temp file currently or using its streaming API if available.")
+        """Convert from an open file stream (writes temp file for MarkItDown)."""
+        suffix = Path(filename).suffix or ".bin"
+        tmp_path: str | None = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(stream.read())
+                tmp_path = tmp.name
+            return self.convert(tmp_path)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
