@@ -247,8 +247,4 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full technical specification.
 - Logs stored locally at `~/.guardian/logs/`
 - Optional license sync sends **only** a hashed key + check count — never prompts or responses
 
----
 
-## License
-
-Apache-2.0 — free to use, modify, and distribute. See [LICENSE](LICENSE).
