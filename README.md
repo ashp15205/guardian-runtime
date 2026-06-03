@@ -1,33 +1,42 @@
 # Guardian Runtime
 
-**Open-source, local-first AI governance & cost optimization.**
+**Cut LLM token costs. Block data leaks. Ship safer AI.**
+
+Guardian Runtime is a local-first Python SDK that sits between your AI application and any LLM. It automatically compresses prompts to reduce token costs, blocks PII and API key leaks before they reach the model, and catches jailbreak attempts — all on your machine. Your prompts never leave your infrastructure.
 
 [![PyPI](https://img.shields.io/pypi/v/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
-[![Python](https://img.shields.io/pypi/pyversions/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
-[![Tests](https://img.shields.io/badge/tests-109%20passed-brightgreen)](https://github.com/ashp15205/guardian-runtime)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
+[![Python 3.9+](https://img.shields.io/pypi/pyversions/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
+[![Tests](https://img.shields.io/badge/tests-111%20passed-brightgreen)](https://github.com/ashp15205/guardian-runtime)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-Guardian Runtime is a Python SDK that sits between your AI application and any LLM — **intercepting every prompt and response** to block data leaks, prevent jailbreaks, and **automatically reduce your token costs by up to 40%**. Everything runs locally. Your data never leaves your infrastructure.
-
-```
-User Input → [Input Optimizer] → [Input Guard] → LLM → [Output Guard] → User
-                  ↓                    ↓                      ↓
-           Saves tokens          Blocks PII/secrets     Blocks output PII
+```text
+User Input
+    ↓
+[Input Optimizer]  →  saves 30–70% tokens
+    ↓
+[Input Guard]      →  blocks PII, secrets, jailbreaks
+    ↓
+   LLM             →  your model, your API key
+    ↓
+[Output Guard]     →  scans response before it reaches user
+    ↓
+Safe Response + Analysis Report
 ```
 
 ---
 
 ## Why Guardian?
 
-| Problem | How Guardian Solves It |
-|---------|----------------------|
-| **PII leaks to LLM providers** | Local NER scanning blocks SSNs, Aadhaar, API keys _before_ the prompt leaves your server |
-| **Exploding AI costs** | Input Optimizer compresses prompts, converts PDFs to markdown, trims chat history — saving 30-70% tokens |
-| **No runtime controls** | YAML policy engine enforces per-agent rules without code changes |
-| **Jailbreak attacks** | 40+ pattern detection blocks prompt injection attempts |
-| **Compliance burden** | Built for GDPR, HIPAA, CCPA, and India DPDP out of the box |
+Observability tools (Langfuse, LangSmith, Helicone) log what went wrong — after it happened. Guardian stops it before it happens, on your machine.
 
-Existing tools (Langfuse, Helicone, LangSmith) only **observe** traffic. Guardian **actively prevents** bad behavior at the moment it happens.
+| | Observability Tools | Guardian Runtime |
+|---|---|---|
+| When it acts | After the LLM call | **Before and after** |
+| Your data path | Sent to their cloud | **Stays on your machine** |
+| PII in prompt | Logged | **Blocked** |
+| Exposed API keys | Not detected | **Blocked** |
+| Token costs | Tracked | **Actively reduced** |
+| Jailbreak attempts | Logged | **Blocked** |
 
 ---
 
@@ -37,90 +46,109 @@ Existing tools (Langfuse, Helicone, LangSmith) only **observe** traffic. Guardia
 pip install guardian-runtime
 ```
 
-Requires Python 3.9+
+Optional extras:
+```bash
+pip install guardian-runtime[optimizer]   # PDF/DOCX → markdown conversion
+pip install guardian-runtime[dev]         # testing tools
+```
+
+Requires **Python 3.9+**
 
 ---
 
-## Quickstart
+## Quickstart (60 seconds)
 
-### Full pipeline — providers (Big 3)
+### Free — test with Gemini (no billing required)
 
-| Provider | Env var | Policy file | Default model |
-|----------|---------|-------------|---------------|
-| **Gemini** (free) | `GEMINI_API_KEY` | `policies/gemini.yaml` | `gemini-2.0-flash` |
-| **Claude** | `ANTHROPIC_API_KEY` | `policies/anthropic.yaml` | `claude-3-5-haiku-latest` |
-| **OpenAI** | `OPENAI_API_KEY` | `policies/minimal.yaml` | `gpt-4o-mini` |
+Get a free API key at [aistudio.google.com](https://aistudio.google.com/apikey)
+
+```bash
+export GEMINI_API_KEY=your_key_here
+```
 
 ```python
 from guardian import Guardian
 
-# Free testing with Gemini
 guardian = Guardian.from_policy("policies/gemini.yaml")
-response = guardian.complete(messages=[{"role": "user", "content": "Hello"}])
+
+response = guardian.complete(
+    messages=[{"role": "user", "content": "What is the refund policy?"}]
+)
+
+if response.blocked:
+    print("Blocked:", response.violations[0].type)
+else:
+    print(response.content)
 ```
 
-### Scan Without an LLM Key
+### Scan without any LLM key
 
 ```python
 from guardian import scan_pii, scan_secrets
 
-result = scan_pii("My Aadhaar is 0000 0000 0000")
-print(result.blocked)   # True
+# PII detection
+result = scan_pii("My Aadhaar is xxxx xxxx xxxx")
+print(result.blocked)    # True
 
+# Secret detection
 result = scan_secrets("My key is sk-proj-xxxxxxxxxxxxxxxxxxxx")
-print(result.blocked)   # True
+print(result.blocked)    # True
 ```
 
-### Optimize Prompts Standalone
+---
 
+## Supported Providers
+
+| Provider | Environment Variable | Policy file | Default Model |
+|---|---|---|---|
+| Google Gemini | `GEMINI_API_KEY` | `policies/gemini.yaml` | `gemini-2.0-flash` |
+| Anthropic Claude | `ANTHROPIC_API_KEY` | `policies/anthropic.yaml` | `claude-3-5-haiku-latest` |
+| OpenAI | `OPENAI_API_KEY` | `policies/minimal.yaml` | `gpt-4o-mini` |
+
+Override provider at runtime:
 ```python
-from guardian import optimize_input, convert_document
-
-# Compress a messy conversation
-result = optimize_input(messages, model="gpt-4o")
-print(f"Saved {result.savings_pct:.0%} of tokens")
-
-# Convert a heavy PDF to token-efficient markdown
-doc = convert_document("contract.pdf")  # requires: pip install guardian-runtime[optimizer]
-print(f"{doc.markdown_tokens} tokens (was {doc.original_size_bytes} bytes)")
+response = guardian.complete(
+    provider="anthropic",
+    model="claude-3-5-haiku-latest",
+    messages=[...]
+)
 ```
 
 ---
 
 ## Features
 
-### 🛡️ Security & Privacy
+### Security & Privacy
 
-- **PII Detection** — SSN, credit cards, email, phone, passport, Aadhaar, PAN, UPI
-- **Secret Detection** — OpenAI, Anthropic, AWS, GitHub, Stripe, Razorpay, Groq keys
-- **Jailbreak Detection** — 40+ patterns (DAN, ignore instructions, role-play attacks)
-- **Output Guard** — scans LLM responses for leaked PII before reaching the user
+- **PII Detection** — Aadhaar (`xxxx xxxx xxxx`), PAN (`XXXXX0000X`), UPI (`name@bank`), SSN (`xxx-xx-xxxx`), credit cards, email, phone, passport numbers
+- **Secret Detection** — OpenAI keys (`sk-...`), AWS access keys (`AKIA...`), GitHub tokens (`ghp_...`), Stripe keys (`sk_live_...`), Razorpay keys (`rzp_live_...`), Groq keys (`gsk_...`), generic `.env` patterns
+- **Jailbreak Detection** — 40+ patterns covering DAN variants, instruction overrides, role-play injections, encoding tricks, and system prompt extraction attempts
+- **Output Guard** — scans LLM responses for PII and secrets before they reach users
 - **Action modes** — `block`, `redact`, or `flag` per entity type
 
-### ⚡ Cost Optimization (Input Optimizer)
+### Cost Optimization
 
-- **Prompt compression** — strips whitespace, deduplicates system prompts, removes empty messages
+- **Prompt compression** — strips redundant whitespace, deduplicates system prompts, removes empty messages
 - **History trimming** — keeps last N turns, always preserves system prompt
-- **Document conversion** — PDF/DOCX/XLSX → clean markdown (40-70% token savings)
-- **Token budget enforcement** — warn or block when input exceeds limits
-- **Proactive guidance** — logs suggestions when bloated prompts are detected
-- **Savings tracking** — every `GuardianResponse` includes optimization metadata
+- **Document conversion** — PDF, DOCX, XLSX → clean markdown (30–70% token savings)
+- **Token budget enforcement** — warn or block when input exceeds your defined limit
+- **Cost estimation** — every response includes token count and USD cost estimate
 
-### 🔧 Governance Engine
+### Governance
 
-- **YAML policies** — define rules per agent, no code changes needed
-- **Multi-agent** — different rules for different bots (HR-Bot vs Support-Bot)
-- **Multi-provider** — OpenAI, Google Gemini, and Anthropic Claude (Big 3)
-- **Local JSONL logs** — full audit trail at `~/.guardian/logs/`
-- **CLI** — `guardian init`, `validate`, `status`, `logs`
-- **FinOps** — token counting, cost estimation, per-session spend tracking
+- **YAML policy engine** — define rules per agent, no code changes needed to update policies
+- **Multi-agent support** — different rules for different bots
+- **Block / redact / flag modes** — choose the right action per violation type
+- **Local audit logs** — full JSONL log at `~/.guardian/logs/` — never uploaded anywhere
 
-### 🔒 100% Local-First
+### CLI
 
-- All governance runs on **your infrastructure**
-- No prompts sent to Guardian servers — ever
-- One daily sync sends only: license key + check count (number only)
-- Built for regulated industries: finance, healthcare, government
+```bash
+guardian init --key gdn_free_xxxxx       # optional license setup
+guardian validate policies/gemini.yaml   # check policy syntax
+guardian status                          # view usage this month
+guardian logs --tail 20                  # view recent violations
+```
 
 ---
 
@@ -128,82 +156,142 @@ print(f"{doc.markdown_tokens} tokens (was {doc.original_size_bytes} bytes)")
 
 ```yaml
 version: "1.0"
-name: "production"
-
 agents:
   default:
     llm:
-      provider: openai
-      default_model: gpt-4o-mini
+      provider: gemini
+      default_model: gemini-2.0-flash
     input_guard:
       pii_detection: true
       jailbreak_detection: true
+      pii_action: block
     output_guard:
       pii_detection: true
     optimizer:
       enabled: true
       whitespace_normalization: true
-      max_history_messages: 20
+      max_history_messages: 10
       deduplicate_system_prompts: true
     cost:
       max_input_tokens: 8000
-      per_session_limit: 1.00
+```
+
+Validate before use:
+```bash
+guardian validate policies/gemini.yaml
+```
+
+---
+
+## Analysis Report
+
+Every `guardian.complete()` call returns a full analysis:
+
+```python
+response = guardian.complete(messages=[...])
+
+print(response.content)              # safe, validated response
+print(response.blocked)              # True if blocked
+print(response.violations)           # list of what was caught
+print(response.input_tokens)         # tokens used
+print(response.estimated_cost_usd)   # cost in USD
+print(response.optimization)         # tokens saved, savings %
+```
+
+Example output:
+```python
+{
+  "blocked": False,
+  "input_tokens": 620,
+  "estimated_cost_usd": 0.0004,
+  "optimization": {
+    "original_tokens": 1840,
+    "optimized_tokens": 620,
+    "savings_pct": 0.66,
+    "actions_taken": ["whitespace_normalization", "history_trimming"]
+  },
+  "violations": []
+}
 ```
 
 ---
 
 ## Compliance
 
-Guardian's PII detection covers real regulatory requirements:
+Guardian's detection covers major data protection regulations:
 
-- **GDPR** (EU) — email, phone, passport, general PII
-- **HIPAA** (US health) — sensitive personal data blocking
-- **CCPA** (California) — consumer data protection
-- **DPDP Act 2023** (India) — Aadhaar, PAN, UPI + general PII
-- **SOC2 / Enterprise** — local-only processing, no prompt upload to vendor cloud
+| Regulation | Coverage |
+|---|---|
+| **India DPDP Act 2023** | Aadhaar, PAN, UPI — native patterns |
+| **GDPR** (EU) | Email, phone, passport, general PII |
+| **HIPAA** (US Health) | Sensitive personal data blocking |
+| **CCPA** (California) | Consumer data protection |
 
-> ⚠️ Guardian is an assistive compliance tool, not legal advice. Always consult qualified counsel.
-
----
-
-## CLI
-
-```bash
-guardian init --key gdn_free_xxxxx      # Setup (optional)
-guardian validate policies/minimal.yaml  # Check policy syntax
-guardian status                          # View usage stats
-guardian logs --tail 10                  # View recent violation logs
-```
+> Guardian is an assistive compliance tool, not legal advice. Always consult qualified counsel for regulatory requirements.
 
 ---
 
-## Architecture
+## Local-First Architecture
 
+```text
+Your Machine
+├── guardian SDK         ← all processing happens here
+├── ~/.guardian/
+│   ├── config.json     ← license key (if using paid plan)
+│   ├── usage.json      ← monthly check count
+│   └── logs/           ← violation logs (never uploaded)
+│       └── YYYY-MM-DD.jsonl
 ```
+
+What Guardian's servers **never** receive:
+- Your prompts
+- Your LLM responses
+- Your violation details
+- Your API keys (OpenAI, Anthropic, etc.)
+
+What the optional daily sync sends (once per day, HTTPS only):
+- Your hashed license key
+- A single number: how many checks you ran
+
+---
+
+## Project Structure
+
+```text
 guardian/
-├── core/           # Engine, policy, models, storage, license
-├── guards/         # Input & Output guards
-│   └── validators/ # PII, secrets, jailbreak detectors
-├── optimizer/      # Input Optimizer, Document Converter (MarkItDown)
-├── finops/         # Token counter, cost calculator
-├── providers/      # OpenAI, Gemini, Anthropic (Big 3)
-├── logging/        # Local JSONL logger
-└── cli/            # CLI commands
+├── core/           engine, policy, models, storage
+├── guards/         input guard, output guard, validators
+│   └── validators/ pii, secrets, jailbreak, hallucination
+├── optimizer/      prompt compression, document converter
+├── providers/      openai, gemini, anthropic
+├── finops/         token counter, cost calculator
+├── logging/        local JSONL logger
+└── cli/            init, validate, status, logs
 ```
-
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full technical specification.
 
 ---
 
 ## Development
 
 ```bash
-pip install guardian-runtime[dev]
-pytest tests/   # 109 tests
+git clone https://github.com/ashp15205/guardian-runtime.git
+cd guardian-runtime
+pip install -e ".[dev,optimizer]"
+pytest tests/ -q    # 111 tests
 ```
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full technical specification.
+
+---
+
+## Privacy
+
+- All scanning runs **on your infrastructure**
+- Logs stored locally at `~/.guardian/logs/`
+- Optional license sync sends **only** a hashed key + check count — never prompts or responses
 
 ---
 
 ## License
 
-Apache-2.0
+Apache-2.0 — free to use, modify, and distribute. See [LICENSE](LICENSE).
