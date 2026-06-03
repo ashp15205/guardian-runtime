@@ -66,3 +66,8 @@ test_config.json
 # Secrets
 *.pem
 *.key
+
+# Internal planning and changelog files
+CHANGELOG.md
+V1_LAUNCH_PLAN.md
+concept.md
