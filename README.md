@@ -7,7 +7,7 @@ Guardian Runtime is a local-first Python SDK that sits between your AI applicati
 [![PyPI](https://img.shields.io/pypi/v/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
 [![Python 3.9+](https://img.shields.io/pypi/pyversions/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
 [![Tests](https://img.shields.io/badge/tests-111%20passed-brightgreen)](https://github.com/ashp15205/guardian-runtime)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
 
 ```text
 User Input
@@ -53,49 +53,6 @@ pip install guardian-runtime[dev]         # testing tools
 ```
 
 Requires **Python 3.9+**
-
----
-
-## Quickstart (60 seconds)
-
-### Free — test with Gemini (no billing required)
-
-Get a free API key at [aistudio.google.com](https://aistudio.google.com/apikey)
-
-```bash
-export GEMINI_API_KEY=your_key_here
-```
-
-```python
-from guardian import Guardian
-
-guardian = Guardian.from_policy("policies/gemini.yaml")
-
-response = guardian.complete(
-    messages=[{"role": "user", "content": "What is the refund policy?"}]
-)
-
-if response.blocked:
-    print("Blocked:", response.violations[0].type)
-else:
-    print(response.content)
-```
-
-### Scan without any LLM key
-
-```python
-from guardian import scan_pii, scan_secrets
-
-# PII detection
-result = scan_pii("My Aadhaar is xxxx xxxx xxxx")
-print(result.blocked)    # True
-
-# Secret detection
-result = scan_secrets("My key is sk-proj-xxxxxxxxxxxxxxxxxxxx")
-print(result.blocked)    # True
-```
-
----
 
 ## Supported Providers
 

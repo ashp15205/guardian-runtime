@@ -40,14 +40,15 @@ def test_openai_provider_with_mock_client():
 
 
 @patch("guardian.providers.gemini_provider.genai")
-def test_gemini_provider_single_message(mock_genai):
+@patch("guardian.providers.gemini_provider.genai_types")
+def test_gemini_provider_single_message(mock_types, mock_genai):
     mock_response = MagicMock()
     mock_response.text = "Hello from Gemini"
     mock_response.usage_metadata = MagicMock(prompt_token_count=4, candidates_token_count=2)
 
-    mock_model = MagicMock()
-    mock_model.generate_content.return_value = mock_response
-    mock_genai.GenerativeModel.return_value = mock_model
+    mock_client = MagicMock()
+    mock_client.models.generate_content.return_value = mock_response
+    mock_genai.Client.return_value = mock_client
 
     from guardian.providers.gemini_provider import GeminiProvider
 
@@ -59,7 +60,7 @@ def test_gemini_provider_single_message(mock_genai):
 
     assert result.content == "Hello from Gemini"
     assert result.input_tokens == 4
-    mock_genai.configure.assert_called_once()
+    mock_genai.Client.assert_called_once_with(api_key="test-key")
 
 
 def test_anthropic_provider_with_mock_client():

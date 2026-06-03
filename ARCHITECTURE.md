@@ -284,7 +284,6 @@ guardian-runtime/                    # ← GitHub repo root
 ├── PLAN.md                          #    Execution timeline
 ├── ARCHITECTURE.md                  #    This file
 ├── CHANGELOG.md                     #    Release history
-├── LICENSE                          #    Apache-2.0
 └── .gitignore
 ```
 

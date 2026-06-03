@@ -7,18 +7,21 @@ from typing import Any
 from guardian.providers.base import ProviderResult
 
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types as genai_types
 except ImportError:
     genai = None  # type: ignore[assignment]
+    genai_types = None  # type: ignore[assignment]
 
 
 class GeminiProvider:
-    """Wraps google-generativeai for Gemini models."""
+    """Wraps google-genai SDK for Gemini models."""
 
     name = "gemini"
 
     def __init__(self, api_key: str | None = None) -> None:
         self._api_key = api_key
+        self._client = None
 
     def _resolve_api_key(self) -> str:
         key = self._api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
@@ -29,53 +32,61 @@ class GeminiProvider:
             )
         return key
 
+    def _get_client(self):
+        if self._client is None:
+            if genai is None:
+                raise ImportError(
+                    "google-genai is required for Gemini. "
+                    "Install with: pip install google-genai"
+                )
+            self._client = genai.Client(api_key=self._resolve_api_key())
+        return self._client
+
     def complete(
         self,
         model: str,
         messages: list[dict[str, Any]],
         **kwargs: Any,
     ) -> ProviderResult:
-        if genai is None:
-            raise ImportError(
-                "google-generativeai is required for Gemini. "
-                "Install with: pip install google-generativeai"
-            )
+        client = self._get_client()
 
-        genai.configure(api_key=self._resolve_api_key())
+        # Extract system instruction
+        system_parts = [
+            m["content"] for m in messages
+            if m.get("role") == "system" and m.get("content")
+        ]
+        system_instruction = "\n".join(system_parts) or None
 
-        system_instruction = "\n".join(
-            m["content"] for m in messages if m.get("role") == "system" and m.get("content")
-        )
-        system_instruction = system_instruction or None
-
-        gemini_model = genai.GenerativeModel(
-            model_name=model,
-            system_instruction=system_instruction,
-        )
-
-        chat_messages: list[dict[str, Any]] = []
+        # Build contents for non-system messages
+        contents = []
         for message in messages:
             role = message.get("role")
             content = message.get("content")
             if role not in ("user", "assistant") or not content:
                 continue
             gemini_role = "user" if role == "user" else "model"
-            chat_messages.append({"role": gemini_role, "parts": [content]})
+            contents.append(
+                genai_types.Content(
+                    role=gemini_role,
+                    parts=[genai_types.Part(text=content)]
+                )
+            )
 
-        generation_config = kwargs.get("generation_config")
-        gen_kwargs: dict[str, Any] = {}
-        if generation_config is not None:
-            gen_kwargs["generation_config"] = generation_config
+        if not contents:
+            contents = [genai_types.Content(
+                role="user",
+                parts=[genai_types.Part(text="")]
+            )]
 
-        if not chat_messages:
-            response = gemini_model.generate_content("", **gen_kwargs)
-        elif len(chat_messages) == 1:
-            response = gemini_model.generate_content(chat_messages[0]["parts"][0], **gen_kwargs)
-        else:
-            history = chat_messages[:-1]
-            last_message = chat_messages[-1]["parts"][0]
-            chat = gemini_model.start_chat(history=history)
-            response = chat.send_message(last_message, **gen_kwargs)
+        config = genai_types.GenerateContentConfig(
+            system_instruction=system_instruction,
+        )
+
+        response = client.models.generate_content(
+            model=model,
+            contents=contents,
+            config=config,
+        )
 
         content = response.text or ""
 

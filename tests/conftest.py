@@ -1,8 +1,24 @@
 """Shared pytest fixtures for all Guardian tests."""
+from __future__ import annotations
+
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 
+# ── Token counter mock — removes tiktoken network dependency ──────────────────
+@pytest.fixture(autouse=True)
+def mock_tiktoken():
+    """Mock tiktoken to avoid network calls in CI/offline environments."""
+    mock_encoding = MagicMock()
+    mock_encoding.encode = lambda text: text.split()  # words as tokens
+
+    with patch("tiktoken.encoding_for_model", return_value=mock_encoding), \
+         patch("tiktoken.get_encoding", return_value=mock_encoding):
+        yield
+
+
+# ── Sample text fixtures ──────────────────────────────────────────────────────
 @pytest.fixture
 def sample_clean_text():
     return "What is the capital of France?"
@@ -26,12 +42,12 @@ def sample_pii_texts():
 
 @pytest.fixture
 def sample_false_positive_texts():
-    """Strings that look like PII but are NOT — used to catch false positives."""
+    """Strings that look like PII but are NOT."""
     return {
-        "regular_email": "Send to admin@gmail.com",          # email, not UPI
-        "upi_lookalike":  "user@outlook.com",                # email domain, not UPI
-        "short_number":   "My ID is 12345",                  # not Aadhaar (only 5 digits)
-        "normal_text":    "The project cost is $10 per unit", # no PII
+        "regular_email": "Send to admin@gmail.com",
+        "upi_lookalike":  "user@outlook.com",
+        "short_number":   "My ID is 12345",
+        "normal_text":    "The project cost is $10 per unit",
     }
 
 

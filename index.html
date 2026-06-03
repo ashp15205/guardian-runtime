@@ -1,1416 +1,1879 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guardian Runtime — Local-First AI Governance for Production LLM Apps</title>
-  <meta name="description" content="Block PII leaks, secrets, and jailbreaks before they reach the model. Cut token costs with built-in prompt optimization. Zero prompt upload. 100% local." />
-  <meta property="og:title" content="Guardian Runtime — Local-First AI Governance" />
-  <meta property="og:description" content="Runtime governance layer for AI systems. Block PII, secrets, jailbreaks. Reduce tokens 40%. 100% local." />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Guardian Runtime — Local-First AI Governance" />
-  <meta name="twitter:description" content="Block PII leaks, secrets, and jailbreaks before they reach the model." />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guardian Runtime — Local Firewall for AI Coding Agents</title>
+  <meta name="description"
+    content="Guardian Runtime is a local-first security firewall for AI coding agents. Blocks secrets, PII, and API key leaks before they reach the cloud." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    /* ─── RESET & TOKENS ─────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg-void:      #060810;
-      --bg-deep:      #090c16;
-      --bg-card:      rgba(255,255,255,0.035);
-      --bg-card-hov:  rgba(255,255,255,0.065);
-      --border:       rgba(255,255,255,0.08);
-      --border-hov:   rgba(255,255,255,0.18);
-
-      --accent-1:     #4f7fff;   /* electric blue */
-      --accent-2:     #7c3aed;   /* violet */
-      --accent-3:     #06b6d4;   /* cyan */
-      --accent-warn:  #f59e0b;
-      --accent-good:  #10b981;
-
-      --text-1:  #f0f2ff;
-      --text-2:  #9ba8c4;
-      --text-3:  #5a6484;
-
-      --gradient-hero:  linear-gradient(135deg, #4f7fff 0%, #7c3aed 50%, #06b6d4 100%);
-      --gradient-glow:  radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,127,255,0.25) 0%, transparent 70%);
-      --gradient-blue:  linear-gradient(135deg, #4f7fff, #06b6d4);
-      --gradient-violet: linear-gradient(135deg, #7c3aed, #4f7fff);
-
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      --radius-xl: 28px;
-
-      --nav-h: 72px;
-      --section-pad: 120px;
+      --bg: #030305;
+      --bg2: #0a0a12;
+      --bg3: #12121d;
+      --border: rgba(255, 255, 255, .08);
+      --border2: rgba(255, 255, 255, .15);
+      --text: #f0f0f5;
+      --muted: #6a6a8a;
+      --muted2: #9898ba;
+      --accent: #00ff9d;
+      --accent-dim: rgba(0, 255, 157, 0.15);
+      --accent2: #0ea5e9;
+      --red: #ff3366;
+      --yellow: #fbbf24;
+      --purple: #9d4edd;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
     }
 
-    html { scroll-behavior: smooth; }
+    @keyframes livepulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: .4;
+        transform: scale(.8)
+      }
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    @keyframes scroll {
+      0% {
+        transform: translateX(0)
+      }
+
+      100% {
+        transform: translateX(-50%)
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-10px)
+      }
+    }
+
+    @keyframes glitch {
+      0% {
+        clip-path: inset(10% 0 80% 0);
+        transform: translate(-2px, 2px)
+      }
+
+      20% {
+        clip-path: inset(80% 0 5% 0);
+        transform: translate(2px, -2px)
+      }
+
+      40% {
+        clip-path: inset(50% 0 30% 0);
+        transform: translate(-2px, 0)
+      }
+
+      60% {
+        clip-path: inset(0 0 100% 0);
+        transform: translate(0, 2px)
+      }
+
+      80% {
+        clip-path: inset(20% 0 60% 0);
+        transform: translate(2px, -2px)
+      }
+
+      100% {
+        clip-path: inset(10% 0 80% 0);
+        transform: translate(-2px, 2px)
+      }
+    }
+
+    @keyframes packetGridMove {
+      0% {
+        left: -20%;
+        opacity: 0;
+      }
+
+      2% {
+        opacity: 1;
+      }
+
+      31% {
+        opacity: 1;
+      }
+
+      33.33% {
+        left: 120%;
+        opacity: 0;
+      }
+
+      100% {
+        left: 120%;
+        opacity: 0;
+      }
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
 
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg-void);
-      color: var(--text-1);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.65;
       overflow-x: hidden;
-      line-height: 1.6;
+      -webkit-font-smoothing: antialiased
     }
 
-    /* ─── SCROLLBAR ──────────────────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-void); }
-    ::-webkit-scrollbar-thumb { background: rgba(79,127,255,0.4); border-radius: 99px; }
-
-    /* ─── NOISE OVERLAY ──────────────────────────────────────────────── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.5;
+    body::after {
+      content: " ";
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, .25) 50%), linear-gradient(90deg, rgba(255, 0, 0, .06), rgba(0, 255, 0, .02), rgba(0, 0, 255, .06));
+      z-index: 2;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none
     }
 
-    /* ─── ANIMATED BG ORBS ───────────────────────────────────────────── */
-    .orb-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-    .orb {
-      position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.18;
-      animation: orbFloat 20s ease-in-out infinite alternate;
-    }
-    .orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, #4f7fff, transparent); top: -200px; left: -200px; animation-duration: 25s; }
-    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, #7c3aed, transparent); top: 30%; right: -150px; animation-duration: 18s; animation-delay: -8s; }
-    .orb-3 { width: 400px; height: 400px; background: radial-gradient(circle, #06b6d4, transparent); bottom: 10%; left: 20%; animation-duration: 22s; animation-delay: -4s; }
-
-    @keyframes orbFloat {
-      0%   { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(40px, 60px) scale(1.1); }
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, .02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none
     }
 
-    /* ─── LAYOUT HELPERS ─────────────────────────────────────────────── */
-    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
-    section { padding: var(--section-pad) 0; position: relative; }
-
-    .label {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--accent-1); padding: 6px 14px; border-radius: 99px;
-      background: rgba(79,127,255,0.12); border: 1px solid rgba(79,127,255,0.25);
-      margin-bottom: 20px;
+    .ambient {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: .6
     }
 
-    .section-title {
-      font-size: clamp(36px, 5vw, 60px); font-weight: 800; line-height: 1.1;
-      letter-spacing: -0.03em; color: var(--text-1); margin-bottom: 20px;
-    }
-    .section-title span { background: var(--gradient-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .section-sub { font-size: 18px; color: var(--text-2); max-width: 640px; line-height: 1.7; }
-    .center { text-align: center; }
-    .center .section-sub { margin: 0 auto; }
-
-    /* ─── GRID DIVIDER ───────────────────────────────────────────────── */
-    .section-divider {
-      width: 100%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      border: none; margin: 0;
+    .ambient-1 {
+      width: 600px;
+      height: 600px;
+      background: rgba(0, 255, 157, .06);
+      top: -200px;
+      left: -150px
     }
 
-    /* ─── NAVBAR ─────────────────────────────────────────────────────── */
-    #navbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
-      height: var(--nav-h);
-      display: flex; align-items: center;
-      transition: background 0.4s, backdrop-filter 0.4s, border-color 0.4s;
-      border-bottom: 1px solid transparent;
+    .ambient-2 {
+      width: 500px;
+      height: 500px;
+      background: rgba(14, 165, 233, .05);
+      top: 300px;
+      right: -200px
     }
-    #navbar.scrolled {
-      background: rgba(6,8,16,0.8);
-      backdrop-filter: blur(20px) saturate(180%);
-      border-bottom-color: var(--border);
-    }
-    .nav-inner {
-      width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 24px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 800; font-size: 18px; text-decoration: none; color: var(--text-1);
-    }
-    .nav-logo-icon {
-      width: 34px; height: 34px; border-radius: 9px;
-      background: var(--gradient-hero);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
-    .nav-links { display: flex; align-items: center; gap: 8px; list-style: none; }
-    .nav-links a {
-      font-size: 14px; font-weight: 500; color: var(--text-2); text-decoration: none;
-      padding: 8px 16px; border-radius: var(--radius-sm);
-      transition: color 0.2s, background 0.2s;
-    }
-    .nav-links a:hover { color: var(--text-1); background: var(--bg-card); }
-    .nav-cta {
-      font-size: 14px; font-weight: 600; color: #fff; text-decoration: none;
-      padding: 10px 22px; border-radius: var(--radius-sm);
-      background: var(--gradient-blue); border: none; cursor: pointer;
-      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 0 20px rgba(79,127,255,0.3);
-    }
-    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 28px rgba(79,127,255,0.45); }
-    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
-    .hamburger span { width: 22px; height: 2px; background: var(--text-2); border-radius: 2px; transition: all 0.3s; }
 
-    /* ─── HERO ───────────────────────────────────────────────────────── */
-    #hero {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: calc(var(--nav-h) + 60px) 0 80px;
+    .ambient-3 {
+      width: 400px;
+      height: 400px;
+      background: rgba(255, 51, 102, .04);
+      bottom: -100px;
+      left: 30%
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit
+    }
+
+    code {
+      font-family: var(--mono)
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 10
+    }
+
+    .section {
+      position: relative;
+      z-index: 10;
+      padding: 8rem 0
+    }
+
+    .section-header {
       text-align: center;
+      margin-bottom: 4rem
     }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 13px; font-weight: 500; color: var(--text-2);
-      padding: 8px 16px; border-radius: 99px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      margin-bottom: 32px; cursor: default;
-      transition: border-color 0.3s, background 0.3s;
-    }
-    .hero-badge:hover { border-color: rgba(79,127,255,0.4); background: rgba(79,127,255,0.08); }
-    .hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-good); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
 
-    .hero-title {
-      font-size: clamp(48px, 8vw, 88px); font-weight: 900; line-height: 1.0;
-      letter-spacing: -0.04em; margin-bottom: 28px;
+    .section-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      font-family: var(--mono);
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      padding: .4rem 1rem;
+      border: 1px solid var(--accent-dim);
+      border-radius: 100px;
+      background: rgba(0, 255, 157, .02)
     }
-    .hero-title .line-1 { display: block; color: var(--text-1); }
-    .hero-title .gradient-word {
-      background: var(--gradient-hero); -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent; background-clip: text;
-      display: inline-block;
+
+    .section-eyebrow .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: livepulse 2s infinite
+    }
+
+    .section-heading {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -.03em;
+      color: var(--text);
+      text-shadow: 0 0 40px rgba(255, 255, 255, .1)
+    }
+
+    .section-sub {
+      font-size: 1.1rem;
+      color: var(--muted2);
+      max-width: 700px;
+      line-height: 1.7;
+      margin: 1.5rem auto 0
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      padding: 0 2rem;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(3, 3, 5, .7);
+      backdrop-filter: blur(20px)
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--bg2), var(--bg3));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-dim)
+    }
+
+    .nav-center {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+      background: rgba(255, 255, 255, .02);
+      border: 1px solid var(--border);
+      padding: .5rem 1.5rem;
+      border-radius: 100px
+    }
+
+    .nav-center a {
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--muted2);
+      transition: color .2s
+    }
+
+    .nav-center a:hover {
+      color: var(--text)
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem
+    }
+
+    .nav-btn {
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--text);
+      padding: .5rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .nav-btn:hover {
+      background: var(--bg2);
+      border-color: var(--border2)
+    }
+
+    .nav-btn svg {
+      width: 16px;
+      height: 16px
+    }
+
+    .nav-pypi-btn {
+      background: rgba(55, 117, 169, .15);
+      border-color: rgba(55, 117, 169, .3);
+      color: #4B8BBE
+    }
+
+    .nav-pypi-btn:hover {
+      background: rgba(55, 117, 169, .25)
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 140px 0 80px
+    }
+
+    .hero-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto
+    }
+
+    .hero-tagline {
+      font-family: var(--mono);
+      font-size: .85rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      padding: .5rem 1rem;
+      border: 1px solid var(--accent-dim);
+      border-radius: 100px;
+      background: rgba(0, 255, 157, .03);
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .hero-tagline::before {
+      content: '>';
+      font-weight: bold
+    }
+
+    .hero-headline {
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      margin-bottom: 1.5rem;
+      position: relative
+    }
+
+    .hero-headline em {
+      font-style: normal;
+      color: var(--red)
+    }
+
+    .hero-headline .hl-glow {
+      color: var(--text);
+      text-shadow: 0 0 30px rgba(255, 255, 255, .2)
+    }
+
+    .glitch-wrapper {
+      position: relative;
+      display: inline-block
+    }
+
+    .glitch-wrapper:hover::before,
+    .glitch-wrapper:hover::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    .glitch-wrapper:hover::before {
+      left: 2px;
+      text-shadow: -2px 0 var(--red);
+      animation: glitch 2s infinite linear alternate-reverse
+    }
+
+    .glitch-wrapper:hover::after {
+      left: -2px;
+      text-shadow: 2px 0 var(--accent2);
+      animation: glitch 3s infinite linear alternate-reverse
     }
 
     .hero-sub {
-      font-size: clamp(17px, 2.5vw, 21px); color: var(--text-2); max-width: 680px;
-      margin: 0 auto 48px; line-height: 1.7; font-weight: 400;
+      font-size: 1.15rem;
+      color: var(--muted2);
+      line-height: 1.7;
+      max-width: 750px;
+      margin: 0 auto 3rem
     }
 
-    .hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 72px; }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 15px; font-weight: 600; color: #fff; text-decoration: none;
-      padding: 14px 28px; border-radius: var(--radius-md);
-      background: var(--gradient-blue); border: none; cursor: pointer;
-      transition: opacity 0.2s, transform 0.2s, box-shadow 0.3s;
-      box-shadow: 0 0 30px rgba(79,127,255,0.35);
+    .hero-cta-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem
     }
-    .btn-primary:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 8px 40px rgba(79,127,255,0.5); }
-    .btn-ghost {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 15px; font-weight: 600; color: var(--text-2); text-decoration: none;
-      padding: 14px 28px; border-radius: var(--radius-md);
-      background: transparent; border: 1px solid var(--border); cursor: pointer;
-      transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.2s;
-    }
-    .btn-ghost:hover { color: var(--text-1); border-color: var(--border-hov); background: var(--bg-card); transform: translateY(-2px); }
 
-    /* ─── PIPELINE DIAGRAM ───────────────────────────────────────────── */
-    .pipeline {
-      display: flex; align-items: center; justify-content: center;
-      gap: 0; flex-wrap: wrap; max-width: 860px; margin: 0 auto;
+    .install-box {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: .4rem .4rem .4rem 1.2rem;
+      font-family: var(--mono);
+      font-size: .95rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+      transition: border-color .2s, box-shadow .2s
     }
-    .pipe-node {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      padding: 16px 20px; border-radius: var(--radius-md);
-      background: var(--bg-card); border: 1px solid var(--border);
-      min-width: 130px; text-align: center;
-      transition: border-color 0.3s, transform 0.3s, background 0.3s;
-      cursor: default;
+
+    .install-box:hover {
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px var(--accent-dim)
     }
-    .pipe-node:hover { border-color: var(--border-hov); transform: translateY(-3px); background: var(--bg-card-hov); }
-    .pipe-node .icon { font-size: 22px; margin-bottom: 4px; }
-    .pipe-node .name { font-size: 12px; font-weight: 700; color: var(--text-1); letter-spacing: 0.05em; text-transform: uppercase; }
-    .pipe-node .tag { font-size: 11px; color: var(--accent-good); font-weight: 600; }
-    .pipe-node .tag.warn { color: var(--accent-warn); }
-    .pipe-node .tag.blue { color: var(--accent-1); }
-    .pipe-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 4px; }
-    .pipe-arrow svg { color: var(--accent-1); }
-    .pipe-arrow .pill {
-      font-size: 10px; font-weight: 600; color: var(--accent-1);
-      background: rgba(79,127,255,0.1); border-radius: 99px; padding: 3px 8px;
+
+    .install-prefix {
+      color: var(--muted);
+      user-select: none
+    }
+
+    .install-pkg {
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .btn-copy {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .6rem 1rem;
+      border-radius: 6px;
+      font-size: .8rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: all .2s
+    }
+
+    .btn-copy:hover {
+      background: var(--border2)
+    }
+
+    .btn-copy svg {
+      width: 14px;
+      height: 14px
+    }
+
+    .hero-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center
+    }
+
+    .btn-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      font-family: var(--mono);
+      font-size: .9rem;
+      font-weight: 600;
+      padding: .8rem 1.5rem;
+      border-radius: 8px;
+      transition: all .2s
+    }
+
+    .btn-github {
+      background: #fff;
+      color: #000
+    }
+
+    .btn-github:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 255, 255, .1)
+    }
+
+    .btn-pypi {
+      background: #3775A9;
+      color: #fff
+    }
+
+    .btn-pypi:hover {
+      background: #4B8BBE;
+      transform: translateY(-2px)
+    }
+
+    .hero-badges {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1.5rem
+    }
+
+    .hbadge {
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--muted);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: .3rem .7rem;
+      border-radius: 4px
+    }
+
+    /* TERMINAL */
+    .hero-terminal-wrap {
+      margin-top: 5rem;
+      width: 100%;
+      max-width: 800px;
+      animation: float 6s ease-in-out infinite
+    }
+
+    .terminal-window {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .05);
+      text-align: left
+    }
+
+    .terminal-header {
+      background: rgba(255, 255, 255, .03);
+      padding: .8rem 1rem;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .t-dots {
+      display: flex;
+      gap: 6px
+    }
+
+    .t-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%
+    }
+
+    .t-dot.r {
+      background: #ff5f57
+    }
+
+    .t-dot.y {
+      background: #febc2e
+    }
+
+    .t-dot.g {
+      background: #28c840
+    }
+
+    .t-title {
+      flex: 1;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: var(--muted)
+    }
+
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: .85rem;
+      line-height: 1.7
+    }
+
+    .t-line {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: .2rem
+    }
+
+    .t-time {
+      color: var(--muted);
+      font-size: .75rem;
+      min-width: 65px
+    }
+
+    .t-content {
+      flex: 1
+    }
+
+    .t-comment {
+      color: var(--muted2)
+    }
+
+    .t-err {
+      color: var(--red);
+      font-weight: bold
+    }
+
+    .t-ok {
+      color: var(--accent)
+    }
+
+    .t-warn {
+      color: var(--yellow)
+    }
+
+    .t-highlight {
+      background: rgba(255, 51, 102, .15);
+      color: #fff;
+      padding: 0 4px;
+      border-radius: 2px
+    }
+
+    /* MARQUEE */
+    .marquee-section {
+      padding: 3rem 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      overflow: hidden;
+      position: relative;
+      z-index: 10
+    }
+
+    .marquee-label {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 1.5rem
+    }
+
+    .marquee-section::before,
+    .marquee-section::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 150px;
+      z-index: 2;
+      pointer-events: none
+    }
+
+    .marquee-section::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg2), transparent)
+    }
+
+    .marquee-section::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg2), transparent)
+    }
+
+    .marquee-container {
+      display: flex;
+      width: 200%;
+      animation: scroll 30s linear infinite
+    }
+
+    .marquee-container:hover {
+      animation-play-state: paused
+    }
+
+    .marquee-content {
+      display: flex;
+      justify-content: space-around;
+      width: 50%;
+      align-items: center;
+      gap: 3rem;
+      padding: 0 1.5rem
+    }
+
+    .agent-logo {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--muted2);
       white-space: nowrap;
+      transition: color .3s;
+      opacity: .6;
+      filter: grayscale(100%)
     }
-    .pipe-arrow .pill.cyan { color: var(--accent-3); background: rgba(6,182,212,0.1); }
 
-    /* highlight nodes */
-    .pipe-node.accent-blue { border-color: rgba(79,127,255,0.35); background: rgba(79,127,255,0.07); }
-    .pipe-node.accent-violet { border-color: rgba(124,58,237,0.35); background: rgba(124,58,237,0.07); }
-    .pipe-node.accent-cyan { border-color: rgba(6,182,212,0.35); background: rgba(6,182,212,0.07); }
+    .agent-logo:hover {
+      opacity: 1;
+      color: var(--text);
+      filter: grayscale(0%)
+    }
 
-    /* ─── STATS BAR ──────────────────────────────────────────────────── */
-    .stats-bar {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px;
-      background: var(--border); border-radius: var(--radius-lg); overflow: hidden;
-      border: 1px solid var(--border); margin-top: 80px;
+    .agent-icon {
+      width: 24px;
+      height: 24px
     }
-    .stat-item {
-      background: var(--bg-deep); padding: 36px 28px; text-align: center;
-      transition: background 0.3s;
-    }
-    .stat-item:hover { background: var(--bg-card); }
-    .stat-num {
-      font-size: 44px; font-weight: 900; letter-spacing: -0.04em;
-      background: var(--gradient-hero); -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent; background-clip: text;
-      line-height: 1;
-    }
-    .stat-label { font-size: 13px; color: var(--text-3); margin-top: 8px; font-weight: 500; }
 
-    /* ─── FEATURES BENTO ─────────────────────────────────────────────── */
+    /* ABOUT */
+    .about-section {
+      background: var(--bg)
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: stretch
+    }
+
+    .about-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden
+    }
+
+    .about-card.problem {
+      border-top: 2px solid var(--red)
+    }
+
+    .about-card.solution {
+      border-top: 2px solid var(--accent)
+    }
+
+    .about-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(255, 255, 255, .03), transparent 70%);
+      pointer-events: none
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem
+    }
+
+    .card-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: var(--text);
+      letter-spacing: -.02em
+    }
+
+    .card-text {
+      font-size: 1.05rem;
+      color: var(--muted2);
+      line-height: 1.7
+    }
+
+    .leak-example {
+      margin-top: 2rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: .8rem
+    }
+
+    .leak-example .red {
+      color: var(--red)
+    }
+
+    .leak-example .green {
+      color: var(--accent)
+    }
+
+    /* HOW IT WORKS */
+    .how-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .diagram-container {
+      margin: 3rem auto 0;
+      max-width: 900px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      position: relative;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 255, 255, .05);
+      background: linear-gradient(180deg, rgba(20, 20, 20, 1) 0%, var(--bg2) 100%)
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 1rem
+    }
+
+    .arch-card {
+      background: rgba(0, 0, 0, .4);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      position: relative;
+      z-index: 2
+    }
+
+    .arch-card.guardian {
+      background: rgba(0, 255, 157, .03);
+      border-color: rgba(0, 255, 157, .3);
+      box-shadow: 0 0 40px rgba(0, 255, 157, .1);
+      transform: scale(1.05)
+    }
+
+    .ac-icon {
+      font-size: 2.5rem;
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border2)
+    }
+
+    .ac-icon.guardian {
+      font-size: 3rem;
+      width: 80px;
+      height: 80px;
+      border-color: rgba(0, 255, 157, .5);
+      background: rgba(0, 255, 157, .1);
+      animation: livepulse 3s infinite;
+      box-shadow: inset 0 0 20px rgba(0, 255, 157, .2)
+    }
+
+    .ac-icon.cloud {
+      border-color: rgba(157, 78, 221, .3)
+    }
+
+    .ac-icon.agent {
+      border-color: rgba(14, 165, 233, .3)
+    }
+
+    .arch-card h3 {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: .5rem
+    }
+
+    .arch-card p {
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: var(--muted)
+    }
+
+    .arch-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      margin-top: 1.5rem
+    }
+
+    .aa-tag {
+      font-family: var(--mono);
+      font-size: .75rem;
+      padding: .4rem .8rem;
+      border-radius: 6px;
+      border: 1px solid
+    }
+
+    .aa-tag.block {
+      color: #ff3366;
+      background: rgba(255, 51, 102, .1);
+      border-color: rgba(255, 51, 102, .3)
+    }
+
+    .aa-tag.opt {
+      color: #a78bfa;
+      background: rgba(157, 78, 221, .1);
+      border-color: rgba(157, 78, 221, .3)
+    }
+
+    .aa-tag.allow {
+      color: #00ff9d;
+      background: rgba(0, 255, 157, .1);
+      border-color: rgba(0, 255, 157, .3)
+    }
+
+    .arch-arrow {
+      color: var(--border2);
+      width: 40px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .arch-arrow svg {
+      width: 100%;
+      height: 24px
+    }
+
+    .arch-packet {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+      opacity: 0;
+      animation: packetGridMove 3s infinite linear;
+    }
+
+    .arch-packet.green {
+      background: #00ff9d;
+      box-shadow: 0 0 10px #00ff9d;
+    }
+
+    .arch-packet.red {
+      background: #ff3366;
+      box-shadow: 0 0 10px #ff3366;
+    }
+
+    .arch-packet.p-green-1 {
+      animation-delay: 0s;
+    }
+
+    .arch-packet.p-green-2 {
+      animation-delay: 1s;
+    }
+
+    .arch-packet.p-red-1 {
+      animation-delay: 2s;
+    }
+
+    .diagram-legend {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.green {
+      background: #00ff9d;
+      box-shadow: 0 0 10px #00ff9d;
+    }
+
+    .legend-dot.red {
+      background: #ff3366;
+      box-shadow: 0 0 10px #ff3366;
+    }
+
+    /* SETUP */
+    .setup-section {
+      background: var(--bg)
+    }
+
+    .setup-container {
+      max-width: 800px;
+      margin: 0 auto
+    }
+
+    .step-block {
+      margin-bottom: 3rem
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem
+    }
+
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .step-title {
+      font-size: 1.4rem;
+      font-weight: 700
+    }
+
+    .code-window {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden
+    }
+
+    .cw-header {
+      background: var(--bg3);
+      padding: .8rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    .cw-body {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: .9rem;
+      line-height: 1.6;
+      overflow-x: auto
+    }
+
+    .c-cmd {
+      color: var(--text)
+    }
+
+    .c-kw {
+      color: var(--accent2)
+    }
+
+    .c-arg {
+      color: var(--yellow)
+    }
+
+    .c-str {
+      color: #a78bfa
+    }
+
+    .c-comment {
+      color: var(--muted)
+    }
+
+    .agent-tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: .5rem;
+      overflow-x: auto
+    }
+
+    .agent-tab {
+      padding: .5rem 1rem;
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap
+    }
+
+    .agent-tab:hover {
+      color: var(--text);
+      background: var(--bg3)
+    }
+
+    .agent-tab.active {
+      color: var(--accent);
+      border-color: var(--border);
+      background: var(--bg2)
+    }
+
+    /* FEATURES */
+    .features-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border)
+    }
+
     .bento-grid {
-      display: grid; gap: 16px;
+      display: grid;
+      gap: 16px;
       grid-template-columns: repeat(12, 1fr);
+      margin-top: 4rem
     }
-    .bento-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 36px; overflow: hidden; position: relative;
-      transition: border-color 0.3s, transform 0.3s, background 0.3s, box-shadow 0.3s;
-      cursor: default;
-    }
-    .bento-card:hover {
-      border-color: var(--border-hov); transform: translateY(-3px);
-      background: var(--bg-card-hov); box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    }
-    .bento-card::before {
-      content: ''; position: absolute; inset: 0; border-radius: inherit;
-      background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(79,127,255,0.06) 0%, transparent 60%);
-      opacity: 0; transition: opacity 0.4s;
-    }
-    .bento-card:hover::before { opacity: 1; }
 
-    .bc-1  { grid-column: span 7; }
-    .bc-2  { grid-column: span 5; }
-    .bc-3  { grid-column: span 4; }
-    .bc-4  { grid-column: span 4; }
-    .bc-5  { grid-column: span 4; }
-    .bc-6  { grid-column: span 6; }
-    .bc-7  { grid-column: span 6; }
+    .bento-card {
+      background: rgba(255, 255, 255, .035);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 36px;
+      overflow: hidden;
+      position: relative;
+      transition: border-color .3s, transform .3s, background .3s, box-shadow .3s;
+      cursor: default
+    }
+
+    .bento-card:hover {
+      border-color: rgba(255, 255, 255, .18);
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, .065);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .4)
+    }
+
+    .bento-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 50% 50%, rgba(0, 255, 157, .06) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .4s
+    }
+
+    .bento-card:hover::before {
+      opacity: 1
+    }
+
+    .bc-1 {
+      grid-column: span 7
+    }
+
+    .bc-2 {
+      grid-column: span 5
+    }
+
+    .bc-3 {
+      grid-column: span 4
+    }
+
+    .bc-4 {
+      grid-column: span 8
+    }
 
     .bento-icon {
-      width: 52px; height: 52px; border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; margin-bottom: 20px;
-      background: var(--bg-card); border: 1px solid var(--border);
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, .035);
+      border: 1px solid var(--border)
     }
-    .bento-icon.blue   { background: rgba(79,127,255,0.15); border-color: rgba(79,127,255,0.3); }
-    .bento-icon.violet { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); }
-    .bento-icon.cyan   { background: rgba(6,182,212,0.15);  border-color: rgba(6,182,212,0.3); }
-    .bento-icon.green  { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); }
-    .bento-icon.amber  { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); }
 
-    .bento-title { font-size: 20px; font-weight: 700; color: var(--text-1); margin-bottom: 10px; line-height: 1.25; }
-    .bento-body  { font-size: 14px; color: var(--text-2); line-height: 1.7; }
-
-    /* code block inside bento */
-    .bento-code {
-      margin-top: 20px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius-md); padding: 20px; font-family: 'JetBrains Mono', monospace;
-      font-size: 13px; line-height: 1.8; overflow: auto;
+    .bento-icon.blue {
+      background: rgba(14, 165, 233, .15);
+      border-color: rgba(14, 165, 233, .3)
     }
-    .code-line { display: flex; gap: 12px; }
-    .code-line .ln { color: var(--text-3); user-select: none; min-width: 18px; text-align: right; }
-    .kw  { color: #7c3aed; }
-    .fn  { color: #4f7fff; }
-    .st  { color: #10b981; }
-    .cm  { color: var(--text-3); font-style: italic; }
-    .va  { color: var(--accent-warn); }
 
-    /* inline tag pills */
-    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-    .tag-pill {
-      font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
-      background: rgba(79,127,255,0.1); color: var(--accent-1); border: 1px solid rgba(79,127,255,0.2);
+    .bento-icon.green {
+      background: rgba(0, 255, 157, .15);
+      border-color: rgba(0, 255, 157, .3)
     }
-    .tag-pill.violet { background: rgba(124,58,237,0.1); color: #a78bfa; border-color: rgba(124,58,237,0.25); }
-    .tag-pill.cyan   { background: rgba(6,182,212,0.1);  color: var(--accent-3); border-color: rgba(6,182,212,0.25); }
-    .tag-pill.green  { background: rgba(16,185,129,0.1); color: var(--accent-good); border-color: rgba(16,185,129,0.25); }
 
-    /* big number accent in bento */
-    .bento-bignum {
-      font-size: 80px; font-weight: 900; line-height: 1;
-      letter-spacing: -0.06em;
-      background: var(--gradient-hero); -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent; background-clip: text;
+    .bento-icon.amber {
+      background: rgba(251, 191, 36, .15);
+      border-color: rgba(251, 191, 36, .3)
+    }
+
+    .bento-icon.violet {
+      background: rgba(157, 78, 221, .15);
+      border-color: rgba(157, 78, 221, .3)
+    }
+
+    .bento-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
       margin-bottom: 10px;
+      line-height: 1.25
     }
-    .bento-bignum.violet { background: var(--gradient-violet); -webkit-background-clip: text; background-clip: text; }
 
-    /* ─── COMPARISON TABLE ───────────────────────────────────────────── */
-    .comp-table {
-      width: 100%; border-collapse: separate; border-spacing: 0;
-      border-radius: var(--radius-xl); overflow: hidden;
-      border: 1px solid var(--border);
+    .bento-body {
+      font-size: 14px;
+      color: var(--muted2);
+      line-height: 1.7
     }
-    .comp-table th, .comp-table td { padding: 18px 24px; text-align: center; }
-    .comp-table thead { background: rgba(79,127,255,0.06); }
-    .comp-table thead th { font-size: 13px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
-    .comp-table thead th.highlight { color: var(--accent-1); }
-    .comp-table tbody tr { border-top: 1px solid var(--border); }
-    .comp-table tbody tr:hover td { background: rgba(255,255,255,0.025); }
-    .comp-table td:first-child { text-align: left; font-weight: 500; color: var(--text-2); font-size: 14px; }
-    .comp-table td.highlight { background: rgba(79,127,255,0.05); }
-    .check { color: var(--accent-good); font-size: 18px; }
-    .cross { color: var(--text-3); font-size: 18px; }
-    .partial { color: var(--accent-warn); font-size: 14px; font-weight: 600; }
 
-    /* ─── PROVIDER LOGOS ─────────────────────────────────────────────── */
-    .provider-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+    .bento-code {
+      margin-top: 20px;
+      background: rgba(0, 0, 0, .45);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 14px;
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.8;
+      overflow: auto
     }
-    .provider-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 28px 24px;
-      display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
-      transition: border-color 0.3s, transform 0.3s, background 0.3s;
-    }
-    .provider-card:hover { border-color: var(--border-hov); transform: translateY(-2px); background: var(--bg-card-hov); }
-    .provider-logo { font-size: 32px; }
-    .provider-name { font-size: 16px; font-weight: 700; color: var(--text-1); }
-    .provider-detail { font-size: 12px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; }
-    .provider-env { font-size: 12px; color: var(--accent-1); font-family: 'JetBrains Mono', monospace; }
 
-    /* ─── INSTALL BLOCK ──────────────────────────────────────────────── */
-    .install-block {
-      background: rgba(0,0,0,0.55); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); overflow: hidden;
+    .bento-code .red {
+      color: #f87171
     }
-    .install-tab-bar {
-      display: flex; border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
-    }
-    .install-tab {
-      padding: 14px 24px; font-size: 13px; font-weight: 600; color: var(--text-3);
-      cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
-      user-select: none;
-    }
-    .install-tab.active { color: var(--accent-1); border-bottom-color: var(--accent-1); }
-    .install-pane { display: none; padding: 28px 32px; }
-    .install-pane.active { display: block; }
-    .install-pane pre {
-      font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.9;
-      color: var(--text-1); overflow-x: auto;
-    }
-    .copy-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      margin-top: 16px; font-size: 13px; font-weight: 600; color: var(--accent-1);
-      background: rgba(79,127,255,0.1); border: 1px solid rgba(79,127,255,0.25);
-      border-radius: var(--radius-sm); padding: 8px 16px; cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-    }
-    .copy-btn:hover { background: rgba(79,127,255,0.18); transform: translateY(-1px); }
-    .copy-btn.copied { color: var(--accent-good); background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25); }
 
-    /* ─── CLI DEMO ───────────────────────────────────────────────────── */
-    .cli-window {
-      background: #0a0d18; border: 1px solid var(--border);
-      border-radius: var(--radius-xl); overflow: hidden;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    .bento-code .green {
+      color: #10b981
     }
-    .cli-titlebar {
-      display: flex; align-items: center; gap: 8px; padding: 14px 20px;
-      background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
-    }
-    .cli-dot { width: 12px; height: 12px; border-radius: 50%; }
-    .cli-dot.red    { background: #ff5f57; }
-    .cli-dot.yellow { background: #febc2e; }
-    .cli-dot.green  { background: #28c840; }
-    .cli-path { font-size: 12px; color: var(--text-3); margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
-    .cli-body { padding: 28px 32px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 2; }
-    .cli-prompt { color: var(--accent-1); }
-    .cli-cmd    { color: var(--text-1); }
-    .cli-out    { color: var(--text-2); }
-    .cli-ok     { color: var(--accent-good); }
-    .cli-warn   { color: var(--accent-warn); }
-    .cli-err    { color: #f87171; }
-    .cli-dim    { color: var(--text-3); }
 
-    /* ─── PRICING ────────────────────────────────────────────────────── */
-    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .pricing-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 36px; display: flex; flex-direction: column;
-      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-      position: relative;
+    .bento-code .dim {
+      color: var(--muted)
     }
-    .pricing-card:hover { border-color: var(--border-hov); transform: translateY(-3px); }
-    .pricing-card.featured {
-      border-color: rgba(79,127,255,0.5);
-      background: rgba(79,127,255,0.06);
-      box-shadow: 0 0 0 1px rgba(79,127,255,0.2), 0 30px 80px rgba(79,127,255,0.15);
-    }
-    .pricing-card.featured:hover { box-shadow: 0 0 0 1px rgba(79,127,255,0.4), 0 40px 100px rgba(79,127,255,0.25); }
-    .pricing-badge {
-      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-      color: #fff; padding: 5px 16px; border-radius: 99px;
-      background: var(--gradient-blue); box-shadow: 0 4px 16px rgba(79,127,255,0.4);
-    }
-    .pricing-plan { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 16px; }
-    .pricing-price { font-size: 52px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-1); line-height: 1; }
-    .pricing-price span { font-size: 18px; font-weight: 500; color: var(--text-3); letter-spacing: 0; }
-    .pricing-desc { font-size: 14px; color: var(--text-2); margin-top: 12px; line-height: 1.6; }
-    .pricing-divider { width: 100%; height: 1px; background: var(--border); margin: 24px 0; }
-    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; flex: 1; }
-    .pricing-features li { font-size: 14px; color: var(--text-2); display: flex; align-items: flex-start; gap: 10px; }
-    .pricing-features li .icon { color: var(--accent-good); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .pricing-features li .icon.dim { color: var(--text-3); }
-    .pricing-cta {
-      display: block; text-align: center; margin-top: 28px;
-      font-size: 14px; font-weight: 700; color: var(--text-1); text-decoration: none;
-      padding: 14px 24px; border-radius: var(--radius-md); border: 1px solid var(--border);
-      background: transparent;
-      transition: border-color 0.2s, background 0.2s, transform 0.2s, color 0.2s;
-    }
-    .pricing-cta:hover { border-color: var(--border-hov); background: var(--bg-card-hov); transform: translateY(-2px); }
-    .pricing-card.featured .pricing-cta {
-      background: var(--gradient-blue); border-color: transparent; color: #fff;
-      box-shadow: 0 4px 20px rgba(79,127,255,0.35);
-    }
-    .pricing-card.featured .pricing-cta:hover { box-shadow: 0 8px 32px rgba(79,127,255,0.5); }
 
-    /* ─── FOOTER ─────────────────────────────────────────────────────── */
+    /* FOOTER */
     footer {
-      border-top: 1px solid var(--border); padding: 60px 0 40px;
-      position: relative; z-index: 1;
-    }
-    .footer-inner {
-      max-width: 1160px; margin: 0 auto; padding: 0 24px;
-      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
-    }
-    .footer-brand { display: flex; flex-direction: column; gap: 16px; }
-    .footer-brand-desc { font-size: 14px; color: var(--text-3); line-height: 1.7; max-width: 280px; }
-    .footer-col-title { font-size: 13px; font-weight: 700; color: var(--text-1); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
-    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-    .footer-links a { font-size: 14px; color: var(--text-3); text-decoration: none; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--text-1); }
-    .footer-bottom {
-      max-width: 1160px; margin: 40px auto 0; padding: 24px 24px 0;
       border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
-    }
-    .footer-bottom-left { font-size: 13px; color: var(--text-3); }
-    .footer-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-    .footer-badge {
-      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-3);
+      padding: 4rem 2rem;
+      background: var(--bg);
+      text-align: center
     }
 
-    /* ─── SCROLL ANIMATIONS ──────────────────────────────────────────── */
-    .fade-up {
-      opacity: 0; transform: translateY(32px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    .fade-up.visible { opacity: 1; transform: none; }
-
-    /* stagger children */
-    .stagger > * { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
-    .stagger.visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.05s; }
-    .stagger.visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.12s; }
-    .stagger.visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.19s; }
-    .stagger.visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.26s; }
-    .stagger.visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.33s; }
-    .stagger.visible > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.40s; }
-    .stagger.visible > *:nth-child(7) { opacity: 1; transform: none; transition-delay: 0.47s; }
-    .stagger.visible > *:nth-child(8) { opacity: 1; transform: none; transition-delay: 0.54s; }
-
-    /* ─── RESPONSIVE ─────────────────────────────────────────────────── */
-    @media (max-width: 1024px) {
-      .bc-1  { grid-column: span 12; }
-      .bc-2  { grid-column: span 12; }
-      .bc-3  { grid-column: span 12; }
-      .bc-4  { grid-column: span 6; }
-      .bc-5  { grid-column: span 6; }
-      .bc-6  { grid-column: span 12; }
-      .bc-7  { grid-column: span 12; }
-    }
-    @media (max-width: 768px) {
-      :root { --section-pad: 80px; }
-      .bc-4, .bc-5 { grid-column: span 12; }
-      .footer-inner { grid-template-columns: 1fr 1fr; }
-      .comp-table { font-size: 13px; }
-      .comp-table th, .comp-table td { padding: 12px 14px; }
-      .nav-links, .nav-cta { display: none; }
-      .hamburger { display: flex; }
-      .pipeline { gap: 0; }
-      .pipe-node { min-width: 100px; padding: 12px; }
-    }
-    @media (max-width: 480px) {
-      .footer-inner { grid-template-columns: 1fr; }
-      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
-      .pipeline { flex-direction: column; }
-      .pipe-arrow { transform: rotate(90deg); }
+    .footer-logo {
+      font-family: var(--mono);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem
     }
 
-    /* ─── MOBILE NAV MENU ────────────────────────────────────────────── */
-    #mobile-menu {
-      display: none; position: fixed; top: var(--nav-h); left: 0; right: 0;
-      background: rgba(6,8,16,0.97); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border); z-index: 998;
-      padding: 20px 24px 28px;
-      flex-direction: column; gap: 8px;
-    }
-    #mobile-menu.open { display: flex; }
-    #mobile-menu a { font-size: 16px; font-weight: 500; color: var(--text-2); text-decoration: none; padding: 12px 16px; border-radius: var(--radius-sm); transition: color 0.2s, background 0.2s; }
-    #mobile-menu a:hover { color: var(--text-1); background: var(--bg-card); }
-    #mobile-menu .mob-cta { background: var(--gradient-blue); color: #fff; text-align: center; border-radius: var(--radius-md); margin-top: 8px; }
-
-    /* ─── TICKER ─────────────────────────────────────────────────────── */
-    .ticker-wrap { overflow: hidden; padding: 18px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .ticker-inner { display: flex; width: max-content; animation: ticker 28s linear infinite; }
-    .ticker-item {
-      display: flex; align-items: center; gap: 10px; white-space: nowrap;
-      padding: 0 40px; font-size: 13px; font-weight: 600; color: var(--text-3);
-    }
-    .ticker-item .icon { font-size: 16px; }
-    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-
-    /* ─── GLOW LINES ─────────────────────────────────────────────────── */
-    .glow-line {
-      position: absolute; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(79,127,255,0.4), transparent);
-      pointer-events: none;
+    .footer-desc {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: 2rem
     }
 
-    /* counter animation */
-    .count-up { display: inline-block; }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem
+    }
+
+    .footer-links a {
+      color: var(--muted2);
+      font-weight: 500;
+      font-size: .9rem;
+      transition: color .2s
+    }
+
+    .footer-links a:hover {
+      color: var(--accent)
+    }
+
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    /* ANIMATIONS */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all .8s cubic-bezier(.16, 1, .3, 1)
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0)
+    }
+
+    @media(max-width:900px) {
+      .about-grid {
+        grid-template-columns: 1fr
+      }
+
+      .arch-grid {
+        grid-template-columns: 1fr;
+        text-align: center
+      }
+
+      .arch-arrow {
+        transform: rotate(90deg);
+        margin: 1rem auto
+      }
+    }
+
+    @media(max-width:1024px) {
+
+      .bc-1,
+      .bc-2,
+      .bc-3,
+      .bc-4 {
+        grid-column: span 12
+      }
+    }
+
+    @media(max-width:600px) {
+      .nav-center {
+        display: none
+      }
+
+      .hero-links {
+        flex-direction: column;
+        width: 100%
+      }
+
+      .hero-links a {
+        width: 100%;
+        justify-content: center
+      }
+
+      .install-box {
+        width: 100%;
+        justify-content: space-between
+      }
+    }
   </style>
 </head>
+
 <body>
+  <div class="bg-grid"></div>
+  <div class="ambient ambient-1"></div>
+  <div class="ambient ambient-2"></div>
+  <div class="ambient ambient-3"></div>
 
-<!-- ANIMATED BG -->
-<div class="orb-container">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-</div>
-
-<!-- NAVBAR -->
-<nav id="navbar" aria-label="Main navigation">
-  <div class="nav-inner">
-    <a href="#" class="nav-logo" id="nav-home-link">
-      <div class="nav-logo-icon">🛡️</div>
-      Guardian
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon">⛨</div>
+      Guardian Runtime
     </a>
-    <ul class="nav-links" role="list">
-      <li><a href="#features" id="nav-features">Features</a></li>
-      <li><a href="#providers" id="nav-providers">Providers</a></li>
-      <li><a href="#install" id="nav-install">Install</a></li>
-      <li><a href="#pricing" id="nav-pricing">Pricing</a></li>
-      <li><a href="https://github.com/ashp15205/guardian-runtime" id="nav-github" target="_blank" rel="noopener">GitHub</a></li>
-    </ul>
-    <a href="https://pypi.org/project/guardian-runtime/" id="nav-pypi-cta" class="nav-cta" target="_blank" rel="noopener">Install Now →</a>
-    <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-
-<!-- MOBILE MENU -->
-<div id="mobile-menu" role="navigation" aria-label="Mobile navigation">
-  <a href="#features"  id="mob-features">Features</a>
-  <a href="#providers" id="mob-providers">Providers</a>
-  <a href="#install"   id="mob-install">Install</a>
-  <a href="#pricing"   id="mob-pricing">Pricing</a>
-  <a href="https://github.com/ashp15205/guardian-runtime" id="mob-github" target="_blank" rel="noopener">GitHub</a>
-  <a href="https://pypi.org/project/guardian-runtime/" id="mob-pypi" class="mob-cta" target="_blank" rel="noopener">pip install guardian-runtime →</a>
-</div>
-
-<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
-<section id="hero">
-  <div class="container">
-    <div class="fade-up" style="display:flex;justify-content:center;">
-      <div class="hero-badge">
-        <span class="dot"></span>
-        v1.0.0 — Now with Anthropic Claude support
-      </div>
+    <div class="nav-center">
+      <a href="#about">About</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#setup">Setup</a>
+      <a href="#features">Features</a>
     </div>
-
-    <h1 class="hero-title fade-up" style="transition-delay:0.1s">
-      <span class="line-1">AI Governance.</span>
-      <span class="gradient-word">Local-First.</span>
-      <span class="line-1">Zero Leaks.</span>
-    </h1>
-
-    <p class="hero-sub fade-up" style="transition-delay:0.2s">
-      Block PII, secrets &amp; jailbreaks <em>before</em> they reach the model.
-      Cut token costs up to <strong style="color:var(--text-1)">40%</strong> with built-in prompt optimization.
-      Runs 100% on your infrastructure — nothing leaves your machine.
-    </p>
-
-    <div class="hero-ctas fade-up" style="transition-delay:0.3s">
-      <a href="#install" id="hero-cta-install" class="btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Get Started Free
+    <div class="nav-right">
+      <a href="https://pypi.org/project/guardian-runtime/" target="_blank" class="nav-btn nav-pypi-btn">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path
+            d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 2c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8 3.582-8 8-8z" />
+        </svg>
+        PyPI
       </a>
-      <a href="https://github.com/ashp15205/guardian-runtime" id="hero-cta-github" class="btn-ghost" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        View on GitHub
+      <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+          </path>
+        </svg>
+        GitHub
       </a>
     </div>
+  </nav>
 
-    <!-- PIPELINE DIAGRAM -->
-    <div class="pipeline fade-up" style="transition-delay:0.45s" aria-label="Guardian Runtime data flow pipeline">
-      <div class="pipe-node">
-        <div class="icon">👤</div>
-        <div class="name">User</div>
-        <div class="tag blue">Request</div>
-      </div>
-      <div class="pipe-arrow">
-        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="pill">prompt</div>
-      </div>
-      <div class="pipe-node accent-violet">
-        <div class="icon">⚡</div>
-        <div class="name">Optimizer</div>
-        <div class="tag warn">−40% tokens</div>
-      </div>
-      <div class="pipe-arrow">
-        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="pill">scan</div>
-      </div>
-      <div class="pipe-node accent-blue">
-        <div class="icon">🛡️</div>
-        <div class="name">Input Guard</div>
-        <div class="tag">PII / Secrets</div>
-      </div>
-      <div class="pipe-arrow">
-        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="pill cyan">safe</div>
-      </div>
-      <div class="pipe-node accent-cyan">
-        <div class="icon">🤖</div>
-        <div class="name">LLM</div>
-        <div class="tag cyan">OpenAI / Claude…</div>
-      </div>
-      <div class="pipe-arrow">
-        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="pill">check</div>
-      </div>
-      <div class="pipe-node accent-blue">
-        <div class="icon">🔎</div>
-        <div class="name">Output Guard</div>
-        <div class="tag">Output PII</div>
-      </div>
-      <div class="pipe-arrow">
-        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="pill cyan">clean</div>
-      </div>
-      <div class="pipe-node">
-        <div class="icon">✅</div>
-        <div class="name">User</div>
-        <div class="tag">Response</div>
-      </div>
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-bar fade-up stagger" style="transition-delay:0.55s" aria-label="Key metrics">
-      <div class="stat-item">
-        <div class="stat-num count-up" data-target="40">0</div><div class="stat-num">%</div>
-        <div class="stat-label">Token cost reduction</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num count-up" data-target="111">0</div>
-        <div class="stat-label">Tests passing</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num count-up" data-target="40">0</div><div class="stat-num">+</div>
-        <div class="stat-label">Jailbreak patterns detected</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">3</div>
-        <div class="stat-label">LLM providers supported</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">0</div>
-        <div class="stat-label">Prompts uploaded to Guardian</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TICKER -->
-<div class="ticker-wrap" aria-hidden="true">
-  <div class="ticker-inner">
-    <!-- duplicated for seamless loop -->
-    <div class="ticker-item"><span class="icon">🔒</span> PII Detection</div>
-    <div class="ticker-item"><span class="icon">🔑</span> Secret Scanning</div>
-    <div class="ticker-item"><span class="icon">🧱</span> Jailbreak Blocking</div>
-    <div class="ticker-item"><span class="icon">⚡</span> Prompt Optimization</div>
-    <div class="ticker-item"><span class="icon">📄</span> PDF / DOCX Converter</div>
-    <div class="ticker-item"><span class="icon">📊</span> YAML Policies</div>
-    <div class="ticker-item"><span class="icon">🏥</span> HIPAA Compliant</div>
-    <div class="ticker-item"><span class="icon">🇮🇳</span> India DPDP Ready</div>
-    <div class="ticker-item"><span class="icon">🌍</span> GDPR Assistive</div>
-    <div class="ticker-item"><span class="icon">💰</span> FinOps Built-In</div>
-    <div class="ticker-item"><span class="icon">🔒</span> PII Detection</div>
-    <div class="ticker-item"><span class="icon">🔑</span> Secret Scanning</div>
-    <div class="ticker-item"><span class="icon">🧱</span> Jailbreak Blocking</div>
-    <div class="ticker-item"><span class="icon">⚡</span> Prompt Optimization</div>
-    <div class="ticker-item"><span class="icon">📄</span> PDF / DOCX Converter</div>
-    <div class="ticker-item"><span class="icon">📊</span> YAML Policies</div>
-    <div class="ticker-item"><span class="icon">🏥</span> HIPAA Compliant</div>
-    <div class="ticker-item"><span class="icon">🇮🇳</span> India DPDP Ready</div>
-    <div class="ticker-item"><span class="icon">🌍</span> GDPR Assistive</div>
-    <div class="ticker-item"><span class="icon">💰</span> FinOps Built-In</div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════ COMPARISON ══════════════════════════════ -->
-<section id="why-guardian">
-  <div class="container">
-    <div class="center fade-up">
-      <div class="label">Why Guardian?</div>
-      <h2 class="section-title">Observability <span>logs</span> it.<br>Guardian <span>stops</span> it.</h2>
-      <p class="section-sub">Existing tools fire alerts after the damage is done. Guardian intercepts at the request boundary — before a single token reaches your LLM.</p>
-    </div>
-
-    <div style="margin-top:56px;" class="fade-up">
-      <table class="comp-table" role="table" aria-label="Comparison with observability tools">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Observability Tools<br><small style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(Langfuse, LangSmith, Helicone)</small></th>
-            <th class="highlight">Guardian Runtime ✦</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>When it acts</td>
-            <td><span class="cross">⚠</span> After the LLM call</td>
-            <td class="highlight"><span class="check">✓</span> Before &amp; after</td>
-          </tr>
-          <tr>
-            <td>Data path</td>
-            <td><span class="cross">⚠</span> Often cloud-forwarded</td>
-            <td class="highlight"><span class="check">✓</span> 100% local</td>
-          </tr>
-          <tr>
-            <td>PII in prompt</td>
-            <td><span class="cross">✗</span> Logged to cloud</td>
-            <td class="highlight"><span class="check">✓</span> Blocked at source</td>
-          </tr>
-          <tr>
-            <td>Secrets in prompt</td>
-            <td><span class="cross">✗</span> Exposed</td>
-            <td class="highlight"><span class="check">✓</span> Redacted / blocked</td>
-          </tr>
-          <tr>
-            <td>Token cost</td>
-            <td><span class="partial">~</span> Tracked only</td>
-            <td class="highlight"><span class="check">✓</span> Actively reduced</td>
-          </tr>
-          <tr>
-            <td>Jailbreak detection</td>
-            <td><span class="cross">✗</span> Not applicable</td>
-            <td class="highlight"><span class="check">✓</span> 40+ patterns</td>
-          </tr>
-          <tr>
-            <td>Policy-as-code</td>
-            <td><span class="cross">✗</span> No</td>
-            <td class="highlight"><span class="check">✓</span> YAML, per-agent</td>
-          </tr>
-          <tr>
-            <td>Output scanning</td>
-            <td><span class="cross">✗</span> No</td>
-            <td class="highlight"><span class="check">✓</span> Yes</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ FEATURES ════════════════════════════════ -->
-<section id="features">
-  <div class="container">
-    <div class="center fade-up">
-      <div class="label">Features</div>
-      <h2 class="section-title">Everything your AI stack<br><span>needs to stay safe</span></h2>
-      <p class="section-sub">Production-grade guardrails, cost controls, and governance — all in one Python package.</p>
-    </div>
-
-    <div class="bento-grid" style="margin-top:56px;">
-
-      <!-- CARD 1 — big code demo -->
-      <div class="bento-card bc-1 fade-up">
-        <div class="bento-icon blue">🛡️</div>
-        <div class="bento-title">One line to govern any LLM call</div>
-        <div class="bento-body">Replace your raw API call with <code style="font-family:monospace;color:var(--accent-1)">guardian.complete()</code> and get automatic PII blocking, token compression, and audit logging.</div>
-        <div class="bento-code" aria-label="Code example">
-          <div class="code-line"><span class="ln">1</span><span><span class="kw">from</span> guardian <span class="kw">import</span> <span class="fn">Guardian</span></span></div>
-          <div class="code-line"><span class="ln">2</span><span></span></div>
-          <div class="code-line"><span class="ln">3</span><span><span class="va">guardian</span> = <span class="fn">Guardian</span>.<span class="fn">from_policy</span>(<span class="st">"policies/gemini.yaml"</span>)</span></div>
-          <div class="code-line"><span class="ln">4</span><span></span></div>
-          <div class="code-line"><span class="ln">5</span><span><span class="va">response</span> = <span class="va">guardian</span>.<span class="fn">complete</span>(</span></div>
-          <div class="code-line"><span class="ln">6</span><span>&nbsp;&nbsp;messages=[{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="st">"What is my Aadhaar?"</span>}]</span></div>
-          <div class="code-line"><span class="ln">7</span><span>)</span></div>
-          <div class="code-line"><span class="ln">8</span><span></span></div>
-          <div class="code-line"><span class="ln">9</span><span><span class="kw">if</span> <span class="va">response</span>.blocked:</span></div>
-          <div class="code-line"><span class="ln">10</span><span>&nbsp;&nbsp;<span class="fn">print</span>(<span class="st">"Blocked:"</span>, <span class="va">response</span>.violations[<span class="va">0</span>].type)  <span class="cm"># → pii</span></span></div>
-        </div>
-      </div>
-
-      <!-- CARD 2 — no API key -->
-      <div class="bento-card bc-2 fade-up" style="transition-delay:0.1s">
-        <div class="bento-icon green">🔬</div>
-        <div class="bento-title">Scan without any API key</div>
-        <div class="bento-body">Standalone PII and secret scanning that runs entirely offline — no model, no key, no latency.</div>
-        <div class="bento-code" aria-label="Scan without API key example">
-          <div class="code-line"><span class="ln">1</span><span><span class="kw">from</span> guardian <span class="kw">import</span> <span class="fn">scan_pii</span>, <span class="fn">scan_secrets</span></span></div>
-          <div class="code-line"><span class="ln">2</span><span></span></div>
-          <div class="code-line"><span class="ln">3</span><span><span class="fn">scan_pii</span>(<span class="st">"Aadhaar: 2345 6789 0123"</span>).blocked   <span class="cm"># True</span></span></div>
-          <div class="code-line"><span class="ln">4</span><span><span class="fn">scan_secrets</span>(<span class="st">"sk-proj-xxxxx"</span>).blocked       <span class="cm"># True</span></span></div>
-        </div>
-      </div>
-
-      <!-- CARD 3 — 40% cost -->
-      <div class="bento-card bc-3 fade-up" style="transition-delay:0.15s">
-        <div class="bento-bignum">−40%</div>
-        <div class="bento-title">Token cost reduction</div>
-        <div class="bento-body">The built-in optimizer trims whitespace, deduplicates context, and prunes old history before your prompt hits the model.</div>
-      </div>
-
-      <!-- CARD 4 — PII types -->
-      <div class="bento-card bc-4 fade-up" style="transition-delay:0.2s">
-        <div class="bento-icon violet">🔒</div>
-        <div class="bento-title">10+ PII entity types</div>
-        <div class="bento-body">Aadhaar, PAN, UPI, SSN, credit cards, email, phone, passport, and more — fully regex-powered, zero cloud calls.</div>
-        <div class="tag-row">
-          <span class="tag-pill">Aadhaar</span>
-          <span class="tag-pill">PAN</span>
-          <span class="tag-pill">UPI</span>
-          <span class="tag-pill violet">SSN</span>
-          <span class="tag-pill cyan">Credit Card</span>
-          <span class="tag-pill">Passport</span>
-          <span class="tag-pill violet">Email</span>
-          <span class="tag-pill cyan">Phone</span>
-        </div>
-      </div>
-
-      <!-- CARD 5 — jailbreak -->
-      <div class="bento-card bc-5 fade-up" style="transition-delay:0.25s">
-        <div class="bento-icon amber">🧱</div>
-        <div class="bento-title">40+ jailbreak patterns</div>
-        <div class="bento-body">DAN prompts, role-play overrides, encoding tricks, and goal-hijacking — Guardian catches them all before they reach the model.</div>
-        <div class="tag-row">
-          <span class="tag-pill">DAN</span>
-          <span class="tag-pill violet">Role-play</span>
-          <span class="tag-pill cyan">Encoding</span>
-          <span class="tag-pill">Override</span>
-          <span class="tag-pill violet">Goal-hijack</span>
-        </div>
-      </div>
-
-      <!-- CARD 6 — YAML policy -->
-      <div class="bento-card bc-6 fade-up" style="transition-delay:0.3s">
-        <div class="bento-icon blue">📋</div>
-        <div class="bento-title">Policy-as-Code via YAML</div>
-        <div class="bento-body">Define per-agent rules, token budgets, guard modes (block / redact / flag), and provider routing — all in a single YAML file you own.</div>
-        <div class="bento-code" aria-label="YAML policy example">
-          <div class="code-line"><span class="ln">1</span><span><span class="kw">version</span>: <span class="st">"1.0"</span></span></div>
-          <div class="code-line"><span class="ln">2</span><span><span class="kw">agents</span>:</span></div>
-          <div class="code-line"><span class="ln">3</span><span>&nbsp;&nbsp;<span class="fn">default</span>:</span></div>
-          <div class="code-line"><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">llm</span>: { <span class="kw">provider</span>: <span class="st">gemini</span>, <span class="kw">default_model</span>: <span class="st">gemini-2.0-flash</span> }</span></div>
-          <div class="code-line"><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">input_guard</span>: { <span class="kw">pii_detection</span>: <span class="va">true</span>, <span class="kw">jailbreak_detection</span>: <span class="va">true</span> }</span></div>
-          <div class="code-line"><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">output_guard</span>: { <span class="kw">pii_detection</span>: <span class="va">true</span> }</span></div>
-          <div class="code-line"><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">optimizer</span>: { <span class="kw">enabled</span>: <span class="va">true</span>, <span class="kw">max_history_messages</span>: <span class="va">10</span> }</span></div>
-          <div class="code-line"><span class="ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost</span>: { <span class="kw">max_input_tokens</span>: <span class="va">8000</span> }</span></div>
-        </div>
-      </div>
-
-      <!-- CARD 7 — compliance -->
-      <div class="bento-card bc-7 fade-up" style="transition-delay:0.35s">
-        <div class="bento-icon cyan">⚖️</div>
-        <div class="bento-title">Compliance-ready from day one</div>
-        <div class="bento-body">Built as an assistive tool (not legal advice) to help teams operating under GDPR, HIPAA, CCPA, and India's DPDP Act. All audit logs remain local at <code style="font-family:monospace;color:var(--accent-1)">~/.guardian/logs/</code>.</div>
-        <div class="tag-row">
-          <span class="tag-pill green">GDPR</span>
-          <span class="tag-pill green">HIPAA</span>
-          <span class="tag-pill green">CCPA</span>
-          <span class="tag-pill green">India DPDP</span>
-          <span class="tag-pill cyan">Local Audit Log</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ PROVIDERS ═══════════════════════════════ -->
-<section id="providers">
-  <div class="container">
-    <div class="center fade-up">
-      <div class="label">Providers</div>
-      <h2 class="section-title">Works with the<br><span>Big Three LLMs</span></h2>
-      <p class="section-sub">Swap providers with a single config line. Guardian normalises every response into the same interface.</p>
-    </div>
-
-    <div class="provider-grid" style="margin-top:52px;">
-      <div class="provider-card fade-up" style="transition-delay:0.05s">
-        <div class="provider-logo">🟢</div>
-        <div class="provider-name">Google Gemini</div>
-        <div class="provider-detail">gemini-2.0-flash (default)</div>
-        <div class="provider-env">GEMINI_API_KEY</div>
-      </div>
-      <div class="provider-card fade-up" style="transition-delay:0.12s">
-        <div class="provider-logo">🟠</div>
-        <div class="provider-name">Anthropic Claude</div>
-        <div class="provider-detail">claude-3-5-haiku-latest (default)</div>
-        <div class="provider-env">ANTHROPIC_API_KEY</div>
-      </div>
-      <div class="provider-card fade-up" style="transition-delay:0.19s">
-        <div class="provider-logo">⚫</div>
-        <div class="provider-name">OpenAI</div>
-        <div class="provider-detail">gpt-4o-mini (default)</div>
-        <div class="provider-env">OPENAI_API_KEY</div>
-      </div>
-    </div>
-
-    <div style="margin-top:32px;text-align:center;" class="fade-up">
-      <p style="font-size:14px;color:var(--text-3)">Override at runtime: <code style="font-family:monospace;color:var(--accent-1)">guardian.complete(provider="anthropic", model="claude-opus-4")</code></p>
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ INSTALL ═════════════════════════════════ -->
-<section id="install">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;" class="fade-up">
-
-      <div>
-        <div class="label">Install</div>
-        <h2 class="section-title" style="font-size:clamp(30px,4vw,48px);">Up in<br><span>60 seconds</span></h2>
-        <p class="section-sub" style="font-size:16px;">Three commands and you have a fully governed LLM — locally. Free test with Gemini requires no billing info.</p>
-
-        <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px;">
-          <div style="display:flex;gap:16px;align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--gradient-blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">1</div>
-            <div>
-              <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Install the package</div>
-              <div style="font-size:14px;color:var(--text-2);">Available on PyPI. Python 3.9+ required.</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:16px;align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--gradient-violet);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">2</div>
-            <div>
-              <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Set your API key</div>
-              <div style="font-size:14px;color:var(--text-2);">Get a free Gemini key at Google AI Studio.</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:16px;align-items:flex-start;">
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#4f7fff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">3</div>
-            <div>
-              <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Start governing</div>
-              <div style="font-size:14px;color:var(--text-2);">Use the SDK or CLI — zero configuration to get started.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="install-block">
-          <div class="install-tab-bar" role="tablist">
-            <div class="install-tab active" id="tab-pip" role="tab" aria-selected="true" aria-controls="pane-pip" tabindex="0">pip</div>
-            <div class="install-tab" id="tab-quickstart" role="tab" aria-selected="false" aria-controls="pane-quickstart" tabindex="-1">Quickstart</div>
-            <div class="install-tab" id="tab-cli" role="tab" aria-selected="false" aria-controls="pane-cli" tabindex="-1">CLI</div>
-          </div>
-
-          <div class="install-pane active" id="pane-pip" role="tabpanel" aria-labelledby="tab-pip">
-<pre><span style="color:var(--text-3)"># Core</span>
-<span style="color:var(--accent-1)">pip install</span> guardian-runtime
-
-<span style="color:var(--text-3)"># With PDF/DOCX converter + dev tools</span>
-<span style="color:var(--accent-1)">pip install</span> <span style="color:var(--accent-warn)">"guardian-runtime[optimizer,dev]"</span>
-
-<span style="color:var(--text-3)"># With Presidio NER-based PII</span>
-<span style="color:var(--accent-1)">pip install</span> <span style="color:var(--accent-warn)">"guardian-runtime[presidio]"</span></pre>
-            <button class="copy-btn" id="copy-pip-btn" onclick="copyCode(this,'pip install guardian-runtime')">
-              📋 Copy
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner reveal visible">
+        <div class="hero-tagline">Guardian Runtime — Local-first governance &amp; cost control</div>
+        <h1 class="hero-headline glitch-wrapper"
+          data-text="Your terminal AI agent is leaking your secrets to the cloud.">
+          Your terminal AI agent<br>
+          is <em>leaking your secrets</em><br>
+          <span class="hl-glow">to the cloud.</span>
+        </h1>
+        <p class="hero-sub">
+          Terminal AI agents read your entire codebase for context — including <code>.env</code> files, database
+          configs, and API keys — then ship it all to remote LLMs.<br>
+          <strong>Guardian is the local firewall that intercepts every prompt before it leaves your machine.</strong>
+        </p>
+        <div class="hero-cta-group">
+          <div class="install-box">
+            <span class="install-prefix">$</span>
+            <span class="install-cmd">pip install <span class="install-pkg">guardian-runtime</span></span>
+            <button class="btn-copy" onclick="copyText('pip install guardian-runtime',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              copy
             </button>
           </div>
-
-          <div class="install-pane" id="pane-quickstart" role="tabpanel" aria-labelledby="tab-quickstart">
-<pre><span style="color:var(--text-3)"># 1. Set key</span>
-<span style="color:var(--accent-1)">export</span> <span style="color:var(--accent-warn)">GEMINI_API_KEY</span>=your_key
-
-<span style="color:var(--text-3)"># 2. Run</span>
-<span style="color:var(--accent-1)">python</span> examples/quickstart.py</pre>
+          <div class="hero-links">
+            <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" class="btn-hero btn-github">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path
+                  d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+              </svg>
+              Star on GitHub
+            </a>
+            <a href="https://pypi.org/project/guardian-runtime/" target="_blank" class="btn-hero btn-pypi">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 2c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8 3.582-8 8-8zm-1 3v6l5-3-5-3z" />
+              </svg>
+              View on PyPI
+            </a>
           </div>
-
-          <div class="install-pane" id="pane-cli" role="tabpanel" aria-labelledby="tab-cli">
-<pre><span style="color:var(--text-3)"># Initialise (optional license)</span>
-<span style="color:var(--accent-1)">guardian</span> init --key gdn_free_xxxxx
-
-<span style="color:var(--text-3)"># Validate policy file</span>
-<span style="color:var(--accent-1)">guardian</span> validate policies/gemini.yaml
-
-<span style="color:var(--text-3)"># See usage this month</span>
-<span style="color:var(--accent-1)">guardian</span> status
-
-<span style="color:var(--text-3)"># Tail audit logs</span>
-<span style="color:var(--accent-1)">guardian</span> logs --tail 20</pre>
+          <div class="hero-badges">
+            <span class="hbadge">Python 3.9+</span>
+            <span class="hbadge">109 tests passing</span>
+            <span class="hbadge">OpenAI · Gemini · Claude</span>
+            <span class="hbadge">Apache 2.0</span>
+            <span class="hbadge">Local-first</span>
           </div>
         </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ CLI DEMO ════════════════════════════════ -->
-<section id="cli-demo" style="padding-top:80px;padding-bottom:80px;">
-  <div class="container">
-    <div class="center fade-up" style="margin-bottom:44px;">
-      <div class="label">See It Live</div>
-      <h2 class="section-title">Watch Guardian catch a<br><span>real PII leak in real time</span></h2>
-    </div>
-
-    <div class="cli-window fade-up">
-      <div class="cli-titlebar">
-        <div class="cli-dot red"></div>
-        <div class="cli-dot yellow"></div>
-        <div class="cli-dot green"></div>
-        <div class="cli-path">~/my-app — python main.py</div>
-      </div>
-      <div class="cli-body" aria-label="CLI output demonstration">
-        <div><span class="cli-prompt">❯ </span><span class="cli-cmd">python main.py</span></div>
-        <div>&nbsp;</div>
-        <div><span class="cli-dim">[Guardian]  Policy loaded: policies/gemini.yaml</span></div>
-        <div><span class="cli-dim">[Guardian]  Provider: gemini → gemini-2.0-flash</span></div>
-        <div><span class="cli-dim">[Guardian]  Optimizer: enabled (max 8 000 tokens)</span></div>
-        <div>&nbsp;</div>
-        <div><span class="cli-dim">[Optimizer] Input tokens before: 1 824</span></div>
-        <div><span class="cli-ok">  [Optimizer] After compression:  1 109  (−39%)</span></div>
-        <div>&nbsp;</div>
-        <div><span class="cli-dim">[InputGuard] Scanning prompt…</span></div>
-        <div><span class="cli-warn">  [InputGuard] ⚠ PII detected: aadhaar (HIGH confidence)</span></div>
-        <div><span class="cli-warn">  [InputGuard] ⚠ PII detected: email (HIGH confidence)</span></div>
-        <div><span class="cli-err">  [InputGuard] ✗ BLOCKED — 2 violation(s) found</span></div>
-        <div>&nbsp;</div>
-        <div><span class="cli-dim">[Guardian]  Audit entry written → ~/.guardian/logs/2026-06-03.jsonl</span></div>
-        <div>&nbsp;</div>
-        <div><span class="cli-prompt">❯ </span><span class="cli-cmd">guardian logs --tail 1</span></div>
-        <div><span class="cli-ok">{"ts":"2026-06-03T09:41:22Z","blocked":true,"violations":["aadhaar","email"],"tokens_saved":715}</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ PRIVACY ═════════════════════════════════ -->
-<section id="privacy" style="padding:100px 0;">
-  <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;" class="fade-up">
-      <div>
-        <div class="label">Privacy by Architecture</div>
-        <h2 class="section-title" style="font-size:clamp(30px,4vw,52px);">We can't read<br>your prompts.<br><span>By design.</span></h2>
-        <p class="section-sub" style="font-size:16px;">Guardian makes exactly two types of network requests. That's it. Every word of your prompts stays on your machine.</p>
-      </div>
-      <div>
-        <div class="bento-card" style="border-radius:var(--radius-xl);">
-          <div style="display:flex;flex-direction:column;gap:20px;">
-            <div style="display:flex;gap:14px;align-items:flex-start;">
-              <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">✅</div>
-              <div>
-                <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Your LLM provider</div>
-                <div style="font-size:13px;color:var(--text-2);">Calls go directly from your machine to OpenAI / Gemini / Anthropic via your own API key.</div>
+        <div class="hero-terminal-wrap">
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="t-dots">
+                <div class="t-dot r"></div>
+                <div class="t-dot y"></div>
+                <div class="t-dot g"></div>
+              </div>
+              <div class="t-title">guardian proxy --log-level INFO</div>
+            </div>
+            <div class="terminal-body">
+              <div class="t-line">
+                <div class="t-time">14:02:11</div>
+                <div class="t-content"><span class="t-comment"># Agent initiated request to remote LLM</span></div>
+              </div>
+              <div class="t-line">
+                <div class="t-time">14:02:12</div>
+                <div class="t-content">Intercepting request [req_8f9a2b] for analysis...</div>
+              </div>
+              <div class="t-line">
+                <div class="t-time">14:02:12</div>
+                <div class="t-content">Scanning 14,205 tokens of context...</div>
+              </div>
+              <div class="t-line">
+                <div class="t-time">14:02:13</div>
+                <div class="t-content"><span class="t-err">[BLOCKED]</span> Critical violation detected in prompt.</div>
+              </div>
+              <div class="t-line">
+                <div class="t-time">14:02:13</div>
+                <div class="t-content"> ↳ <span class="t-warn">Rule:</span> prevent_secret_leak</div>
+              </div>
+              <div class="t-line">
+                <div class="t-time">14:02:13</div>
+                <div class="t-content"> ↳ <span class="t-warn">Match:</span> Found <span
+                    class="t-highlight">sk-proj-49f2...</span> in src/config/.env</div>
+              </div>
+              <div class="t-line">
+                <div class="t-time">14:02:13</div>
+                <div class="t-content"><span class="t-ok">Connection dropped. Secret safely contained locally.</span>
+                  <span style="animation:blink 1s infinite;display:inline-block">█</span>
+                </div>
               </div>
             </div>
-            <div style="display:flex;gap:14px;align-items:flex-start;">
-              <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">✅</div>
-              <div>
-                <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">guardian-ai.dev (license only)</div>
-                <div style="font-size:13px;color:var(--text-2);">Once per day: <code style="font-family:monospace;color:var(--accent-1)">&#123; key_hash, check_count &#125;</code> — never prompts, never violations.</div>
-              </div>
-            </div>
-            <div style="height:1px;background:var(--border);"></div>
-            <div style="font-size:13px;color:var(--text-3);">We store: hashed key · plan type · usage count · payment records. That's all. No prompts. No responses. Ever.</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ PRICING ═════════════════════════════════ -->
-<section id="pricing">
-  <div class="container">
-    <div class="center fade-up">
-      <div class="label">Pricing</div>
-      <h2 class="section-title">Start free.<br><span>Scale when you're ready.</span></h2>
-      <p class="section-sub">Guardian is open-source on Apache 2.0. The SDK is free forever. Paid plans unlock higher check limits and priority support.</p>
-    </div>
-
-    <div class="pricing-grid stagger" style="margin-top:56px;">
-
-      <div class="pricing-card">
-        <div class="pricing-plan">Free</div>
-        <div class="pricing-price">$0<span>/mo</span></div>
-        <div class="pricing-desc">Perfect to evaluate and ship your first production integration.</div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li><span class="icon">✓</span> 500 governed calls / month</li>
-          <li><span class="icon">✓</span> PII + Secret detection</li>
-          <li><span class="icon">✓</span> Jailbreak detection</li>
-          <li><span class="icon">✓</span> Prompt optimizer</li>
-          <li><span class="icon">✓</span> CLI tools</li>
-          <li><span class="icon">✓</span> Local audit logs</li>
-          <li><span class="icon dim">–</span> Priority support</li>
-        </ul>
-        <a href="https://pypi.org/project/guardian-runtime/" id="pricing-free-cta" class="pricing-cta" target="_blank" rel="noopener">Get Started Free →</a>
+  <!-- MARQUEE -->
+  <section class="marquee-section">
+    <div class="marquee-label">Seamlessly protects your favorite terminal tools</div>
+    <div class="marquee-container">
+      <div class="marquee-content">
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M9.218 2h2.402L16 12.987h-2.402zM4.379 2h2.512l4.38 10.987H8.82l-.895-2.308h-4.58l-.896 2.307H0L4.38 2.001zm2.755 6.64L5.635 4.777 4.137 8.64z" />
+          </svg> Claude Code</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg> Aider</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L5.5 3.21z" />
+          </svg> Cursor Agent</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 256 208" fill="currentColor">
+            <path
+              d="M205.3 31.4c14 14.8 20 35.2 22.5 63.6 6.6 0 12.8 1.5 17 7.2l7.8 10.6c2.2 3 3.4 6.6 3.4 10.4v28.7a12 12 0 0 1-4.8 9.5C215.9 187.2 172.3 208 128 208c-49 0-98.2-28.3-123.2-46.6a12 12 0 0 1-4.8-9.5v-28.7c0-3.8 1.2-7.4 3.4-10.5l7.8-10.5c4.2-5.7 10.4-7.2 17-7.2 2.5-28.4 8.4-48.8 22.5-63.6C77.3 3.2 112.6 0 127.6 0h.4c14.7 0 50.4 2.9 77.3 31.4ZM128 78.7c-3 0-6.5.2-10.3.6a27.1 27.1 0 0 1-6 12.1 45 45 0 0 1-32 13c-6.8 0-13.9-1.5-19.7-5.2-5.5 1.9-10.8 4.5-11.2 11-.5 12.2-.6 24.5-.6 36.8 0 6.1 0 12.3-.2 18.5 0 3.6 2.2 6.9 5.5 8.4C79.9 185.9 105 192 128 192s48-6 74.5-18.1a9.4 9.4 0 0 0 5.5-8.4c.3-18.4 0-37-.8-55.3-.4-6.6-5.7-9.1-11.2-11-5.8 3.7-13 5.1-19.7 5.1a45 45 0 0 1-32-12.9 27.1 27.1 0 0 1-6-12.1c-3.4-.4-6.9-.5-10.3-.6Zm-27 44c5.8 0 10.5 4.6 10.5 10.4v19.2a10.4 10.4 0 0 1-20.8 0V133c0-5.8 4.6-10.4 10.4-10.4Zm53.4 0c5.8 0 10.4 4.6 10.4 10.4v19.2a10.4 10.4 0 0 1-20.8 0V133c0-5.8 4.7-10.4 10.4-10.4Zm-73-94.4c-11.2 1.1-20.6 4.8-25.4 10-10.4 11.3-8.2 40.1-2.2 46.2A31.2 31.2 0 0 0 75 91.7c6.8 0 19.6-1.5 30.1-12.2 4.7-4.5 7.5-15.7 7.2-27-.3-9.1-2.9-16.7-6.7-19.9-4.2-3.6-13.6-5.2-24.2-4.3Zm69 4.3c-3.8 3.2-6.4 10.8-6.7 19.9-.3 11.3 2.5 22.5 7.2 27a41.7 41.7 0 0 0 30 12.2c8.9 0 17-2.9 21.3-7.2 6-6.1 8.2-34.9-2.2-46.3-4.8-5-14.2-8.8-25.4-9.9-10.6-1-20 .7-24.2 4.3ZM128 56c-2.6 0-5.6.2-9 .5.4 1.7.5 3.7.7 5.7 0 1.5 0 3-.2 4.5 3.2-.3 6-.3 8.5-.3 2.6 0 5.3 0 8.5.3-.2-1.6-.2-3-.2-4.5.2-2 .3-4 .7-5.7-3.4-.3-6.4-.5-9-.5Z" />
+          </svg> GitHub Copilot</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+            </path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg> Cline / Continue</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 16 16" fill="currentColor">
+            <path
+              d="M14.949 6.547a3.94 3.94 0 0 0-.348-3.273 4.11 4.11 0 0 0-4.4-1.934A4.1 4.1 0 0 0 8.423.2 4.15 4.15 0 0 0 6.305.086a4.1 4.1 0 0 0-1.891.948 4.04 4.04 0 0 0-1.158 1.753 4.1 4.1 0 0 0-1.563.679A4 4 0 0 0 .554 4.72a3.99 3.99 0 0 0 .502 4.731 3.94 3.94 0 0 0 .346 3.274 4.11 4.11 0 0 0 4.402 1.933c.382.425.852.764 1.377.995.526.231 1.095.35 1.67.346 1.78.002 3.358-1.132 3.901-2.804a4.1 4.1 0 0 0 1.563-.68 4 4 0 0 0 1.14-1.253 3.99 3.99 0 0 0-.506-4.716m-6.097 8.406a3.05 3.05 0 0 1-1.945-.694l.096-.054 3.23-1.838a.53.53 0 0 0 .265-.455v-4.49l1.366.778q.02.011.025.035v3.722c-.003 1.653-1.361 2.992-3.037 2.996m-6.53-2.75a2.95 2.95 0 0 1-.36-2.01l.095.057L5.29 12.09a.53.53 0 0 0 .527 0l3.949-2.246v1.555a.05.05 0 0 1-.022.041L6.473 13.3c-1.454.826-3.311.335-4.15-1.098m-.85-6.94A3.02 3.02 0 0 1 3.07 3.949v3.785a.51.51 0 0 0 .262.451l3.93 2.237-1.366.779a.05.05 0 0 1-.048 0L2.585 9.342a2.98 2.98 0 0 1-1.113-4.094zm11.216 2.571L8.747 5.576l1.362-.776a.05.05 0 0 1 .048 0l3.265 1.86a3 3 0 0 1 1.173 1.207 2.96 2.96 0 0 1-.27 3.2 3.05 3.05 0 0 1-1.36.997V8.279a.52.52 0 0 0-.276-.445m1.36-2.015-.097-.057-3.226-1.855a.53.53 0 0 0-.53 0L6.249 6.153V4.598a.04.04 0 0 1 .019-.04L9.533 2.7a3.07 3.07 0 0 1 3.257.139c.474.325.843.778 1.066 1.303.223.526.289 1.103.191 1.664zM5.503 8.575 4.139 7.8a.05.05 0 0 1-.026-.037V4.049c0-.57.166-1.127.476-1.607s.752-.864 1.275-1.105a3.08 3.08 0 0 1" />
+          </svg> OpenAI-compatible</div>
       </div>
-
-      <div class="pricing-card featured">
-        <div class="pricing-badge">Most Popular</div>
-        <div class="pricing-plan">Starter</div>
-        <div class="pricing-price">$29<span>/mo</span></div>
-        <div class="pricing-desc">For teams shipping AI features who need higher throughput and support.</div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li><span class="icon">✓</span> 10 000 governed calls / month</li>
-          <li><span class="icon">✓</span> Everything in Free</li>
-          <li><span class="icon">✓</span> PDF / DOCX optimizer</li>
-          <li><span class="icon">✓</span> Multi-agent policies</li>
-          <li><span class="icon">✓</span> Email support</li>
-          <li><span class="icon">✓</span> LangChain integration</li>
-          <li><span class="icon">✓</span> Microsoft Presidio NER</li>
-        </ul>
-        <a href="https://github.com/ashp15205/guardian-runtime" id="pricing-starter-cta" class="pricing-cta" target="_blank" rel="noopener">Start Trial →</a>
-      </div>
-
-      <div class="pricing-card">
-        <div class="pricing-plan">Enterprise</div>
-        <div class="pricing-price" style="font-size:36px;padding-top:6px;">Custom</div>
-        <div class="pricing-desc">Unlimited calls, dedicated support, and on-premise deployment for regulated industries.</div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li><span class="icon">✓</span> Unlimited governed calls</li>
-          <li><span class="icon">✓</span> Everything in Starter</li>
-          <li><span class="icon">✓</span> Air-gapped deployment</li>
-          <li><span class="icon">✓</span> SLA + dedicated Slack</li>
-          <li><span class="icon">✓</span> Custom PII patterns</li>
-          <li><span class="icon">✓</span> Compliance audit export</li>
-          <li><span class="icon">✓</span> SAML SSO</li>
-        </ul>
-        <a href="mailto:ashishtp2005@gmail.com" id="pricing-enterprise-cta" class="pricing-cta">Contact Sales →</a>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider" />
-
-<!-- ═══════════════════════════ CTA BANNER ══════════════════════════════ -->
-<section id="cta-section" style="padding:100px 0;text-align:center;">
-  <div class="container fade-up">
-    <div style="position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:72px 48px;overflow:hidden;">
-      <!-- glow -->
-      <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(79,127,255,0.2),transparent 70%);pointer-events:none;"></div>
-
-      <div class="label" style="margin:0 auto 24px;">Open Source · Apache 2.0</div>
-      <h2 class="section-title" style="font-size:clamp(36px,5vw,64px);">Govern your AI in<br><span>under 60 seconds</span></h2>
-      <p class="section-sub" style="margin:20px auto 44px;font-size:18px;">Join developers protecting production LLM apps with Guardian Runtime. Free forever, no credit card required.</p>
-
-      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-        <a href="https://pypi.org/project/guardian-runtime/" id="final-cta-pypi" class="btn-primary" target="_blank" rel="noopener" style="font-size:16px;padding:16px 32px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          pip install guardian-runtime
-        </a>
-        <a href="https://github.com/ashp15205/guardian-runtime" id="final-cta-github" class="btn-ghost" target="_blank" rel="noopener" style="font-size:16px;padding:16px 32px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          Star on GitHub
-        </a>
+      <div class="marquee-content" aria-hidden="true">
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M9.218 2h2.402L16 12.987h-2.402zM4.379 2h2.512l4.38 10.987H8.82l-.895-2.308h-4.58l-.896 2.307H0L4.38 2.001zm2.755 6.64L5.635 4.777 4.137 8.64z" />
+          </svg> Claude Code</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg> Aider</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L5.5 3.21z" />
+          </svg> Cursor Agent</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 256 208" fill="currentColor">
+            <path
+              d="M205.3 31.4c14 14.8 20 35.2 22.5 63.6 6.6 0 12.8 1.5 17 7.2l7.8 10.6c2.2 3 3.4 6.6 3.4 10.4v28.7a12 12 0 0 1-4.8 9.5C215.9 187.2 172.3 208 128 208c-49 0-98.2-28.3-123.2-46.6a12 12 0 0 1-4.8-9.5v-28.7c0-3.8 1.2-7.4 3.4-10.5l7.8-10.5c4.2-5.7 10.4-7.2 17-7.2 2.5-28.4 8.4-48.8 22.5-63.6C77.3 3.2 112.6 0 127.6 0h.4c14.7 0 50.4 2.9 77.3 31.4ZM128 78.7c-3 0-6.5.2-10.3.6a27.1 27.1 0 0 1-6 12.1 45 45 0 0 1-32 13c-6.8 0-13.9-1.5-19.7-5.2-5.5 1.9-10.8 4.5-11.2 11-.5 12.2-.6 24.5-.6 36.8 0 6.1 0 12.3-.2 18.5 0 3.6 2.2 6.9 5.5 8.4C79.9 185.9 105 192 128 192s48-6 74.5-18.1a9.4 9.4 0 0 0 5.5-8.4c.3-18.4 0-37-.8-55.3-.4-6.6-5.7-9.1-11.2-11-5.8 3.7-13 5.1-19.7 5.1a45 45 0 0 1-32-12.9 27.1 27.1 0 0 1-6-12.1c-3.4-.4-6.9-.5-10.3-.6Zm-27 44c5.8 0 10.5 4.6 10.5 10.4v19.2a10.4 10.4 0 0 1-20.8 0V133c0-5.8 4.6-10.4 10.4-10.4Zm53.4 0c5.8 0 10.4 4.6 10.4 10.4v19.2a10.4 10.4 0 0 1-20.8 0V133c0-5.8 4.7-10.4 10.4-10.4Zm-73-94.4c-11.2 1.1-20.6 4.8-25.4 10-10.4 11.3-8.2 40.1-2.2 46.2A31.2 31.2 0 0 0 75 91.7c6.8 0 19.6-1.5 30.1-12.2 4.7-4.5 7.5-15.7 7.2-27-.3-9.1-2.9-16.7-6.7-19.9-4.2-3.6-13.6-5.2-24.2-4.3Zm69 4.3c-3.8 3.2-6.4 10.8-6.7 19.9-.3 11.3 2.5 22.5 7.2 27a41.7 41.7 0 0 0 30 12.2c8.9 0 17-2.9 21.3-7.2 6-6.1 8.2-34.9-2.2-46.3-4.8-5-14.2-8.8-25.4-9.9-10.6-1-20 .7-24.2 4.3ZM128 56c-2.6 0-5.6.2-9 .5.4 1.7.5 3.7.7 5.7 0 1.5 0 3-.2 4.5 3.2-.3 6-.3 8.5-.3 2.6 0 5.3 0 8.5.3-.2-1.6-.2-3-.2-4.5.2-2 .3-4 .7-5.7-3.4-.3-6.4-.5-9-.5Z" />
+          </svg> GitHub Copilot</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+            </path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg> Cline / Continue</div>
+        <div class="agent-logo"><svg class="agent-icon" viewBox="0 0 16 16" fill="currentColor">
+            <path
+              d="M14.949 6.547a3.94 3.94 0 0 0-.348-3.273 4.11 4.11 0 0 0-4.4-1.934A4.1 4.1 0 0 0 8.423.2 4.15 4.15 0 0 0 6.305.086a4.1 4.1 0 0 0-1.891.948 4.04 4.04 0 0 0-1.158 1.753 4.1 4.1 0 0 0-1.563.679A4 4 0 0 0 .554 4.72a3.99 3.99 0 0 0 .502 4.731 3.94 3.94 0 0 0 .346 3.274 4.11 4.11 0 0 0 4.402 1.933c.382.425.852.764 1.377.995.526.231 1.095.35 1.67.346 1.78.002 3.358-1.132 3.901-2.804a4.1 4.1 0 0 0 1.563-.68 4 4 0 0 0 1.14-1.253 3.99 3.99 0 0 0-.506-4.716m-6.097 8.406a3.05 3.05 0 0 1-1.945-.694l.096-.054 3.23-1.838a.53.53 0 0 0 .265-.455v-4.49l1.366.778q.02.011.025.035v3.722c-.003 1.653-1.361 2.992-3.037 2.996m-6.53-2.75a2.95 2.95 0 0 1-.36-2.01l.095.057L5.29 12.09a.53.53 0 0 0 .527 0l3.949-2.246v1.555a.05.05 0 0 1-.022.041L6.473 13.3c-1.454.826-3.311.335-4.15-1.098m-.85-6.94A3.02 3.02 0 0 1 3.07 3.949v3.785a.51.51 0 0 0 .262.451l3.93 2.237-1.366.779a.05.05 0 0 1-.048 0L2.585 9.342a2.98 2.98 0 0 1-1.113-4.094zm11.216 2.571L8.747 5.576l1.362-.776a.05.05 0 0 1 .048 0l3.265 1.86a3 3 0 0 1 1.173 1.207 2.96 2.96 0 0 1-.27 3.2 3.05 3.05 0 0 1-1.36.997V8.279a.52.52 0 0 0-.276-.445m1.36-2.015-.097-.057-3.226-1.855a.53.53 0 0 0-.53 0L6.249 6.153V4.598a.04.04 0 0 1 .019-.04L9.533 2.7a3.07 3.07 0 0 1 3.257.139c.474.325.843.778 1.066 1.303.223.526.289 1.103.191 1.664zM5.503 8.575 4.139 7.8a.05.05 0 0 1-.026-.037V4.049c0-.57.166-1.127.476-1.607s.752-.864 1.275-1.105a3.08 3.08 0 0 1" />
+          </svg> OpenAI-compatible</div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════════════════ FOOTER ══════════════════════════════════ -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <a href="#" class="nav-logo" id="footer-logo-link" style="text-decoration:none;">
-        <div class="nav-logo-icon">🛡️</div>
+  <!-- ABOUT -->
+  <section id="about" class="about-section section">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">
+          <div class="dot"></div> The Reality
+        </div>
+        <h2 class="section-heading">AI agents are powerful.<br>But they are reckless.</h2>
+        <p class="section-sub">You give them access to your terminal and codebase. They read files to gain context. But
+          they don't know the difference between a config file and a state secret.</p>
+      </div>
+      <div class="about-grid reveal">
+        <div class="about-card problem">
+          <div class="card-icon">⚠️</div>
+          <h3 class="card-title">The Problem</h3>
+          <p class="card-text">When you ask an agent to "fix the database connection", it reads your config files,
+            including <code>.env</code>. It then packages that entire context into a massive prompt and sends it to a
+            remote LLM provider.<br><br>Your production database credentials, API keys, and customer PII just left your
+            machine. You have zero visibility into what was sent.</p>
+          <div class="leak-example">
+            <span class="t-comment"># Inside the agent's hidden payload:</span><br>
+            "Here is the context for the user's codebase:"<br>
+            <span class="red">DATABASE_URL=postgres://user:secret@prod-db...</span><br>
+            <span class="red">STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxx</span>
+          </div>
+        </div>
+        <div class="about-card solution">
+          <div class="card-icon">⛨</div>
+          <h3 class="card-title">The Solution</h3>
+          <p class="card-text">What if you had a local firewall sitting between your agent and the
+            cloud?<br><br>Guardian Runtime intercepts HTTP requests from your agent on your local machine. It scans the
+            prompt payload for secrets and PII using fast regex — no ML models required. If it's clean, it forwards it.
+            If it contains a secret, it blocks the request instantly.</p>
+          <div class="leak-example">
+            <span class="t-comment"># Guardian intercepts on localhost:</span><br>
+            [SCAN] Checking payload...<br>
+            <span class="red">[MATCH] STRIPE_SECRET_KEY detected.</span><br>
+            <span class="green">[ACTION] Request blocked. Secret contained locally.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" class="how-section section">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">
+          <div class="dot"></div> Architecture
+        </div>
+        <h2 class="section-heading">A transparent proxy.<br>Zero friction.</h2>
+        <p class="section-sub">Guardian runs as a local HTTP server that mimics the APIs of popular LLM providers. Point
+          your agent's base URL to localhost. The agent never knows the difference.</p>
+      </div>
+      <div class="diagram-container reveal">
+        <div class="arch-grid">
+          <div class="arch-card">
+            <div class="ac-icon agent">🤖</div>
+            <h3>Terminal Agent</h3>
+            <p>Cursor, Copilot, etc.</p>
+          </div>
+          <div class="arch-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+            <span class="arch-packet green p-green-1"></span>
+            <span class="arch-packet red p-red-1"></span>
+          </div>
+          <div class="arch-card guardian">
+            <div class="ac-icon guardian">🛡️</div>
+            <h3>Guardian Proxy</h3>
+            <p>localhost:8080</p>
+          </div>
+          <div class="arch-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+            <span class="arch-packet green p-green-2"></span>
+          </div>
+          <div class="arch-card">
+            <div class="ac-icon cloud">☁️</div>
+            <h3>Remote LLM</h3>
+            <p>OpenAI, Anthropic, Gemini</p>
+          </div>
+        </div>
+        <div class="diagram-legend">
+          <div class="legend-item"><span class="legend-dot green"></span> Clean Prompt (Forwarded)</div>
+          <div class="legend-item"><span class="legend-dot red"></span> Secret / PII (Blocked)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section id="setup" class="setup-section section">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">
+          <div class="dot"></div> Integration
+        </div>
+        <h2 class="section-heading">Setup in 2 minutes</h2>
+        <p class="section-sub">No Docker. No complex config. Just pip install and one environment variable.</p>
+      </div>
+      <div class="setup-container reveal">
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-num">1</div>
+            <h3 class="step-title">Install &amp; run the proxy</h3>
+          </div>
+          <div class="code-window">
+            <div class="cw-header">
+              <div class="t-dots">
+                <div class="t-dot r"></div>
+                <div class="t-dot y"></div>
+                <div class="t-dot g"></div>
+              </div><span>Terminal</span>
+            </div>
+            <div class="cw-body">
+              <span class="c-comment"># Install via pip</span><br>
+              <span class="c-cmd">$</span> <span class="c-kw">pip install</span> <span
+                class="c-arg">guardian-runtime</span><br><br>
+              <span class="c-comment"># Start the local proxy</span><br>
+              <span class="c-cmd">$</span> <span class="c-kw">guardian proxy</span><br>
+              <span style="color:var(--accent);">⛨ Guardian Proxy listening on http://localhost:8080</span>
+            </div>
+          </div>
+        </div>
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-num">2</div>
+            <h3 class="step-title">Point your agent to localhost</h3>
+          </div>
+          <div class="code-window">
+            <div class="cw-header" style="justify-content:flex-start;padding-bottom:0">
+              <div class="agent-tabs">
+                <div class="agent-tab active" onclick="switchTab('claude',this)">Claude Code</div>
+                <div class="agent-tab" onclick="switchTab('aider',this)">Aider</div>
+                <div class="agent-tab" onclick="switchTab('cursor',this)">Cursor</div>
+              </div>
+            </div>
+            <div class="cw-body" id="tab-content">
+              <span class="c-comment"># For Anthropic-based agents</span><br>
+              <span class="c-cmd">$</span> <span class="c-kw">export</span> <span
+                class="c-arg">ANTHROPIC_BASE_URL</span>=<span class="c-str">"http://localhost:8080"</span><br>
+              <span class="c-cmd">$</span> <span class="c-kw">claude</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="features-section section">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">
+          <div class="dot"></div> Toolkit
+        </div>
+        <h2 class="section-heading">Built for control</h2>
+        <p class="section-sub">Four layers of protection that work together silently in the background.</p>
+      </div>
+      <div class="bento-grid reveal">
+        <div class="bento-card bc-1">
+          <div class="bento-icon green">🔑</div>
+          <h3 class="bento-title">Secret &amp; PII Blocking</h3>
+          <p class="bento-body">Detects OpenAI, Anthropic, AWS, Stripe, Razorpay, GitHub keys and more. Also blocks PII
+            like Aadhaar, PAN, SSNs, credit cards, emails, and phone numbers before they leave your machine.</p>
+          <div class="bento-code">
+            <div><span class="dim"># Intercepting prompt payload...</span></div>
+            <div><span class="red">[MATCH]</span> Found sk-proj-xxxx... in context</div>
+            <div><span class="red">[MATCH]</span> Found AADHAAR pattern in user message</div>
+            <div><span class="green">[ACTION]</span> Connection dropped locally. Zero data sent.</div>
+          </div>
+        </div>
+        <div class="bento-card bc-2">
+          <div class="bento-icon amber">💸</div>
+          <h3 class="bento-title">FinOps &amp; Cost Limits</h3>
+          <p class="bento-body">Prevent agents from burning your budget in infinite loops. Set token limits per request,
+            daily spend budgets, and per-session cost caps.</p>
+          <div
+            style="margin-top:20px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);padding:15px;border-radius:14px">
+            <div style="font-size:24px;font-weight:800;color:#fbbf24">$10.00</div>
+            <div
+              style="font-size:12px;color:var(--muted2);font-family:var(--mono);text-transform:uppercase;margin-top:4px">
+              Daily Budget Limit</div>
+          </div>
+        </div>
+        <div class="bento-card bc-3">
+          <div class="bento-icon blue">📊</div>
+          <h3 class="bento-title">Local Observability</h3>
+          <p class="bento-body">Run <code>guardian logs</code> to see what your agent is sending in real-time. All logs
+            stored locally at <code>~/.guardian/logs/</code>. Zero telemetry sent to our servers.</p>
+        </div>
+        <div class="bento-card bc-4">
+          <div class="bento-icon violet">⚡</div>
+          <h3 class="bento-title">Prompt Optimization</h3>
+          <p class="bento-body">Automatically compress agent prompts by stripping whitespace, deduplicating system
+            messages, and trimming unnecessary chat history. Typical savings: 20–60%.</p>
+          <div style="display:flex;gap:10px;margin-top:20px">
+            <div
+              style="flex:1;padding:15px;background:rgba(0,0,0,.3);border-radius:14px;border:1px dashed rgba(255,255,255,.1);text-align:center">
+              <div style="font-size:20px;font-weight:bold;color:var(--muted)">14,200</div>
+              <div style="font-size:11px;color:var(--muted2)">Original Tokens</div>
+            </div>
+            <div
+              style="flex:1;padding:15px;background:rgba(157,78,221,.1);border-radius:14px;border:1px solid rgba(157,78,221,.3);text-align:center">
+              <div style="font-size:20px;font-weight:bold;color:#a78bfa">~8,500</div>
+              <div style="font-size:11px;color:#a78bfa">Optimized (−40%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-logo">
+        <div class="nav-logo-icon" style="width:24px;height:24px;font-size:.8rem">⛨</div>
         Guardian Runtime
-      </a>
-      <p class="footer-brand-desc">Local-first AI governance for production LLM applications. Block PII, secrets, and jailbreaks before they reach the model.</p>
-      <div style="font-size:13px;color:var(--text-3);">Apache 2.0 · Built with ❤️ by Ashish Patil</div>
+      </div>
+      <p class="footer-desc">Local-first governance and cost control for terminal AI coding agents.</p>
+      <div class="footer-links">
+        <a href="https://github.com/ashp15205/guardian-runtime" target="_blank">GitHub</a>
+        <a href="https://pypi.org/project/guardian-runtime/" target="_blank">PyPI</a>
+      </div>
     </div>
+  </footer>
 
-    <div>
-      <div class="footer-col-title">Product</div>
-      <ul class="footer-links">
-        <li><a href="#features" id="footer-features-link">Features</a></li>
-        <li><a href="#providers" id="footer-providers-link">Providers</a></li>
-        <li><a href="#install" id="footer-install-link">Install</a></li>
-        <li><a href="#pricing" id="footer-pricing-link">Pricing</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <div class="footer-col-title">Resources</div>
-      <ul class="footer-links">
-        <li><a href="https://github.com/ashp15205/guardian-runtime" id="footer-github-link" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="https://pypi.org/project/guardian-runtime/" id="footer-pypi-link" target="_blank" rel="noopener">PyPI</a></li>
-        <li><a href="https://github.com/ashp15205/guardian-runtime/blob/main/ARCHITECTURE.md" id="footer-arch-link" target="_blank" rel="noopener">Architecture</a></li>
-        <li><a href="https://github.com/ashp15205/guardian-runtime/tree/main/examples" id="footer-examples-link" target="_blank" rel="noopener">Examples</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <div class="footer-col-title">Legal</div>
-      <ul class="footer-links">
-        <li><a href="https://github.com/ashp15205/guardian-runtime/blob/main/LICENSE" id="footer-license-link" target="_blank" rel="noopener">License</a></li>
-        <li><a href="mailto:ashishtp2005@gmail.com" id="footer-contact-link">Contact</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <div class="footer-bottom-left">© 2026 Guardian Runtime. Released under Apache 2.0.</div>
-    <div class="footer-badges">
-      <span class="footer-badge">Python 3.9+</span>
-      <span class="footer-badge">OpenAI</span>
-      <span class="footer-badge">Gemini</span>
-      <span class="footer-badge">Claude</span>
-      <span class="footer-badge">Apache 2.0</span>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // ─── NAVBAR SCROLL ──────────────────────────────────────────────────
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 24);
-  }, { passive: true });
-
-  // ─── HAMBURGER ──────────────────────────────────────────────────────
-  const hamburger = document.getElementById('hamburger-btn');
-  const mobileMenu = document.getElementById('mobile-menu');
-  hamburger.addEventListener('click', () => {
-    const open = mobileMenu.classList.toggle('open');
-    hamburger.setAttribute('aria-expanded', open);
-  });
-  mobileMenu.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
-      mobileMenu.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', false);
-    });
-  });
-
-  // ─── INSTALL TABS ────────────────────────────────────────────────────
-  document.querySelectorAll('.install-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.install-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); t.tabIndex = -1; });
-      document.querySelectorAll('.install-pane').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected','true');
-      tab.tabIndex = 0;
-      const paneId = tab.getAttribute('aria-controls');
-      document.getElementById(paneId).classList.add('active');
-    });
-    tab.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') tab.click(); });
-  });
-
-  // ─── COPY BUTTON ─────────────────────────────────────────────────────
-  function copyCode(btn, text) {
-    navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = '✓ Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
-    });
-  }
-
-  // ─── MOUSE GLOW ON BENTO CARDS ───────────────────────────────────────
-  document.querySelectorAll('.bento-card').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-      card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
-    });
-  });
-
-  // ─── INTERSECTION OBSERVER (scroll reveals) ───────────────────────────
-  const revealObs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-  document.querySelectorAll('.fade-up, .stagger').forEach(el => revealObs.observe(el));
-
-  // Hero elements visible immediately
-  document.querySelectorAll('#hero .fade-up').forEach(el => {
-    setTimeout(() => el.classList.add('visible'), 100);
-  });
-
-  // ─── COUNT-UP ANIMATION ───────────────────────────────────────────────
-  function animateCount(el, target, duration = 1500) {
-    let start = null;
-    const step = ts => {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(eased * target);
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
-  const countObs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.querySelectorAll('.count-up').forEach(el => {
-          animateCount(el, parseInt(el.dataset.target, 10));
-        });
-        countObs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.3 });
-  document.querySelectorAll('.stats-bar').forEach(b => countObs.observe(b));
-
-  // ─── SMOOTH ANCHOR SCROLL ─────────────────────────────────────────────
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (!target) return;
-      e.preventDefault();
-      const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'), 10);
-      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - navH - 8, behavior: 'smooth' });
-    });
-  });
-
-  // ─── TICKER PAUSE ON HOVER ────────────────────────────────────────────
-  const tickerInner = document.querySelector('.ticker-inner');
-  const tickerWrap  = document.querySelector('.ticker-wrap');
-  if (tickerWrap && tickerInner) {
-    tickerWrap.addEventListener('mouseenter', () => tickerInner.style.animationPlayState = 'paused');
-    tickerWrap.addEventListener('mouseleave', () => tickerInner.style.animationPlayState = 'running');
-  }
-</script>
+  <script>
+    function switchTab(agent, el) {
+      document.querySelectorAll('.agent-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      const c = document.getElementById('tab-content');
+      if (agent === 'claude') c.innerHTML = '<span class="c-comment"># For Anthropic-based agents</span><br><span class="c-cmd">$</span> <span class="c-kw">export</span> <span class="c-arg">ANTHROPIC_BASE_URL</span>=<span class="c-str">"http://localhost:8080"</span><br><span class="c-cmd">$</span> <span class="c-kw">claude</span>';
+      else if (agent === 'aider') c.innerHTML = '<span class="c-comment"># For OpenAI-compatible agents</span><br><span class="c-cmd">$</span> <span class="c-kw">export</span> <span class="c-arg">OPENAI_BASE_URL</span>=<span class="c-str">"http://localhost:8080"</span><br><span class="c-cmd">$</span> <span class="c-kw">aider</span>';
+      else c.innerHTML = '<span class="c-comment"># In Cursor Settings > Models</span><br>Set OpenAI API Base URL to: <span class="c-str">http://localhost:8080</span><br>Toggle "Override Base URL" ✓';
+    }
+    const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target) } }) }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    function copyText(text, btn) { navigator.clipboard.writeText(text).then(() => { const o = btn.innerHTML; btn.innerHTML = '<span style="color:var(--accent)">Copied!</span>'; setTimeout(() => { btn.innerHTML = o }, 2000) }) }
+    window.addEventListener('scroll', () => { const nav = document.querySelector('nav'); if (window.scrollY > 50) { nav.style.background = 'rgba(3,3,5,.9)'; nav.style.borderBottom = '1px solid var(--border2)' } else { nav.style.background = 'rgba(3,3,5,.7)'; nav.style.borderBottom = '1px solid var(--border)' } });
+  </script>
 </body>
+
 </html>
