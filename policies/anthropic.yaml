@@ -1,0 +1,28 @@
+# Guardian policy — Anthropic Claude (Big 3).
+# Set: export ANTHROPIC_API_KEY=your_key
+# Get a key: https://console.anthropic.com/
+
+version: "1.0"
+name: "anthropic"
+
+agents:
+  default:
+    llm:
+      provider: anthropic
+      default_model: claude-3-5-haiku-latest
+    input_guard:
+      pii_detection: true
+      pii_entities: [aadhaar, pan, upi_id, credit_card, ssn, email, phone, secret]
+      jailbreak_detection: true
+    output_guard:
+      pii_detection: true
+      hallucination_check: false
+    optimizer:
+      enabled: true
+      whitespace_normalization: true
+      max_history_messages: 10
+      deduplicate_system_prompts: true
+      remove_empty_messages: true
+    cost:
+      max_input_tokens: 8000
+      per_session_limit: 1.00
