@@ -1,511 +1,1416 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guardian Runtime - Private AI Governance & Optimization</title>
-    <meta name="description" content="Local-first AI governance layer that actively protects your applications from data leaks and automatically optimizes inputs to slash your LLM token costs.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-base: #0B0D12;
-            --bg-surface: #14171F;
-            --bg-surface-hover: #1C202B;
-            --text-primary: #F8FAFC;
-            --text-secondary: #94A3B8;
-            --accent-blue: #0175FF;
-            --accent-blue-glow: rgba(1, 117, 255, 0.2);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(255, 255, 255, 0.15);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guardian Runtime — Local-First AI Governance for Production LLM Apps</title>
+  <meta name="description" content="Block PII leaks, secrets, and jailbreaks before they reach the model. Cut token costs with built-in prompt optimization. Zero prompt upload. 100% local." />
+  <meta property="og:title" content="Guardian Runtime — Local-First AI Governance" />
+  <meta property="og:description" content="Runtime governance layer for AI systems. Block PII, secrets, jailbreaks. Reduce tokens 40%. 100% local." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Guardian Runtime — Local-First AI Governance" />
+  <meta name="twitter:description" content="Block PII leaks, secrets, and jailbreaks before they reach the model." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  <style>
+    /* ─── RESET & TOKENS ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
+    :root {
+      --bg-void:      #060810;
+      --bg-deep:      #090c16;
+      --bg-card:      rgba(255,255,255,0.035);
+      --bg-card-hov:  rgba(255,255,255,0.065);
+      --border:       rgba(255,255,255,0.08);
+      --border-hov:   rgba(255,255,255,0.18);
 
-        /* Background effects */
-        .bg-glow {
-            position: absolute;
-            top: -20%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80vw;
-            height: 600px;
-            background: radial-gradient(ellipse at top, var(--accent-blue-glow) 0%, transparent 70%);
-            z-index: -1;
-            pointer-events: none;
-        }
+      --accent-1:     #4f7fff;   /* electric blue */
+      --accent-2:     #7c3aed;   /* violet */
+      --accent-3:     #06b6d4;   /* cyan */
+      --accent-warn:  #f59e0b;
+      --accent-good:  #10b981;
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
+      --text-1:  #f0f2ff;
+      --text-2:  #9ba8c4;
+      --text-3:  #5a6484;
 
-        /* Navigation (minimal) */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
+      --gradient-hero:  linear-gradient(135deg, #4f7fff 0%, #7c3aed 50%, #06b6d4 100%);
+      --gradient-glow:  radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,127,255,0.25) 0%, transparent 70%);
+      --gradient-blue:  linear-gradient(135deg, #4f7fff, #06b6d4);
+      --gradient-violet: linear-gradient(135deg, #7c3aed, #4f7fff);
 
-        .logo {
-            font-weight: 700;
-            font-size: 1.25rem;
-            letter-spacing: -0.02em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #F8FAFC, #94A3B8);
-            border-radius: 6px;
-        }
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
 
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
+      --nav-h: 72px;
+      --section-pad: 120px;
+    }
 
-        /* Hero Section */
-        .hero {
-            padding: 100px 0 80px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    html { scroll-behavior: smooth; }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            letter-spacing: 0.02em;
-        }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-void);
+      color: var(--text-1);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
 
-        .hero h1 {
-            font-size: clamp(3rem, 5vw, 4.5rem);
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            line-height: 1.1;
-            margin-bottom: 24px;
-            max-width: 800px;
-        }
+    /* ─── SCROLLBAR ──────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-void); }
+    ::-webkit-scrollbar-thumb { background: rgba(79,127,255,0.4); border-radius: 99px; }
 
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            max-width: 650px;
-            margin: 0 auto 48px;
-            font-weight: 400;
-        }
+    /* ─── NOISE OVERLAY ──────────────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
 
-        .hero-actions {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 64px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+    /* ─── ANIMATED BG ORBS ───────────────────────────────────────────── */
+    .orb-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.18;
+      animation: orbFloat 20s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, #4f7fff, transparent); top: -200px; left: -200px; animation-duration: 25s; }
+    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, #7c3aed, transparent); top: 30%; right: -150px; animation-duration: 18s; animation-delay: -8s; }
+    .orb-3 { width: 400px; height: 400px; background: radial-gradient(circle, #06b6d4, transparent); bottom: 10%; left: 20%; animation-duration: 22s; animation-delay: -4s; }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
+    @keyframes orbFloat {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 60px) scale(1.1); }
+    }
 
-        .btn-primary {
-            background-color: var(--text-primary);
-            color: var(--bg-base);
-        }
-        .btn-primary:hover {
-            background-color: #E2E8F0;
-        }
+    /* ─── LAYOUT HELPERS ─────────────────────────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+    section { padding: var(--section-pad) 0; position: relative; }
 
-        .btn-secondary {
-            background-color: var(--bg-surface);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-        .btn-secondary:hover {
-            background-color: var(--bg-surface-hover);
-            border-color: var(--border-highlight);
-        }
+    .label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent-1); padding: 6px 14px; border-radius: 99px;
+      background: rgba(79,127,255,0.12); border: 1px solid rgba(79,127,255,0.25);
+      margin-bottom: 20px;
+    }
 
-        /* Terminal Block */
-        .terminal {
-            background: #000;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            text-align: left;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .terminal::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border-highlight), transparent);
-        }
+    .section-title {
+      font-size: clamp(36px, 5vw, 60px); font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.03em; color: var(--text-1); margin-bottom: 20px;
+    }
+    .section-title span { background: var(--gradient-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-sub { font-size: 18px; color: var(--text-2); max-width: 640px; line-height: 1.7; }
+    .center { text-align: center; }
+    .center .section-sub { margin: 0 auto; }
 
-        .terminal-header {
-            padding: 12px 16px;
-            display: flex;
-            gap: 6px;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(255,255,255,0.02);
-        }
+    /* ─── GRID DIVIDER ───────────────────────────────────────────────── */
+    .section-divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      border: none; margin: 0;
+    }
 
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #333;
-        }
+    /* ─── NAVBAR ─────────────────────────────────────────────────────── */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      height: var(--nav-h);
+      display: flex; align-items: center;
+      transition: background 0.4s, backdrop-filter 0.4s, border-color 0.4s;
+      border-bottom: 1px solid transparent;
+    }
+    #navbar.scrolled {
+      background: rgba(6,8,16,0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom-color: var(--border);
+    }
+    .nav-inner {
+      width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 18px; text-decoration: none; color: var(--text-1);
+    }
+    .nav-logo-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--gradient-hero);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 8px; list-style: none; }
+    .nav-links a {
+      font-size: 14px; font-weight: 500; color: var(--text-2); text-decoration: none;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-1); background: var(--bg-card); }
+    .nav-cta {
+      font-size: 14px; font-weight: 600; color: #fff; text-decoration: none;
+      padding: 10px 22px; border-radius: var(--radius-sm);
+      background: var(--gradient-blue); border: none; cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(79,127,255,0.3);
+    }
+    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 28px rgba(79,127,255,0.45); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
+    .hamburger span { width: 22px; height: 2px; background: var(--text-2); border-radius: 2px; transition: all 0.3s; }
 
-        .terminal-body {
-            padding: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    /* ─── HERO ───────────────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: calc(var(--nav-h) + 60px) 0 80px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500; color: var(--text-2);
+      padding: 8px 16px; border-radius: 99px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      margin-bottom: 32px; cursor: default;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .hero-badge:hover { border-color: rgba(79,127,255,0.4); background: rgba(79,127,255,0.08); }
+    .hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-good); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
 
-        .command-text {
-            color: var(--text-primary);
-        }
-        
-        .command-prompt {
-            color: var(--text-secondary);
-            margin-right: 12px;
-            user-select: none;
-        }
+    .hero-title {
+      font-size: clamp(48px, 8vw, 88px); font-weight: 900; line-height: 1.0;
+      letter-spacing: -0.04em; margin-bottom: 28px;
+    }
+    .hero-title .line-1 { display: block; color: var(--text-1); }
+    .hero-title .gradient-word {
+      background: var(--gradient-hero); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+      display: inline-block;
+    }
 
-        .copy-icon {
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.2s;
-            background: none;
-            border: none;
-            padding: 4px;
-        }
-        .copy-icon:hover {
-            color: var(--text-primary);
-        }
+    .hero-sub {
+      font-size: clamp(17px, 2.5vw, 21px); color: var(--text-2); max-width: 680px;
+      margin: 0 auto 48px; line-height: 1.7; font-weight: 400;
+    }
 
-        /* Section Styling */
-        .section {
-            padding: 80px 0;
-            border-top: 1px solid var(--border-color);
-        }
+    .hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 72px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 600; color: #fff; text-decoration: none;
+      padding: 14px 28px; border-radius: var(--radius-md);
+      background: var(--gradient-blue); border: none; cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.3s;
+      box-shadow: 0 0 30px rgba(79,127,255,0.35);
+    }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 8px 40px rgba(79,127,255,0.5); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 600; color: var(--text-2); text-decoration: none;
+      padding: 14px 28px; border-radius: var(--radius-md);
+      background: transparent; border: 1px solid var(--border); cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text-1); border-color: var(--border-hov); background: var(--bg-card); transform: translateY(-2px); }
 
-        .section-header {
-            text-align: center;
-            margin-bottom: 64px;
-        }
+    /* ─── PIPELINE DIAGRAM ───────────────────────────────────────────── */
+    .pipeline {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap; max-width: 860px; margin: 0 auto;
+    }
+    .pipe-node {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 16px 20px; border-radius: var(--radius-md);
+      background: var(--bg-card); border: 1px solid var(--border);
+      min-width: 130px; text-align: center;
+      transition: border-color 0.3s, transform 0.3s, background 0.3s;
+      cursor: default;
+    }
+    .pipe-node:hover { border-color: var(--border-hov); transform: translateY(-3px); background: var(--bg-card-hov); }
+    .pipe-node .icon { font-size: 22px; margin-bottom: 4px; }
+    .pipe-node .name { font-size: 12px; font-weight: 700; color: var(--text-1); letter-spacing: 0.05em; text-transform: uppercase; }
+    .pipe-node .tag { font-size: 11px; color: var(--accent-good); font-weight: 600; }
+    .pipe-node .tag.warn { color: var(--accent-warn); }
+    .pipe-node .tag.blue { color: var(--accent-1); }
+    .pipe-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 4px; }
+    .pipe-arrow svg { color: var(--accent-1); }
+    .pipe-arrow .pill {
+      font-size: 10px; font-weight: 600; color: var(--accent-1);
+      background: rgba(79,127,255,0.1); border-radius: 99px; padding: 3px 8px;
+      white-space: nowrap;
+    }
+    .pipe-arrow .pill.cyan { color: var(--accent-3); background: rgba(6,182,212,0.1); }
 
-        .section-header h2 {
-            font-size: 2rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin-bottom: 16px;
-        }
+    /* highlight nodes */
+    .pipe-node.accent-blue { border-color: rgba(79,127,255,0.35); background: rgba(79,127,255,0.07); }
+    .pipe-node.accent-violet { border-color: rgba(124,58,237,0.35); background: rgba(124,58,237,0.07); }
+    .pipe-node.accent-cyan { border-color: rgba(6,182,212,0.35); background: rgba(6,182,212,0.07); }
 
-        .section-header p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    /* ─── STATS BAR ──────────────────────────────────────────────────── */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px;
+      background: var(--border); border-radius: var(--radius-lg); overflow: hidden;
+      border: 1px solid var(--border); margin-top: 80px;
+    }
+    .stat-item {
+      background: var(--bg-deep); padding: 36px 28px; text-align: center;
+      transition: background 0.3s;
+    }
+    .stat-item:hover { background: var(--bg-card); }
+    .stat-num {
+      font-size: 44px; font-weight: 900; letter-spacing: -0.04em;
+      background: var(--gradient-hero); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1;
+    }
+    .stat-label { font-size: 13px; color: var(--text-3); margin-top: 8px; font-weight: 500; }
 
-        /* Flow Diagram (Zylon style) */
-        .flow-container {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-        }
+    /* ─── FEATURES BENTO ─────────────────────────────────────────────── */
+    .bento-grid {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .bento-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 36px; overflow: hidden; position: relative;
+      transition: border-color 0.3s, transform 0.3s, background 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+    .bento-card:hover {
+      border-color: var(--border-hov); transform: translateY(-3px);
+      background: var(--bg-card-hov); box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .bento-card::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(79,127,255,0.06) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .bento-card:hover::before { opacity: 1; }
 
-        .flow-container::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--border-color);
-            z-index: 1;
-        }
+    .bc-1  { grid-column: span 7; }
+    .bc-2  { grid-column: span 5; }
+    .bc-3  { grid-column: span 4; }
+    .bc-4  { grid-column: span 4; }
+    .bc-5  { grid-column: span 4; }
+    .bc-6  { grid-column: span 6; }
+    .bc-7  { grid-column: span 6; }
 
-        .flow-node {
-            background: var(--bg-base);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            z-index: 2;
-            width: 140px;
-            transition: border-color 0.3s;
-        }
+    .bento-icon {
+      width: 52px; height: 52px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .bento-icon.blue   { background: rgba(79,127,255,0.15); border-color: rgba(79,127,255,0.3); }
+    .bento-icon.violet { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); }
+    .bento-icon.cyan   { background: rgba(6,182,212,0.15);  border-color: rgba(6,182,212,0.3); }
+    .bento-icon.green  { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); }
+    .bento-icon.amber  { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); }
 
-        .flow-node.active {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 20px rgba(1, 117, 255, 0.1);
-        }
+    .bento-title { font-size: 20px; font-weight: 700; color: var(--text-1); margin-bottom: 10px; line-height: 1.25; }
+    .bento-body  { font-size: 14px; color: var(--text-2); line-height: 1.7; }
 
-        .node-icon {
-            font-size: 1.5rem;
-            margin-bottom: 12px;
-            color: var(--text-primary);
-        }
+    /* code block inside bento */
+    .bento-code {
+      margin-top: 20px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-md); padding: 20px; font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; line-height: 1.8; overflow: auto;
+    }
+    .code-line { display: flex; gap: 12px; }
+    .code-line .ln { color: var(--text-3); user-select: none; min-width: 18px; text-align: right; }
+    .kw  { color: #7c3aed; }
+    .fn  { color: #4f7fff; }
+    .st  { color: #10b981; }
+    .cm  { color: var(--text-3); font-style: italic; }
+    .va  { color: var(--accent-warn); }
 
-        .node-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
+    /* inline tag pills */
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .tag-pill {
+      font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
+      background: rgba(79,127,255,0.1); color: var(--accent-1); border: 1px solid rgba(79,127,255,0.2);
+    }
+    .tag-pill.violet { background: rgba(124,58,237,0.1); color: #a78bfa; border-color: rgba(124,58,237,0.25); }
+    .tag-pill.cyan   { background: rgba(6,182,212,0.1);  color: var(--accent-3); border-color: rgba(6,182,212,0.25); }
+    .tag-pill.green  { background: rgba(16,185,129,0.1); color: var(--accent-good); border-color: rgba(16,185,129,0.25); }
 
-        .node-desc {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
+    /* big number accent in bento */
+    .bento-bignum {
+      font-size: 80px; font-weight: 900; line-height: 1;
+      letter-spacing: -0.06em;
+      background: var(--gradient-hero); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 10px;
+    }
+    .bento-bignum.violet { background: var(--gradient-violet); -webkit-background-clip: text; background-clip: text; }
 
-        /* Bento Grid */
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
+    /* ─── COMPARISON TABLE ───────────────────────────────────────────── */
+    .comp-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      border-radius: var(--radius-xl); overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .comp-table th, .comp-table td { padding: 18px 24px; text-align: center; }
+    .comp-table thead { background: rgba(79,127,255,0.06); }
+    .comp-table thead th { font-size: 13px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
+    .comp-table thead th.highlight { color: var(--accent-1); }
+    .comp-table tbody tr { border-top: 1px solid var(--border); }
+    .comp-table tbody tr:hover td { background: rgba(255,255,255,0.025); }
+    .comp-table td:first-child { text-align: left; font-weight: 500; color: var(--text-2); font-size: 14px; }
+    .comp-table td.highlight { background: rgba(79,127,255,0.05); }
+    .check { color: var(--accent-good); font-size: 18px; }
+    .cross { color: var(--text-3); font-size: 18px; }
+    .partial { color: var(--accent-warn); font-size: 14px; font-weight: 600; }
 
-        .bento-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 32px;
-            transition: background 0.3s;
-        }
-        .bento-card:hover {
-            background: var(--bg-surface-hover);
-        }
+    /* ─── PROVIDER LOGOS ─────────────────────────────────────────────── */
+    .provider-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+    }
+    .provider-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 28px 24px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+      transition: border-color 0.3s, transform 0.3s, background 0.3s;
+    }
+    .provider-card:hover { border-color: var(--border-hov); transform: translateY(-2px); background: var(--bg-card-hov); }
+    .provider-logo { font-size: 32px; }
+    .provider-name { font-size: 16px; font-weight: 700; color: var(--text-1); }
+    .provider-detail { font-size: 12px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; }
+    .provider-env { font-size: 12px; color: var(--accent-1); font-family: 'JetBrains Mono', monospace; }
 
-        .bento-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            margin-bottom: 24px;
-        }
+    /* ─── INSTALL BLOCK ──────────────────────────────────────────────── */
+    .install-block {
+      background: rgba(0,0,0,0.55); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); overflow: hidden;
+    }
+    .install-tab-bar {
+      display: flex; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .install-tab {
+      padding: 14px 24px; font-size: 13px; font-weight: 600; color: var(--text-3);
+      cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
+      user-select: none;
+    }
+    .install-tab.active { color: var(--accent-1); border-bottom-color: var(--accent-1); }
+    .install-pane { display: none; padding: 28px 32px; }
+    .install-pane.active { display: block; }
+    .install-pane pre {
+      font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.9;
+      color: var(--text-1); overflow-x: auto;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 16px; font-size: 13px; font-weight: 600; color: var(--accent-1);
+      background: rgba(79,127,255,0.1); border: 1px solid rgba(79,127,255,0.25);
+      border-radius: var(--radius-sm); padding: 8px 16px; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .copy-btn:hover { background: rgba(79,127,255,0.18); transform: translateY(-1px); }
+    .copy-btn.copied { color: var(--accent-good); background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25); }
 
-        .bento-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
+    /* ─── CLI DEMO ───────────────────────────────────────────────────── */
+    .cli-window {
+      background: #0a0d18; border: 1px solid var(--border);
+      border-radius: var(--radius-xl); overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    }
+    .cli-titlebar {
+      display: flex; align-items: center; gap: 8px; padding: 14px 20px;
+      background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
+    }
+    .cli-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .cli-dot.red    { background: #ff5f57; }
+    .cli-dot.yellow { background: #febc2e; }
+    .cli-dot.green  { background: #28c840; }
+    .cli-path { font-size: 12px; color: var(--text-3); margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
+    .cli-body { padding: 28px 32px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 2; }
+    .cli-prompt { color: var(--accent-1); }
+    .cli-cmd    { color: var(--text-1); }
+    .cli-out    { color: var(--text-2); }
+    .cli-ok     { color: var(--accent-good); }
+    .cli-warn   { color: var(--accent-warn); }
+    .cli-err    { color: #f87171; }
+    .cli-dim    { color: var(--text-3); }
 
-        .bento-desc {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
+    /* ─── PRICING ────────────────────────────────────────────────────── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .pricing-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 36px; display: flex; flex-direction: column;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .pricing-card:hover { border-color: var(--border-hov); transform: translateY(-3px); }
+    .pricing-card.featured {
+      border-color: rgba(79,127,255,0.5);
+      background: rgba(79,127,255,0.06);
+      box-shadow: 0 0 0 1px rgba(79,127,255,0.2), 0 30px 80px rgba(79,127,255,0.15);
+    }
+    .pricing-card.featured:hover { box-shadow: 0 0 0 1px rgba(79,127,255,0.4), 0 40px 100px rgba(79,127,255,0.25); }
+    .pricing-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #fff; padding: 5px 16px; border-radius: 99px;
+      background: var(--gradient-blue); box-shadow: 0 4px 16px rgba(79,127,255,0.4);
+    }
+    .pricing-plan { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 16px; }
+    .pricing-price { font-size: 52px; font-weight: 900; letter-spacing: -0.05em; color: var(--text-1); line-height: 1; }
+    .pricing-price span { font-size: 18px; font-weight: 500; color: var(--text-3); letter-spacing: 0; }
+    .pricing-desc { font-size: 14px; color: var(--text-2); margin-top: 12px; line-height: 1.6; }
+    .pricing-divider { width: 100%; height: 1px; background: var(--border); margin: 24px 0; }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .pricing-features li { font-size: 14px; color: var(--text-2); display: flex; align-items: flex-start; gap: 10px; }
+    .pricing-features li .icon { color: var(--accent-good); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .pricing-features li .icon.dim { color: var(--text-3); }
+    .pricing-cta {
+      display: block; text-align: center; margin-top: 28px;
+      font-size: 14px; font-weight: 700; color: var(--text-1); text-decoration: none;
+      padding: 14px 24px; border-radius: var(--radius-md); border: 1px solid var(--border);
+      background: transparent;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s, color 0.2s;
+    }
+    .pricing-cta:hover { border-color: var(--border-hov); background: var(--bg-card-hov); transform: translateY(-2px); }
+    .pricing-card.featured .pricing-cta {
+      background: var(--gradient-blue); border-color: transparent; color: #fff;
+      box-shadow: 0 4px 20px rgba(79,127,255,0.35);
+    }
+    .pricing-card.featured .pricing-cta:hover { box-shadow: 0 8px 32px rgba(79,127,255,0.5); }
 
-        /* Footer */
-        footer {
-            padding: 40px 0;
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
+    /* ─── FOOTER ─────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border); padding: 60px 0 40px;
+      position: relative; z-index: 1;
+    }
+    .footer-inner {
+      max-width: 1160px; margin: 0 auto; padding: 0 24px;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+    }
+    .footer-brand { display: flex; flex-direction: column; gap: 16px; }
+    .footer-brand-desc { font-size: 14px; color: var(--text-3); line-height: 1.7; max-width: 280px; }
+    .footer-col-title { font-size: 13px; font-weight: 700; color: var(--text-1); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .footer-links a { font-size: 14px; color: var(--text-3); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text-1); }
+    .footer-bottom {
+      max-width: 1160px; margin: 40px auto 0; padding: 24px 24px 0;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
+    }
+    .footer-bottom-left { font-size: 13px; color: var(--text-3); }
+    .footer-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .footer-badge {
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-3);
+    }
 
-        @media (max-width: 900px) {
-            .flow-container {
-                flex-direction: column;
-                gap: 24px;
-            }
-            .flow-container::before {
-                top: 0; bottom: 0; left: 50%; width: 1px; height: 100%;
-            }
-            .bento-grid {
-                grid-template-columns: 1fr;
-            }
-            .hero h1 { font-size: 2.5rem; }
-        }
-    </style>
+    /* ─── SCROLL ANIMATIONS ──────────────────────────────────────────── */
+    .fade-up {
+      opacity: 0; transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: none; }
+
+    /* stagger children */
+    .stagger > * { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .stagger.visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.05s; }
+    .stagger.visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.12s; }
+    .stagger.visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.19s; }
+    .stagger.visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.26s; }
+    .stagger.visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.33s; }
+    .stagger.visible > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.40s; }
+    .stagger.visible > *:nth-child(7) { opacity: 1; transform: none; transition-delay: 0.47s; }
+    .stagger.visible > *:nth-child(8) { opacity: 1; transform: none; transition-delay: 0.54s; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .bc-1  { grid-column: span 12; }
+      .bc-2  { grid-column: span 12; }
+      .bc-3  { grid-column: span 12; }
+      .bc-4  { grid-column: span 6; }
+      .bc-5  { grid-column: span 6; }
+      .bc-6  { grid-column: span 12; }
+      .bc-7  { grid-column: span 12; }
+    }
+    @media (max-width: 768px) {
+      :root { --section-pad: 80px; }
+      .bc-4, .bc-5 { grid-column: span 12; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .comp-table { font-size: 13px; }
+      .comp-table th, .comp-table td { padding: 12px 14px; }
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .pipeline { gap: 0; }
+      .pipe-node { min-width: 100px; padding: 12px; }
+    }
+    @media (max-width: 480px) {
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .pipeline { flex-direction: column; }
+      .pipe-arrow { transform: rotate(90deg); }
+    }
+
+    /* ─── MOBILE NAV MENU ────────────────────────────────────────────── */
+    #mobile-menu {
+      display: none; position: fixed; top: var(--nav-h); left: 0; right: 0;
+      background: rgba(6,8,16,0.97); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); z-index: 998;
+      padding: 20px 24px 28px;
+      flex-direction: column; gap: 8px;
+    }
+    #mobile-menu.open { display: flex; }
+    #mobile-menu a { font-size: 16px; font-weight: 500; color: var(--text-2); text-decoration: none; padding: 12px 16px; border-radius: var(--radius-sm); transition: color 0.2s, background 0.2s; }
+    #mobile-menu a:hover { color: var(--text-1); background: var(--bg-card); }
+    #mobile-menu .mob-cta { background: var(--gradient-blue); color: #fff; text-align: center; border-radius: var(--radius-md); margin-top: 8px; }
+
+    /* ─── TICKER ─────────────────────────────────────────────────────── */
+    .ticker-wrap { overflow: hidden; padding: 18px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .ticker-inner { display: flex; width: max-content; animation: ticker 28s linear infinite; }
+    .ticker-item {
+      display: flex; align-items: center; gap: 10px; white-space: nowrap;
+      padding: 0 40px; font-size: 13px; font-weight: 600; color: var(--text-3);
+    }
+    .ticker-item .icon { font-size: 16px; }
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ─── GLOW LINES ─────────────────────────────────────────────────── */
+    .glow-line {
+      position: absolute; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(79,127,255,0.4), transparent);
+      pointer-events: none;
+    }
+
+    /* counter animation */
+    .count-up { display: inline-block; }
+  </style>
 </head>
 <body>
-    <div class="bg-glow"></div>
-    
-    <div class="container">
-        <nav>
-            <div class="logo">
-                <div class="logo-icon"></div>
-                Guardian
-            </div>
-            <div class="nav-links">
-                <a href="https://github.com/ashp15205/guardian-runtime" target="_blank">GitHub</a>
-            </div>
-        </nav>
 
-        <main>
-            <!-- Hero Section -->
-            <section class="hero">
-                <div class="badge">Open Source Engine</div>
-                <h1>The private AI platform<br>for regulated industries</h1>
-                <p>Deploy secure enterprise AI on your infrastructure. Guarantee data privacy, block leaks, and automatically optimize prompts to slash token costs by 40%.</p>
-                
-                <div class="hero-actions">
-                    <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" class="btn btn-primary">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                        </svg>
-                        Star on GitHub
-                    </a>
-                    <a href="https://pypi.org/project/guardian-runtime/" target="_blank" class="btn btn-secondary">View PyPI</a>
-                </div>
+<!-- ANIMATED BG -->
+<div class="orb-container">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
 
-                <div class="terminal">
-                    <div class="terminal-header">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                    </div>
-                    <div class="terminal-body">
-                        <div>
-                            <span class="command-prompt">~</span>
-                            <span class="command-text">pip install guardian-runtime</span>
-                        </div>
-                        <button class="copy-icon" onclick="copyInstallCmd(this)" aria-label="Copy command">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </section>
+<!-- NAVBAR -->
+<nav id="navbar" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo" id="nav-home-link">
+      <div class="nav-logo-icon">🛡️</div>
+      Guardian
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="#features" id="nav-features">Features</a></li>
+      <li><a href="#providers" id="nav-providers">Providers</a></li>
+      <li><a href="#install" id="nav-install">Install</a></li>
+      <li><a href="#pricing" id="nav-pricing">Pricing</a></li>
+      <li><a href="https://github.com/ashp15205/guardian-runtime" id="nav-github" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+    <a href="https://pypi.org/project/guardian-runtime/" id="nav-pypi-cta" class="nav-cta" target="_blank" rel="noopener">Install Now →</a>
+    <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
 
-            <!-- The Problem -->
-            <section class="section">
-                <div class="section-header">
-                    <h2>The Enterprise AI Dilemma</h2>
-                    <p>Current LLM deployments force a compromise between capability and risk. You either bleed budget on unoptimized queries, or risk compliance violations by sending sensitive PII to external APIs. Guardian Runtime solves both.</p>
-                </div>
+<!-- MOBILE MENU -->
+<div id="mobile-menu" role="navigation" aria-label="Mobile navigation">
+  <a href="#features"  id="mob-features">Features</a>
+  <a href="#providers" id="mob-providers">Providers</a>
+  <a href="#install"   id="mob-install">Install</a>
+  <a href="#pricing"   id="mob-pricing">Pricing</a>
+  <a href="https://github.com/ashp15205/guardian-runtime" id="mob-github" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://pypi.org/project/guardian-runtime/" id="mob-pypi" class="mob-cta" target="_blank" rel="noopener">pip install guardian-runtime →</a>
+</div>
 
-                <div class="flow-container">
-                    <div class="flow-node">
-                        <div class="node-icon">👤</div>
-                        <div class="node-title">Client App</div>
-                    </div>
-                    
-                    <div class="flow-node active">
-                        <div class="node-icon">⚡</div>
-                        <div class="node-title">Optimizer</div>
-                        <div class="node-desc">Compress tokens</div>
-                    </div>
-
-                    <div class="flow-node active">
-                        <div class="node-icon">🛡️</div>
-                        <div class="node-title">Security Guard</div>
-                        <div class="node-desc">Block PII leaks</div>
-                    </div>
-
-                    <div class="flow-node">
-                        <div class="node-icon">🧠</div>
-                        <div class="node-title">LLM</div>
-                        <div class="node-desc">OpenAI / Gemini</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Features -->
-            <section class="section">
-                <div class="section-header">
-                    <h2>Enterprise Grade, Developer Friendly</h2>
-                </div>
-                <div class="bento-grid">
-                    <div class="bento-card">
-                        <div class="bento-icon">🛡️</div>
-                        <div class="bento-title">Security & Compliance</div>
-                        <div class="bento-desc">Zero-trust architecture. Local NER scanning detects and scrubs SSNs, API keys, and PII before the data ever leaves your server.</div>
-                    </div>
-                    <div class="bento-card">
-                        <div class="bento-icon">📉</div>
-                        <div class="bento-title">Cost Optimization</div>
-                        <div class="bento-desc">Automatically convert heavy PDFs to Markdown and strip prompt bloat. Enforce strict token budgets to eliminate API bill shock.</div>
-                    </div>
-                    <div class="bento-card">
-                        <div class="bento-icon">🔒</div>
-                        <div class="bento-title">100% Local-First</div>
-                        <div class="bento-desc">No external proxies. All governance rules and interceptors run completely on your own infrastructure with near-zero latency.</div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <p>&copy; 2026 Guardian Runtime. Built for the future of private AI.</p>
-        </footer>
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<section id="hero">
+  <div class="container">
+    <div class="fade-up" style="display:flex;justify-content:center;">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        v1.0.0 — Now with Anthropic Claude support
+      </div>
     </div>
 
-    <script>
-        function copyInstallCmd(btn) {
-            navigator.clipboard.writeText('pip install guardian-runtime');
-            const original = btn.innerHTML;
-            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-            setTimeout(() => btn.innerHTML = original, 2000);
-        }
-    </script>
+    <h1 class="hero-title fade-up" style="transition-delay:0.1s">
+      <span class="line-1">AI Governance.</span>
+      <span class="gradient-word">Local-First.</span>
+      <span class="line-1">Zero Leaks.</span>
+    </h1>
+
+    <p class="hero-sub fade-up" style="transition-delay:0.2s">
+      Block PII, secrets &amp; jailbreaks <em>before</em> they reach the model.
+      Cut token costs up to <strong style="color:var(--text-1)">40%</strong> with built-in prompt optimization.
+      Runs 100% on your infrastructure — nothing leaves your machine.
+    </p>
+
+    <div class="hero-ctas fade-up" style="transition-delay:0.3s">
+      <a href="#install" id="hero-cta-install" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Get Started Free
+      </a>
+      <a href="https://github.com/ashp15205/guardian-runtime" id="hero-cta-github" class="btn-ghost" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+
+    <!-- PIPELINE DIAGRAM -->
+    <div class="pipeline fade-up" style="transition-delay:0.45s" aria-label="Guardian Runtime data flow pipeline">
+      <div class="pipe-node">
+        <div class="icon">👤</div>
+        <div class="name">User</div>
+        <div class="tag blue">Request</div>
+      </div>
+      <div class="pipe-arrow">
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="pill">prompt</div>
+      </div>
+      <div class="pipe-node accent-violet">
+        <div class="icon">⚡</div>
+        <div class="name">Optimizer</div>
+        <div class="tag warn">−40% tokens</div>
+      </div>
+      <div class="pipe-arrow">
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="pill">scan</div>
+      </div>
+      <div class="pipe-node accent-blue">
+        <div class="icon">🛡️</div>
+        <div class="name">Input Guard</div>
+        <div class="tag">PII / Secrets</div>
+      </div>
+      <div class="pipe-arrow">
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="pill cyan">safe</div>
+      </div>
+      <div class="pipe-node accent-cyan">
+        <div class="icon">🤖</div>
+        <div class="name">LLM</div>
+        <div class="tag cyan">OpenAI / Claude…</div>
+      </div>
+      <div class="pipe-arrow">
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="pill">check</div>
+      </div>
+      <div class="pipe-node accent-blue">
+        <div class="icon">🔎</div>
+        <div class="name">Output Guard</div>
+        <div class="tag">Output PII</div>
+      </div>
+      <div class="pipe-arrow">
+        <svg width="28" height="14" viewBox="0 0 28 14" fill="none"><path d="M1 7h22M17 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="pill cyan">clean</div>
+      </div>
+      <div class="pipe-node">
+        <div class="icon">✅</div>
+        <div class="name">User</div>
+        <div class="tag">Response</div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-bar fade-up stagger" style="transition-delay:0.55s" aria-label="Key metrics">
+      <div class="stat-item">
+        <div class="stat-num count-up" data-target="40">0</div><div class="stat-num">%</div>
+        <div class="stat-label">Token cost reduction</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num count-up" data-target="111">0</div>
+        <div class="stat-label">Tests passing</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num count-up" data-target="40">0</div><div class="stat-num">+</div>
+        <div class="stat-label">Jailbreak patterns detected</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">3</div>
+        <div class="stat-label">LLM providers supported</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Prompts uploaded to Guardian</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-inner">
+    <!-- duplicated for seamless loop -->
+    <div class="ticker-item"><span class="icon">🔒</span> PII Detection</div>
+    <div class="ticker-item"><span class="icon">🔑</span> Secret Scanning</div>
+    <div class="ticker-item"><span class="icon">🧱</span> Jailbreak Blocking</div>
+    <div class="ticker-item"><span class="icon">⚡</span> Prompt Optimization</div>
+    <div class="ticker-item"><span class="icon">📄</span> PDF / DOCX Converter</div>
+    <div class="ticker-item"><span class="icon">📊</span> YAML Policies</div>
+    <div class="ticker-item"><span class="icon">🏥</span> HIPAA Compliant</div>
+    <div class="ticker-item"><span class="icon">🇮🇳</span> India DPDP Ready</div>
+    <div class="ticker-item"><span class="icon">🌍</span> GDPR Assistive</div>
+    <div class="ticker-item"><span class="icon">💰</span> FinOps Built-In</div>
+    <div class="ticker-item"><span class="icon">🔒</span> PII Detection</div>
+    <div class="ticker-item"><span class="icon">🔑</span> Secret Scanning</div>
+    <div class="ticker-item"><span class="icon">🧱</span> Jailbreak Blocking</div>
+    <div class="ticker-item"><span class="icon">⚡</span> Prompt Optimization</div>
+    <div class="ticker-item"><span class="icon">📄</span> PDF / DOCX Converter</div>
+    <div class="ticker-item"><span class="icon">📊</span> YAML Policies</div>
+    <div class="ticker-item"><span class="icon">🏥</span> HIPAA Compliant</div>
+    <div class="ticker-item"><span class="icon">🇮🇳</span> India DPDP Ready</div>
+    <div class="ticker-item"><span class="icon">🌍</span> GDPR Assistive</div>
+    <div class="ticker-item"><span class="icon">💰</span> FinOps Built-In</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ COMPARISON ══════════════════════════════ -->
+<section id="why-guardian">
+  <div class="container">
+    <div class="center fade-up">
+      <div class="label">Why Guardian?</div>
+      <h2 class="section-title">Observability <span>logs</span> it.<br>Guardian <span>stops</span> it.</h2>
+      <p class="section-sub">Existing tools fire alerts after the damage is done. Guardian intercepts at the request boundary — before a single token reaches your LLM.</p>
+    </div>
+
+    <div style="margin-top:56px;" class="fade-up">
+      <table class="comp-table" role="table" aria-label="Comparison with observability tools">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Observability Tools<br><small style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(Langfuse, LangSmith, Helicone)</small></th>
+            <th class="highlight">Guardian Runtime ✦</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>When it acts</td>
+            <td><span class="cross">⚠</span> After the LLM call</td>
+            <td class="highlight"><span class="check">✓</span> Before &amp; after</td>
+          </tr>
+          <tr>
+            <td>Data path</td>
+            <td><span class="cross">⚠</span> Often cloud-forwarded</td>
+            <td class="highlight"><span class="check">✓</span> 100% local</td>
+          </tr>
+          <tr>
+            <td>PII in prompt</td>
+            <td><span class="cross">✗</span> Logged to cloud</td>
+            <td class="highlight"><span class="check">✓</span> Blocked at source</td>
+          </tr>
+          <tr>
+            <td>Secrets in prompt</td>
+            <td><span class="cross">✗</span> Exposed</td>
+            <td class="highlight"><span class="check">✓</span> Redacted / blocked</td>
+          </tr>
+          <tr>
+            <td>Token cost</td>
+            <td><span class="partial">~</span> Tracked only</td>
+            <td class="highlight"><span class="check">✓</span> Actively reduced</td>
+          </tr>
+          <tr>
+            <td>Jailbreak detection</td>
+            <td><span class="cross">✗</span> Not applicable</td>
+            <td class="highlight"><span class="check">✓</span> 40+ patterns</td>
+          </tr>
+          <tr>
+            <td>Policy-as-code</td>
+            <td><span class="cross">✗</span> No</td>
+            <td class="highlight"><span class="check">✓</span> YAML, per-agent</td>
+          </tr>
+          <tr>
+            <td>Output scanning</td>
+            <td><span class="cross">✗</span> No</td>
+            <td class="highlight"><span class="check">✓</span> Yes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ FEATURES ════════════════════════════════ -->
+<section id="features">
+  <div class="container">
+    <div class="center fade-up">
+      <div class="label">Features</div>
+      <h2 class="section-title">Everything your AI stack<br><span>needs to stay safe</span></h2>
+      <p class="section-sub">Production-grade guardrails, cost controls, and governance — all in one Python package.</p>
+    </div>
+
+    <div class="bento-grid" style="margin-top:56px;">
+
+      <!-- CARD 1 — big code demo -->
+      <div class="bento-card bc-1 fade-up">
+        <div class="bento-icon blue">🛡️</div>
+        <div class="bento-title">One line to govern any LLM call</div>
+        <div class="bento-body">Replace your raw API call with <code style="font-family:monospace;color:var(--accent-1)">guardian.complete()</code> and get automatic PII blocking, token compression, and audit logging.</div>
+        <div class="bento-code" aria-label="Code example">
+          <div class="code-line"><span class="ln">1</span><span><span class="kw">from</span> guardian <span class="kw">import</span> <span class="fn">Guardian</span></span></div>
+          <div class="code-line"><span class="ln">2</span><span></span></div>
+          <div class="code-line"><span class="ln">3</span><span><span class="va">guardian</span> = <span class="fn">Guardian</span>.<span class="fn">from_policy</span>(<span class="st">"policies/gemini.yaml"</span>)</span></div>
+          <div class="code-line"><span class="ln">4</span><span></span></div>
+          <div class="code-line"><span class="ln">5</span><span><span class="va">response</span> = <span class="va">guardian</span>.<span class="fn">complete</span>(</span></div>
+          <div class="code-line"><span class="ln">6</span><span>&nbsp;&nbsp;messages=[{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="st">"What is my Aadhaar?"</span>}]</span></div>
+          <div class="code-line"><span class="ln">7</span><span>)</span></div>
+          <div class="code-line"><span class="ln">8</span><span></span></div>
+          <div class="code-line"><span class="ln">9</span><span><span class="kw">if</span> <span class="va">response</span>.blocked:</span></div>
+          <div class="code-line"><span class="ln">10</span><span>&nbsp;&nbsp;<span class="fn">print</span>(<span class="st">"Blocked:"</span>, <span class="va">response</span>.violations[<span class="va">0</span>].type)  <span class="cm"># → pii</span></span></div>
+        </div>
+      </div>
+
+      <!-- CARD 2 — no API key -->
+      <div class="bento-card bc-2 fade-up" style="transition-delay:0.1s">
+        <div class="bento-icon green">🔬</div>
+        <div class="bento-title">Scan without any API key</div>
+        <div class="bento-body">Standalone PII and secret scanning that runs entirely offline — no model, no key, no latency.</div>
+        <div class="bento-code" aria-label="Scan without API key example">
+          <div class="code-line"><span class="ln">1</span><span><span class="kw">from</span> guardian <span class="kw">import</span> <span class="fn">scan_pii</span>, <span class="fn">scan_secrets</span></span></div>
+          <div class="code-line"><span class="ln">2</span><span></span></div>
+          <div class="code-line"><span class="ln">3</span><span><span class="fn">scan_pii</span>(<span class="st">"Aadhaar: 2345 6789 0123"</span>).blocked   <span class="cm"># True</span></span></div>
+          <div class="code-line"><span class="ln">4</span><span><span class="fn">scan_secrets</span>(<span class="st">"sk-proj-xxxxx"</span>).blocked       <span class="cm"># True</span></span></div>
+        </div>
+      </div>
+
+      <!-- CARD 3 — 40% cost -->
+      <div class="bento-card bc-3 fade-up" style="transition-delay:0.15s">
+        <div class="bento-bignum">−40%</div>
+        <div class="bento-title">Token cost reduction</div>
+        <div class="bento-body">The built-in optimizer trims whitespace, deduplicates context, and prunes old history before your prompt hits the model.</div>
+      </div>
+
+      <!-- CARD 4 — PII types -->
+      <div class="bento-card bc-4 fade-up" style="transition-delay:0.2s">
+        <div class="bento-icon violet">🔒</div>
+        <div class="bento-title">10+ PII entity types</div>
+        <div class="bento-body">Aadhaar, PAN, UPI, SSN, credit cards, email, phone, passport, and more — fully regex-powered, zero cloud calls.</div>
+        <div class="tag-row">
+          <span class="tag-pill">Aadhaar</span>
+          <span class="tag-pill">PAN</span>
+          <span class="tag-pill">UPI</span>
+          <span class="tag-pill violet">SSN</span>
+          <span class="tag-pill cyan">Credit Card</span>
+          <span class="tag-pill">Passport</span>
+          <span class="tag-pill violet">Email</span>
+          <span class="tag-pill cyan">Phone</span>
+        </div>
+      </div>
+
+      <!-- CARD 5 — jailbreak -->
+      <div class="bento-card bc-5 fade-up" style="transition-delay:0.25s">
+        <div class="bento-icon amber">🧱</div>
+        <div class="bento-title">40+ jailbreak patterns</div>
+        <div class="bento-body">DAN prompts, role-play overrides, encoding tricks, and goal-hijacking — Guardian catches them all before they reach the model.</div>
+        <div class="tag-row">
+          <span class="tag-pill">DAN</span>
+          <span class="tag-pill violet">Role-play</span>
+          <span class="tag-pill cyan">Encoding</span>
+          <span class="tag-pill">Override</span>
+          <span class="tag-pill violet">Goal-hijack</span>
+        </div>
+      </div>
+
+      <!-- CARD 6 — YAML policy -->
+      <div class="bento-card bc-6 fade-up" style="transition-delay:0.3s">
+        <div class="bento-icon blue">📋</div>
+        <div class="bento-title">Policy-as-Code via YAML</div>
+        <div class="bento-body">Define per-agent rules, token budgets, guard modes (block / redact / flag), and provider routing — all in a single YAML file you own.</div>
+        <div class="bento-code" aria-label="YAML policy example">
+          <div class="code-line"><span class="ln">1</span><span><span class="kw">version</span>: <span class="st">"1.0"</span></span></div>
+          <div class="code-line"><span class="ln">2</span><span><span class="kw">agents</span>:</span></div>
+          <div class="code-line"><span class="ln">3</span><span>&nbsp;&nbsp;<span class="fn">default</span>:</span></div>
+          <div class="code-line"><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">llm</span>: { <span class="kw">provider</span>: <span class="st">gemini</span>, <span class="kw">default_model</span>: <span class="st">gemini-2.0-flash</span> }</span></div>
+          <div class="code-line"><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">input_guard</span>: { <span class="kw">pii_detection</span>: <span class="va">true</span>, <span class="kw">jailbreak_detection</span>: <span class="va">true</span> }</span></div>
+          <div class="code-line"><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">output_guard</span>: { <span class="kw">pii_detection</span>: <span class="va">true</span> }</span></div>
+          <div class="code-line"><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">optimizer</span>: { <span class="kw">enabled</span>: <span class="va">true</span>, <span class="kw">max_history_messages</span>: <span class="va">10</span> }</span></div>
+          <div class="code-line"><span class="ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost</span>: { <span class="kw">max_input_tokens</span>: <span class="va">8000</span> }</span></div>
+        </div>
+      </div>
+
+      <!-- CARD 7 — compliance -->
+      <div class="bento-card bc-7 fade-up" style="transition-delay:0.35s">
+        <div class="bento-icon cyan">⚖️</div>
+        <div class="bento-title">Compliance-ready from day one</div>
+        <div class="bento-body">Built as an assistive tool (not legal advice) to help teams operating under GDPR, HIPAA, CCPA, and India's DPDP Act. All audit logs remain local at <code style="font-family:monospace;color:var(--accent-1)">~/.guardian/logs/</code>.</div>
+        <div class="tag-row">
+          <span class="tag-pill green">GDPR</span>
+          <span class="tag-pill green">HIPAA</span>
+          <span class="tag-pill green">CCPA</span>
+          <span class="tag-pill green">India DPDP</span>
+          <span class="tag-pill cyan">Local Audit Log</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ PROVIDERS ═══════════════════════════════ -->
+<section id="providers">
+  <div class="container">
+    <div class="center fade-up">
+      <div class="label">Providers</div>
+      <h2 class="section-title">Works with the<br><span>Big Three LLMs</span></h2>
+      <p class="section-sub">Swap providers with a single config line. Guardian normalises every response into the same interface.</p>
+    </div>
+
+    <div class="provider-grid" style="margin-top:52px;">
+      <div class="provider-card fade-up" style="transition-delay:0.05s">
+        <div class="provider-logo">🟢</div>
+        <div class="provider-name">Google Gemini</div>
+        <div class="provider-detail">gemini-2.0-flash (default)</div>
+        <div class="provider-env">GEMINI_API_KEY</div>
+      </div>
+      <div class="provider-card fade-up" style="transition-delay:0.12s">
+        <div class="provider-logo">🟠</div>
+        <div class="provider-name">Anthropic Claude</div>
+        <div class="provider-detail">claude-3-5-haiku-latest (default)</div>
+        <div class="provider-env">ANTHROPIC_API_KEY</div>
+      </div>
+      <div class="provider-card fade-up" style="transition-delay:0.19s">
+        <div class="provider-logo">⚫</div>
+        <div class="provider-name">OpenAI</div>
+        <div class="provider-detail">gpt-4o-mini (default)</div>
+        <div class="provider-env">OPENAI_API_KEY</div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;text-align:center;" class="fade-up">
+      <p style="font-size:14px;color:var(--text-3)">Override at runtime: <code style="font-family:monospace;color:var(--accent-1)">guardian.complete(provider="anthropic", model="claude-opus-4")</code></p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ INSTALL ═════════════════════════════════ -->
+<section id="install">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;" class="fade-up">
+
+      <div>
+        <div class="label">Install</div>
+        <h2 class="section-title" style="font-size:clamp(30px,4vw,48px);">Up in<br><span>60 seconds</span></h2>
+        <p class="section-sub" style="font-size:16px;">Three commands and you have a fully governed LLM — locally. Free test with Gemini requires no billing info.</p>
+
+        <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--gradient-blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">1</div>
+            <div>
+              <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Install the package</div>
+              <div style="font-size:14px;color:var(--text-2);">Available on PyPI. Python 3.9+ required.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--gradient-violet);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">2</div>
+            <div>
+              <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Set your API key</div>
+              <div style="font-size:14px;color:var(--text-2);">Get a free Gemini key at Google AI Studio.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#4f7fff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">3</div>
+            <div>
+              <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Start governing</div>
+              <div style="font-size:14px;color:var(--text-2);">Use the SDK or CLI — zero configuration to get started.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="install-block">
+          <div class="install-tab-bar" role="tablist">
+            <div class="install-tab active" id="tab-pip" role="tab" aria-selected="true" aria-controls="pane-pip" tabindex="0">pip</div>
+            <div class="install-tab" id="tab-quickstart" role="tab" aria-selected="false" aria-controls="pane-quickstart" tabindex="-1">Quickstart</div>
+            <div class="install-tab" id="tab-cli" role="tab" aria-selected="false" aria-controls="pane-cli" tabindex="-1">CLI</div>
+          </div>
+
+          <div class="install-pane active" id="pane-pip" role="tabpanel" aria-labelledby="tab-pip">
+<pre><span style="color:var(--text-3)"># Core</span>
+<span style="color:var(--accent-1)">pip install</span> guardian-runtime
+
+<span style="color:var(--text-3)"># With PDF/DOCX converter + dev tools</span>
+<span style="color:var(--accent-1)">pip install</span> <span style="color:var(--accent-warn)">"guardian-runtime[optimizer,dev]"</span>
+
+<span style="color:var(--text-3)"># With Presidio NER-based PII</span>
+<span style="color:var(--accent-1)">pip install</span> <span style="color:var(--accent-warn)">"guardian-runtime[presidio]"</span></pre>
+            <button class="copy-btn" id="copy-pip-btn" onclick="copyCode(this,'pip install guardian-runtime')">
+              📋 Copy
+            </button>
+          </div>
+
+          <div class="install-pane" id="pane-quickstart" role="tabpanel" aria-labelledby="tab-quickstart">
+<pre><span style="color:var(--text-3)"># 1. Set key</span>
+<span style="color:var(--accent-1)">export</span> <span style="color:var(--accent-warn)">GEMINI_API_KEY</span>=your_key
+
+<span style="color:var(--text-3)"># 2. Run</span>
+<span style="color:var(--accent-1)">python</span> examples/quickstart.py</pre>
+          </div>
+
+          <div class="install-pane" id="pane-cli" role="tabpanel" aria-labelledby="tab-cli">
+<pre><span style="color:var(--text-3)"># Initialise (optional license)</span>
+<span style="color:var(--accent-1)">guardian</span> init --key gdn_free_xxxxx
+
+<span style="color:var(--text-3)"># Validate policy file</span>
+<span style="color:var(--accent-1)">guardian</span> validate policies/gemini.yaml
+
+<span style="color:var(--text-3)"># See usage this month</span>
+<span style="color:var(--accent-1)">guardian</span> status
+
+<span style="color:var(--text-3)"># Tail audit logs</span>
+<span style="color:var(--accent-1)">guardian</span> logs --tail 20</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ CLI DEMO ════════════════════════════════ -->
+<section id="cli-demo" style="padding-top:80px;padding-bottom:80px;">
+  <div class="container">
+    <div class="center fade-up" style="margin-bottom:44px;">
+      <div class="label">See It Live</div>
+      <h2 class="section-title">Watch Guardian catch a<br><span>real PII leak in real time</span></h2>
+    </div>
+
+    <div class="cli-window fade-up">
+      <div class="cli-titlebar">
+        <div class="cli-dot red"></div>
+        <div class="cli-dot yellow"></div>
+        <div class="cli-dot green"></div>
+        <div class="cli-path">~/my-app — python main.py</div>
+      </div>
+      <div class="cli-body" aria-label="CLI output demonstration">
+        <div><span class="cli-prompt">❯ </span><span class="cli-cmd">python main.py</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cli-dim">[Guardian]  Policy loaded: policies/gemini.yaml</span></div>
+        <div><span class="cli-dim">[Guardian]  Provider: gemini → gemini-2.0-flash</span></div>
+        <div><span class="cli-dim">[Guardian]  Optimizer: enabled (max 8 000 tokens)</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cli-dim">[Optimizer] Input tokens before: 1 824</span></div>
+        <div><span class="cli-ok">  [Optimizer] After compression:  1 109  (−39%)</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cli-dim">[InputGuard] Scanning prompt…</span></div>
+        <div><span class="cli-warn">  [InputGuard] ⚠ PII detected: aadhaar (HIGH confidence)</span></div>
+        <div><span class="cli-warn">  [InputGuard] ⚠ PII detected: email (HIGH confidence)</span></div>
+        <div><span class="cli-err">  [InputGuard] ✗ BLOCKED — 2 violation(s) found</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cli-dim">[Guardian]  Audit entry written → ~/.guardian/logs/2026-06-03.jsonl</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cli-prompt">❯ </span><span class="cli-cmd">guardian logs --tail 1</span></div>
+        <div><span class="cli-ok">{"ts":"2026-06-03T09:41:22Z","blocked":true,"violations":["aadhaar","email"],"tokens_saved":715}</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ PRIVACY ═════════════════════════════════ -->
+<section id="privacy" style="padding:100px 0;">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;" class="fade-up">
+      <div>
+        <div class="label">Privacy by Architecture</div>
+        <h2 class="section-title" style="font-size:clamp(30px,4vw,52px);">We can't read<br>your prompts.<br><span>By design.</span></h2>
+        <p class="section-sub" style="font-size:16px;">Guardian makes exactly two types of network requests. That's it. Every word of your prompts stays on your machine.</p>
+      </div>
+      <div>
+        <div class="bento-card" style="border-radius:var(--radius-xl);">
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">✅</div>
+              <div>
+                <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">Your LLM provider</div>
+                <div style="font-size:13px;color:var(--text-2);">Calls go directly from your machine to OpenAI / Gemini / Anthropic via your own API key.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">✅</div>
+              <div>
+                <div style="font-weight:600;color:var(--text-1);margin-bottom:4px;">guardian-ai.dev (license only)</div>
+                <div style="font-size:13px;color:var(--text-2);">Once per day: <code style="font-family:monospace;color:var(--accent-1)">&#123; key_hash, check_count &#125;</code> — never prompts, never violations.</div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--border);"></div>
+            <div style="font-size:13px;color:var(--text-3);">We store: hashed key · plan type · usage count · payment records. That's all. No prompts. No responses. Ever.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ PRICING ═════════════════════════════════ -->
+<section id="pricing">
+  <div class="container">
+    <div class="center fade-up">
+      <div class="label">Pricing</div>
+      <h2 class="section-title">Start free.<br><span>Scale when you're ready.</span></h2>
+      <p class="section-sub">Guardian is open-source on Apache 2.0. The SDK is free forever. Paid plans unlock higher check limits and priority support.</p>
+    </div>
+
+    <div class="pricing-grid stagger" style="margin-top:56px;">
+
+      <div class="pricing-card">
+        <div class="pricing-plan">Free</div>
+        <div class="pricing-price">$0<span>/mo</span></div>
+        <div class="pricing-desc">Perfect to evaluate and ship your first production integration.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="icon">✓</span> 500 governed calls / month</li>
+          <li><span class="icon">✓</span> PII + Secret detection</li>
+          <li><span class="icon">✓</span> Jailbreak detection</li>
+          <li><span class="icon">✓</span> Prompt optimizer</li>
+          <li><span class="icon">✓</span> CLI tools</li>
+          <li><span class="icon">✓</span> Local audit logs</li>
+          <li><span class="icon dim">–</span> Priority support</li>
+        </ul>
+        <a href="https://pypi.org/project/guardian-runtime/" id="pricing-free-cta" class="pricing-cta" target="_blank" rel="noopener">Get Started Free →</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most Popular</div>
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price">$29<span>/mo</span></div>
+        <div class="pricing-desc">For teams shipping AI features who need higher throughput and support.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="icon">✓</span> 10 000 governed calls / month</li>
+          <li><span class="icon">✓</span> Everything in Free</li>
+          <li><span class="icon">✓</span> PDF / DOCX optimizer</li>
+          <li><span class="icon">✓</span> Multi-agent policies</li>
+          <li><span class="icon">✓</span> Email support</li>
+          <li><span class="icon">✓</span> LangChain integration</li>
+          <li><span class="icon">✓</span> Microsoft Presidio NER</li>
+        </ul>
+        <a href="https://github.com/ashp15205/guardian-runtime" id="pricing-starter-cta" class="pricing-cta" target="_blank" rel="noopener">Start Trial →</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-plan">Enterprise</div>
+        <div class="pricing-price" style="font-size:36px;padding-top:6px;">Custom</div>
+        <div class="pricing-desc">Unlimited calls, dedicated support, and on-premise deployment for regulated industries.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="icon">✓</span> Unlimited governed calls</li>
+          <li><span class="icon">✓</span> Everything in Starter</li>
+          <li><span class="icon">✓</span> Air-gapped deployment</li>
+          <li><span class="icon">✓</span> SLA + dedicated Slack</li>
+          <li><span class="icon">✓</span> Custom PII patterns</li>
+          <li><span class="icon">✓</span> Compliance audit export</li>
+          <li><span class="icon">✓</span> SAML SSO</li>
+        </ul>
+        <a href="mailto:ashishtp2005@gmail.com" id="pricing-enterprise-cta" class="pricing-cta">Contact Sales →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ═══════════════════════════ CTA BANNER ══════════════════════════════ -->
+<section id="cta-section" style="padding:100px 0;text-align:center;">
+  <div class="container fade-up">
+    <div style="position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:72px 48px;overflow:hidden;">
+      <!-- glow -->
+      <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(79,127,255,0.2),transparent 70%);pointer-events:none;"></div>
+
+      <div class="label" style="margin:0 auto 24px;">Open Source · Apache 2.0</div>
+      <h2 class="section-title" style="font-size:clamp(36px,5vw,64px);">Govern your AI in<br><span>under 60 seconds</span></h2>
+      <p class="section-sub" style="margin:20px auto 44px;font-size:18px;">Join developers protecting production LLM apps with Guardian Runtime. Free forever, no credit card required.</p>
+
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <a href="https://pypi.org/project/guardian-runtime/" id="final-cta-pypi" class="btn-primary" target="_blank" rel="noopener" style="font-size:16px;padding:16px 32px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          pip install guardian-runtime
+        </a>
+        <a href="https://github.com/ashp15205/guardian-runtime" id="final-cta-github" class="btn-ghost" target="_blank" rel="noopener" style="font-size:16px;padding:16px 32px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Star on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ══════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo" id="footer-logo-link" style="text-decoration:none;">
+        <div class="nav-logo-icon">🛡️</div>
+        Guardian Runtime
+      </a>
+      <p class="footer-brand-desc">Local-first AI governance for production LLM applications. Block PII, secrets, and jailbreaks before they reach the model.</p>
+      <div style="font-size:13px;color:var(--text-3);">Apache 2.0 · Built with ❤️ by Ashish Patil</div>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Product</div>
+      <ul class="footer-links">
+        <li><a href="#features" id="footer-features-link">Features</a></li>
+        <li><a href="#providers" id="footer-providers-link">Providers</a></li>
+        <li><a href="#install" id="footer-install-link">Install</a></li>
+        <li><a href="#pricing" id="footer-pricing-link">Pricing</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/ashp15205/guardian-runtime" id="footer-github-link" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://pypi.org/project/guardian-runtime/" id="footer-pypi-link" target="_blank" rel="noopener">PyPI</a></li>
+        <li><a href="https://github.com/ashp15205/guardian-runtime/blob/main/ARCHITECTURE.md" id="footer-arch-link" target="_blank" rel="noopener">Architecture</a></li>
+        <li><a href="https://github.com/ashp15205/guardian-runtime/tree/main/examples" id="footer-examples-link" target="_blank" rel="noopener">Examples</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/ashp15205/guardian-runtime/blob/main/LICENSE" id="footer-license-link" target="_blank" rel="noopener">License</a></li>
+        <li><a href="mailto:ashishtp2005@gmail.com" id="footer-contact-link">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-bottom-left">© 2026 Guardian Runtime. Released under Apache 2.0.</div>
+    <div class="footer-badges">
+      <span class="footer-badge">Python 3.9+</span>
+      <span class="footer-badge">OpenAI</span>
+      <span class="footer-badge">Gemini</span>
+      <span class="footer-badge">Claude</span>
+      <span class="footer-badge">Apache 2.0</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ─── NAVBAR SCROLL ──────────────────────────────────────────────────
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 24);
+  }, { passive: true });
+
+  // ─── HAMBURGER ──────────────────────────────────────────────────────
+  const hamburger = document.getElementById('hamburger-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  hamburger.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', false);
+    });
+  });
+
+  // ─── INSTALL TABS ────────────────────────────────────────────────────
+  document.querySelectorAll('.install-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.install-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); t.tabIndex = -1; });
+      document.querySelectorAll('.install-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected','true');
+      tab.tabIndex = 0;
+      const paneId = tab.getAttribute('aria-controls');
+      document.getElementById(paneId).classList.add('active');
+    });
+    tab.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') tab.click(); });
+  });
+
+  // ─── COPY BUTTON ─────────────────────────────────────────────────────
+  function copyCode(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ─── MOUSE GLOW ON BENTO CARDS ───────────────────────────────────────
+  document.querySelectorAll('.bento-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+    });
+  });
+
+  // ─── INTERSECTION OBSERVER (scroll reveals) ───────────────────────────
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-up, .stagger').forEach(el => revealObs.observe(el));
+
+  // Hero elements visible immediately
+  document.querySelectorAll('#hero .fade-up').forEach(el => {
+    setTimeout(() => el.classList.add('visible'), 100);
+  });
+
+  // ─── COUNT-UP ANIMATION ───────────────────────────────────────────────
+  function animateCount(el, target, duration = 1500) {
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  const countObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.count-up').forEach(el => {
+          animateCount(el, parseInt(el.dataset.target, 10));
+        });
+        countObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.stats-bar').forEach(b => countObs.observe(b));
+
+  // ─── SMOOTH ANCHOR SCROLL ─────────────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'), 10);
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - navH - 8, behavior: 'smooth' });
+    });
+  });
+
+  // ─── TICKER PAUSE ON HOVER ────────────────────────────────────────────
+  const tickerInner = document.querySelector('.ticker-inner');
+  const tickerWrap  = document.querySelector('.ticker-wrap');
+  if (tickerWrap && tickerInner) {
+    tickerWrap.addEventListener('mouseenter', () => tickerInner.style.animationPlayState = 'paused');
+    tickerWrap.addEventListener('mouseleave', () => tickerInner.style.animationPlayState = 'running');
+  }
+</script>
 </body>
 </html>
