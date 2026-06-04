@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardian-runtime"
-version = "1.0.0"
+version = "1.0.1"
 description = "Local-first runtime governance layer for AI systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -56,10 +56,9 @@ langchain = [
 all = ["guardian-runtime[presidio,langchain]"]
 
 [project.urls]
-Homepage = "https://github.com/ashp15205/guardian-runtime"
-Documentation = "https://github.com/ashp15205/guardian-runtime#readme"
+Homepage = "https://ashp15205.github.io/guardian-runtime/"
+Documentation = "https://ashp15205.github.io/guardian-runtime/"
 Repository = "https://github.com/ashp15205/guardian-runtime"
-Issues = "https://github.com/ashp15205/guardian-runtime/issues"
 
 [project.scripts]
 guardian_runtime = "guardian_runtime.cli.main:cli"
