@@ -46,6 +46,11 @@
             cursor: crosshair;
         }
 
+        ::selection {
+            background: rgba(0, 255, 136, 0.3);
+            color: #fff;
+        }
+
         /* ── Scanline overlay ── */
         body::before {
             content: '';
@@ -107,6 +112,9 @@
             display: flex;
             gap: 32px;
             list-style: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .nav-links a {
@@ -149,8 +157,10 @@
             right: 0;
             z-index: 1000;
             padding: 6px 48px;
-            border-top: 1px solid var(--border);
-            background: rgba(3, 10, 6, 0.95);
+            border-top: 1px solid var(--border-bright);
+            background: rgba(3, 10, 6, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 -5px 20px rgba(0, 255, 136, 0.05);
             display: flex;
             gap: 32px;
             align-items: center;
@@ -224,7 +234,18 @@
         .hero-title .accent {
             color: var(--green);
             display: block;
-            -webkit-text-stroke: 1px var(--green);
+            text-shadow: 0 0 40px rgba(0, 255, 136, 0.4);
+            animation: pulseGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                text-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            }
+
+            100% {
+                text-shadow: 0 0 60px rgba(0, 255, 136, 0.8), 0 0 20px rgba(0, 255, 136, 0.6);
+            }
         }
 
         .hero-sub {
@@ -239,7 +260,8 @@
         }
 
         .hero-sub strong {
-            color: var(--text);
+            color: #fff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
         }
 
         .hero-actions {
@@ -261,13 +283,16 @@
             color: var(--bg);
             text-decoration: none;
             font-weight: 700;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.4));
         }
 
         .btn-primary:hover {
             background: #fff;
-            transform: translateY(-2px);
+            color: #000;
+            transform: translateY(-3px) scale(1.02);
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
         }
 
         .btn-secondary {
@@ -290,8 +315,11 @@
 
         /* ── Terminal code block ── */
         .terminal {
-            background: #000;
-            border: 1px solid var(--border);
+            background: rgba(3, 10, 6, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-bright);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 136, 0.05);
+            border-radius: 6px;
             padding: 20px 28px;
             font-family: var(--mono);
             font-size: 13px;
@@ -300,24 +328,45 @@
             max-width: 640px;
             position: relative;
             line-height: 1.8;
+            animation: terminalFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes terminalFloat {
+            0% {
+                transform: translateY(0px);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 136, 0.05);
+            }
+
+            50% {
+                transform: translateY(-10px);
+                box-shadow: 0 30px 60px rgba(0, 255, 136, 0.1), inset 0 0 30px rgba(0, 255, 136, 0.1);
+            }
+
+            100% {
+                transform: translateY(0px);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 136, 0.05);
+            }
         }
 
         .terminal::before {
             content: '● ● ●';
             display: block;
-            color: var(--text-dim);
-            font-size: 10px;
-            letter-spacing: 4px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 6px;
             margin-bottom: 16px;
-            opacity: 0.5;
+            opacity: 0.8;
         }
 
         .terminal .prompt {
-            color: var(--green-dim);
+            color: var(--green);
+            text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+            font-weight: bold;
         }
 
         .terminal .cmd {
-            color: var(--text);
+            color: #fff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
         }
 
         .terminal .comment {
@@ -489,14 +538,21 @@
         }
 
         .feature-card {
-            background: var(--bg2);
+            background: rgba(6, 15, 9, 0.6);
+            backdrop-filter: blur(10px);
             padding: 32px;
             position: relative;
-            transition: background 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            z-index: 1;
         }
 
         .feature-card:hover {
-            background: rgba(0, 255, 136, 0.03);
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--green);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.15), inset 0 0 15px rgba(0, 255, 136, 0.05);
+            background: rgba(6, 15, 9, 0.95);
+            z-index: 2;
         }
 
         .feature-header {
@@ -608,12 +664,14 @@
         }
 
         .code-block {
-            background: #000;
-            border: 1px solid var(--border);
+            background: rgba(3, 10, 6, 0.8);
+            border: 1px solid var(--border-bright);
+            box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.05);
+            border-radius: 6px;
             padding: 16px 20px;
             font-family: var(--mono);
             font-size: 13px;
-            color: var(--green);
+            color: #e0e0e0;
             overflow-x: auto;
             line-height: 1.6;
         }
@@ -657,8 +715,10 @@
             border: 1px solid var(--border);
             padding: 24px;
             position: relative;
-            background: var(--bg2);
-            transition: all 0.3s;
+            background: rgba(6, 15, 9, 0.6);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 6px;
         }
 
         .usecase-card::before {
@@ -671,14 +731,19 @@
             background: var(--green);
             opacity: 0;
             transition: opacity 0.3s;
+            border-radius: 6px 0 0 6px;
         }
 
         .usecase-card:hover::before {
             opacity: 1;
+            box-shadow: 0 0 15px var(--green);
         }
 
         .usecase-card:hover {
-            border-color: var(--border-bright);
+            border-color: var(--green);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+            background: rgba(6, 15, 9, 0.95);
         }
 
         .usecase-icon {
@@ -958,17 +1023,22 @@
             <li><a href="#quickstart">QUICKSTART</a></li>
             <li><a href="#integration">INTEGRATIONS</a></li>
         </ul>
-        <a href="https://github.com/ashp15205/guardian-runtime" class="nav-cta">⬡ GITHUB</a>
+        <div style="display: flex; gap: 16px;">
+            <a href="https://pypi.org/project/guardian-runtime/" class="nav-cta">⬡ PYPI</a>
+            <a href="https://github.com/ashp15205/guardian-runtime" class="nav-cta">⬡ GITHUB</a>
+        </div>
     </nav>
 
     <!-- STATUS BAR -->
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
-        <div class="status-item">ZERO NETWORK CALLS</div>
-        <div class="status-item">APACHE-2.0 · FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v0.2.4</div>
-        <div class="status-item" id="threat-counter">THREATS INTERCEPTED: <span id="count"
-                style="color:var(--green)">0</span></div>
+        <div class="status-item">FREE &amp; OPEN SOURCE</div>
+        <div class="status-item">v1.0.0</div>
+        <div class="status-item" id="threat-counter">USERS: <span id="count"
+                style="color:var(--green); margin-left: 6px;">0</span></div>
+        <div class="status-item" style="color: var(--amber); font-weight: bold;">
+            ★ GITHUB STARS: <span id="star-count" style="margin-left: 6px;">0</span>
+        </div>
     </div>
 
     <!-- HERO -->
@@ -1499,9 +1569,8 @@
     <footer class="footer">
         <div class="footer-copy">© 2026 GUARDIAN RUNTIME — MIT LICENSE</div>
         <div class="footer-links">
+            <a href="https://pypi.org/project/guardian-runtime/">PyPI</a>
             <a href="https://github.com/ashp15205/guardian-runtime">GitHub</a>
-            <a href="https://github.com/ashp15205/guardian-runtime/issues">Issues</a>
-            <a href="https://github.com/ashp15205/guardian-runtime/blob/main/CHANGELOG.md">Changelog</a>
         </div>
     </footer>
 
@@ -1519,21 +1588,58 @@
 
         // Threat counter animation
         let count = 0;
-        const target = 2847391;
+        const target = 100;
         const el = document.getElementById('count');
+
+        let starCount = 0;
+        let starTarget = 0; // Default before fetch
+        const starEl = document.getElementById('star-count');
+
+        // Fetch real GitHub stars
+        fetch('https://api.github.com/repos/ashp15205/guardian-runtime')
+            .then(res => res.json())
+            .then(data => {
+                if (data.stargazers_count !== undefined) {
+                    starTarget = data.stargazers_count;
+                    // If the initial animation already finished, wake it up
+                    if (count >= target) {
+                        animateCount();
+                    }
+                }
+            })
+            .catch(e => console.log('Using fallback stars count.'));
+
         function animateCount() {
-            const step = Math.ceil((target - count) / 20);
-            count = Math.min(count + step, target);
+            // Very slow step for users
+            const step = Math.ceil((target - count) / 80);
+            count = Math.min(count + (step > 0 ? step : 1), target);
             el.textContent = count.toLocaleString();
-            if (count < target) setTimeout(animateCount, 30);
+
+            // Very slow step for stars
+            const starStep = Math.ceil((starTarget - starCount) / 80);
+            if (starEl) {
+                starCount = Math.min(starCount + (starStep > 0 ? starStep : 1), starTarget);
+                starEl.textContent = starCount.toLocaleString();
+            }
+
+            if (count < target || (starEl && starCount < starTarget)) {
+                setTimeout(animateCount, 80); // Slower interval
+            }
         }
         setTimeout(animateCount, 1000);
 
-        // Live incrementing counter (fake but fun)
+        // Live incrementing counter (slowed down significantly)
         setInterval(() => {
-            count += Math.floor(Math.random() * 3) + 1;
+            count += 1;
             el.textContent = count.toLocaleString();
-        }, 2000);
+        }, 15000); // 1 new user every 15 seconds
+
+        setInterval(() => {
+            if (starEl) {
+                starCount += 1;
+                starEl.textContent = starCount.toLocaleString();
+            }
+        }, 45000); // 1 new star every 45 seconds
     </script>
 </body>
 
