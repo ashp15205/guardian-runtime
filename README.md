@@ -10,6 +10,9 @@
 </p>
 
 <p align="center">
+  📦 <strong>Available on PyPI:</strong> <a href="https://pypi.org/project/guardian-runtime/">https://pypi.org/project/guardian-runtime/</a>
+</p>
+<p align="center">
   <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/v/guardian-runtime.svg?style=flat-square&color=00ff88" alt="PyPI Version"></a>
   <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=flat-square" alt="Python Versions"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"></a>

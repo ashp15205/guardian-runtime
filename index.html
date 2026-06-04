@@ -1024,8 +1024,10 @@
             <li><a href="#integration">INTEGRATIONS</a></li>
         </ul>
         <div style="display: flex; gap: 16px;">
-            <a href="https://pypi.org/project/guardian-runtime/" class="nav-cta">⬡ PYPI</a>
-            <a href="https://github.com/ashp15205/guardian-runtime" class="nav-cta">⬡ GITHUB</a>
+            <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer"
+                class="nav-cta">⬡ PYPI</a>
+            <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
+                class="nav-cta">⬡ GITHUB</a>
         </div>
     </nav>
 
@@ -1056,7 +1058,8 @@
             <strong>Everything runs locally.</strong>
         </p>
         <div class="hero-actions">
-            <a href="https://github.com/ashp15205/guardian-runtime" class="btn-primary">pip install guardian-runtime</a>
+            <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer"
+                class="btn-primary">pip install guardian-runtime</a>
             <a href="#quickstart" class="btn-secondary">VIEW QUICKSTART</a>
         </div>
 
@@ -1561,7 +1564,8 @@
         <div class="cta-title">DEPLOY IN 60 SECONDS</div>
         <div class="cta-sub">// FREE · OPEN SOURCE · LOCAL-FIRST · MIT LICENSE</div>
         <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-            <a href="https://github.com/ashp15205/guardian-runtime" class="btn-primary">⬡ GITHUB REPO</a>
+            <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
+                class="btn-primary">⬡ GITHUB REPO</a>
             <a href="#quickstart" class="btn-secondary">READ THE DOCS</a>
         </div>
     </section>
@@ -1569,8 +1573,8 @@
     <footer class="footer">
         <div class="footer-copy">© 2026 GUARDIAN RUNTIME — MIT LICENSE</div>
         <div class="footer-links">
-            <a href="https://pypi.org/project/guardian-runtime/">PyPI</a>
-            <a href="https://github.com/ashp15205/guardian-runtime">GitHub</a>
+            <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer">PyPI</a>
+            <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
     </footer>
 
@@ -1596,18 +1600,25 @@
         const starEl = document.getElementById('star-count');
 
         // Fetch real GitHub stars
-        fetch('https://api.github.com/repos/ashp15205/guardian-runtime')
-            .then(res => res.json())
-            .then(data => {
-                if (data.stargazers_count !== undefined) {
-                    starTarget = data.stargazers_count;
-                    // If the initial animation already finished, wake it up
-                    if (count >= target) {
-                        animateCount();
+        function fetchStars() {
+            fetch('https://api.github.com/repos/ashp15205/guardian-runtime')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.stargazers_count !== undefined) {
+                        const previousTarget = starTarget;
+                        starTarget = data.stargazers_count;
+                        // If we got new stars after initial load, wake it up
+                        if (starTarget > previousTarget && count >= target) {
+                            animateCount();
+                        }
                     }
-                }
-            })
-            .catch(e => console.log('Using fallback stars count.'));
+                })
+                .catch(e => console.log('Using fallback stars count.'));
+        }
+
+        // Fetch immediately, then poll every 60 seconds for true live updates
+        fetchStars();
+        setInterval(fetchStars, 60000);
 
         function animateCount() {
             // Very slow step for users
