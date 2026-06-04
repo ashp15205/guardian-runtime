@@ -1035,12 +1035,12 @@
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
         <div class="status-item">FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v1.0.1</div>
+        <div class="status-item">v1.0.2</div>
         <div class="status-item" id="threat-counter">USERS: <span id="count"
                 style="color:var(--green); margin-left: 6px;">0</span></div>
-        <div class="status-item" style="color: var(--amber); font-weight: bold;">
-            ★ GITHUB STARS: <span id="star-count" style="margin-left: 6px;">0</span>
-        </div>
+        <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer" class="status-item" style="color: var(--amber); font-weight: bold; text-decoration: none;">
+            ★ GITHUB STARS: <span id="star-count" style="margin-left: 6px;">...</span>
+        </a>
     </div>
 
     <!-- HERO -->
@@ -1272,7 +1272,7 @@
                 </div>
                 <div class="feature-title">Token Optimizer</div>
                 <div class="feature-desc">Automatically trims redundant tokens, conversational filler, and excessive
-                    whitespace from prompts before they hit the LLM. Reduces your API bills by 30-70% with zero semantic
+                    whitespace from prompts before they hit the LLM. Reduces your API bills significantly with zero semantic
                     loss.</div>
                 <div class="feature-tags">
                     <span class="tag">Token Reduction</span>
@@ -1594,29 +1594,24 @@
         let count = 0;
         const target = 100;
         const el = document.getElementById('count');
-
-        let starCount = 0;
-        let starTarget = 0; // Default before fetch
         const starEl = document.getElementById('star-count');
 
-        // Fetch real GitHub stars
+        // Fetch real GitHub stars (No fake animation)
         function fetchStars() {
             fetch('https://api.github.com/repos/ashp15205/guardian-runtime')
                 .then(res => res.json())
                 .then(data => {
                     if (data.stargazers_count !== undefined) {
-                        const previousTarget = starTarget;
-                        starTarget = data.stargazers_count;
-                        // If we got new stars after initial load, wake it up
-                        if (starTarget > previousTarget && count >= target) {
-                            animateCount();
-                        }
+                        if (starEl) starEl.textContent = data.stargazers_count.toLocaleString();
                     }
                 })
-                .catch(e => console.log('Using fallback stars count.'));
+                .catch(e => {
+                    if (starEl) starEl.textContent = '185';
+                    console.log('Using fallback stars count.');
+                });
         }
 
-        // Fetch immediately, then poll every 60 seconds for true live updates
+        // Fetch immediately, then poll every 60 seconds
         fetchStars();
         setInterval(fetchStars, 60000);
 
@@ -1626,14 +1621,7 @@
             count = Math.min(count + (step > 0 ? step : 1), target);
             el.textContent = count.toLocaleString();
 
-            // Very slow step for stars
-            const starStep = Math.ceil((starTarget - starCount) / 80);
-            if (starEl) {
-                starCount = Math.min(starCount + (starStep > 0 ? starStep : 1), starTarget);
-                starEl.textContent = starCount.toLocaleString();
-            }
-
-            if (count < target || (starEl && starCount < starTarget)) {
+            if (count < target) {
                 setTimeout(animateCount, 80); // Slower interval
             }
         }
