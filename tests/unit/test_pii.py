@@ -23,7 +23,7 @@ def detector():
 @pytest.mark.parametrize("text,expected_type", [
     ("My SSN is 123-45-6789",                  PIIType.SSN),
     ("Card number: 4111 1111 1111 1111",        PIIType.CREDIT_CARD),
-    ("Aadhaar: 2345 6789 0123",                 PIIType.AADHAAR),
+    ("Aadhaar: 0000 0000 0000",                 PIIType.AADHAAR),
     ("PAN card: ABCDE1234F",                    PIIType.PAN),
     ("Pay me at username@ybl",                  PIIType.UPI_ID),
     ("UPI: name@paytm",                         PIIType.UPI_ID),
@@ -90,9 +90,9 @@ def test_empty_string(detector):
 # ────────────────────────────────
 
 def test_redact_removes_aadhaar(detector):
-    text = "My Aadhaar is 2345 6789 0123"
+    text = "My Aadhaar is 0000 0000 0000"
     redacted = detector.redact(text)
-    assert "2345 6789 0123" not in redacted
+    assert "0000 0000 0000" not in redacted
     assert "[AADHAAR_REDACTED]" in redacted
 
 
@@ -104,10 +104,10 @@ def test_redact_removes_pan(detector):
 
 
 def test_redact_multiple_pii_types(detector):
-    text = "SSN: 123-45-6789 and Aadhaar: 2345 6789 0123"
+    text = "SSN: 123-45-6789 and Aadhaar: 0000 0000 0000"
     redacted = detector.redact(text)
     assert "123-45-6789" not in redacted
-    assert "2345 6789 0123" not in redacted
+    assert "0000 0000 0000" not in redacted
 
 
 # ────────────────────────────────────

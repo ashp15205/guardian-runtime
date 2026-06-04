@@ -1,50 +1,18 @@
-# Guardian Runtime — Agent Proxy Policy
-# ========================================
-# Use this policy with: guardian proxy --policy policies/agent-proxy.yaml
-#
-# This policy is tuned for developers running local AI coding agents
-# (Claude Code, Aider, Cursor Agent, GitHub Copilot CLI, etc.)
-#
-# It blocks secrets and PII from leaving your machine, caps token usage
-# to prevent runaway costs, and logs everything locally.
+version: "1.0"
+name: "agent-proxy"
 
-name: agent-proxy
-environment: local
+interactive_mode: warn_ask  # Best DX for developers running the proxy in a side terminal
 
 agents:
   default:
+    llm:
+      provider: openai
+      default_model: gpt-4o-mini
     input_guard:
-      # Block all secrets (API keys, AWS tokens, GitHub tokens, etc.)
       pii_detection: true
-      pii_action: block
-      pii_entities:
-        - secret        # OpenAI/Anthropic/AWS/GitHub/Stripe keys — MOST IMPORTANT
-        - email         # Customer emails in your codebase
-        - aadhaar       # Indian national ID
-        - pan           # Indian PAN card
-        - upi_id        # Indian payment handles
-        - ssn           # US Social Security Numbers
-        - credit_card   # Credit card numbers
-        - phone         # Phone numbers
-        - passport      # Passport numbers
-
-      # Block jailbreak attempts (adversarial content in files read by the agent)
       jailbreak_detection: true
-
+      pii_action: block
+    optimizer:
+      enabled: true
     cost:
-      # Hard cap per request — prevents 128K context window abuse
-      # Aider and Claude Code often send huge context windows by default.
-      # 32,000 tokens ≈ ~25 pages of code (more than enough for most tasks)
-      max_input_tokens: 32000
-
-      # Daily spend limit — if your agent runs overnight, it won't burn your budget
-      daily_budget: 5.00   # USD
-
-      # Per-session limit
-      per_session_limit: 0.50  # USD
-
-logging:
-  # "both" = write to ~/.guardian/logs/ AND print to terminal in real time
-  sink: both
-  log_level: ALL
-  retention_days: 30
+      max_input_tokens: 16000

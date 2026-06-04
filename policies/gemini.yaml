@@ -1,4 +1,4 @@
-# Guardian policy — Google Gemini (free tier friendly).
+# GuardianRuntime policy — Google Gemini (free tier friendly).
 # Set: export GEMINI_API_KEY=your_key
 # Get a key: https://aistudio.google.com/apikey
 

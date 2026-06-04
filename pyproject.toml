@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardian-runtime"
-version = "0.2.3"
+version = "0.2.5"
 description = "Local-first runtime governance layer for AI systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,7 +35,7 @@ dependencies = [
   "click>=8.0",
   "fastapi>=0.100",
   "uvicorn>=0.23",
-  "markitdown>=0.0.1",
+  "markitdown[all]>=0.0.1",
 ]
 
 [project.optional-dependencies]
@@ -62,10 +62,10 @@ Repository = "https://github.com/ashp15205/guardian-runtime"
 Issues = "https://github.com/ashp15205/guardian-runtime/issues"
 
 [project.scripts]
-guardian = "guardian.cli.main:cli"
+guardian_runtime = "guardian_runtime.cli.main:cli"
 
 [tool.hatch.build.targets.wheel]
-packages = ["guardian"]
+packages = ["guardian_runtime"]
 
 [tool.ruff]
 line-length = 100

@@ -1,6 +1,6 @@
-# Guardian Runtime — Complete Technical Architecture
+# GuardianRuntime Runtime — Complete Technical Architecture
 
-> This document is the **single source of truth** for every component, library, function, API endpoint, data model, and design decision in Guardian Runtime. Read this before writing a single line of code.
+> This document is the **single source of truth** for every component, library, function, API endpoint, data model, and design decision in GuardianRuntime Runtime. Read this before writing a single line of code.
 
 ### Product scope
 
@@ -13,7 +13,7 @@
 | PII + secret detectors (`pii.py`) | ✅ Shipped |
 | Policy engine (`policy.py`) | ✅ Shipped |
 | `scan_pii` / `scan_secrets` | ✅ Shipped |
-| Input/Output guards, `GuardianEngine` | ✅ Shipped |
+| Input/Output guards, `GuardianRuntimeEngine` | ✅ Shipped |
 | Input Optimizer (prompt compression) | ✅ Shipped (v0.2.0) |
 | Document Converter (MarkItDown) | ✅ Shipped (v0.2.0) |
 | Jailbreak, finops, storage, license, CLI | ✅ Shipped |
@@ -56,7 +56,7 @@
 
 ## 1. System Overview
 
-Guardian Runtime is split into **three independent deployable units**:
+GuardianRuntime Runtime is split into **three independent deployable units**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -159,16 +159,16 @@ Developer Portal (Browser)  ─── Supabase Auth ────────┘
 ```
 guardian-runtime/                    # ← GitHub repo root
 │
-├── guardian/                        # ← Python SDK package (this ships to PyPI)
-│   ├── __init__.py                  #    Guardian class, __version__, from_policy()
+├── guardian_runtime/                        # ← Python SDK package (this ships to PyPI)
+│   ├── __init__.py                  #    GuardianRuntime class, __version__, from_policy()
 │   │
 │   ├── core/                        #    Core orchestration layer
 │   │   ├── __init__.py
 │   │   ├── engine.py                #    Main execution engine (wraps full flow)
 │   │   ├── policy.py                #    YAML policy loader + Pydantic models
-│   │   ├── analysis.py              #    GuardianAnalysisSheet builder
+│   │   ├── analysis.py              #    GuardianRuntimeAnalysisSheet builder
 │   │   ├── license.py               #    License key validator + daily sync
-│   │   ├── storage.py               #    ~/.guardian/ local file manager
+│   │   ├── storage.py               #    ~/.guardian_runtime/ local file manager
 │   │   └── config.py                #    SDK configuration constants
 │   │
 │   ├── guards/                      #    Input & Output validation
@@ -202,7 +202,7 @@ guardian-runtime/                    # ← GitHub repo root
 │   │   ├── logger.py                #    Main logger (dispatches to sinks)
 │   │   └── sinks/
 │   │       ├── __init__.py
-│   │       ├── jsonl.py             #    Write to ~/.guardian/logs/*.jsonl
+│   │       ├── jsonl.py             #    Write to ~/.guardian_runtime/logs/*.jsonl
 │   │       └── console.py           #    Pretty-print to terminal
 │   │
 │   ├── integrations/                #    Framework connectors
@@ -213,10 +213,10 @@ guardian-runtime/                    # ← GitHub repo root
 │   └── cli/                         #    Command-line interface
 │       ├── __init__.py
 │       ├── main.py                  #    CLI entry point (click group)
-│       ├── init.py                  #    `guardian init --key KEY`
-│       ├── validate.py              #    `guardian validate policy.yaml`
-│       ├── status.py                #    `guardian status` (show plan, usage)
-│       └── logs.py                  #    `guardian logs` (view local logs)
+│       ├── init.py                  #    `guardian_runtime init --key KEY`
+│       ├── validate.py              #    `guardian_runtime validate policy.yaml`
+│       ├── status.py                #    `guardian_runtime status` (show plan, usage)
+│       └── logs.py                  #    `guardian_runtime logs` (view local logs)
 │
 ├── tests/                           #    All tests
 │   ├── unit/
@@ -293,34 +293,34 @@ guardian-runtime/                    # ← GitHub repo root
 
 ### 4.1 CLI Layer
 
-**Location:** `guardian/cli/`  
+**Location:** `guardian_runtime/cli/`  
 **Framework:** `click` (Python)  
-**Entry Point:** `guardian/cli/main.py`  
-**Registered in:** `pyproject.toml` → `[project.scripts]` → `guardian = "guardian.cli.main:cli"`
+**Entry Point:** `guardian_runtime/cli/main.py`  
+**Registered in:** `pyproject.toml` → `[project.scripts]` → `guardian_runtime = "guardian_runtime.cli.main:cli"`
 
 ```
-guardian (CLI root group)
+guardian_runtime (CLI root group)
 │
-├── guardian init --key <LICENSE_KEY>
+├── guardian_runtime init --key <LICENSE_KEY>
 │   Purpose: Store license key locally
 │   File: cli/init.py
 │   Function: init_command(key: str)
 │   Calls: core/storage.py → LocalStorage.save_license(key)
-│   Creates: ~/.guardian/config.json
-│   Output: "✅ Guardian initialized. Plan: free. Run `guardian status` to verify."
+│   Creates: ~/.guardian_runtime/config.json
+│   Output: "✅ GuardianRuntime initialized. Plan: free. Run `guardian_runtime status` to verify."
 │
-├── guardian validate <POLICY_FILE>
+├── guardian_runtime validate <POLICY_FILE>
 │   Purpose: Check YAML policy file for errors
 │   File: cli/validate.py
 │   Function: validate_command(policy_file: str)
 │   Calls: core/policy.py → load_policy(path)
 │   Output: "✅ Policy valid. 2 agents configured." or detailed error messages
 │
-├── guardian status
+├── guardian_runtime status
 │   Purpose: Show current license, plan, and usage
 │   File: cli/status.py
 │   Function: status_command()
-│   Reads: ~/.guardian/config.json, ~/.guardian/usage.json
+│   Reads: ~/.guardian_runtime/config.json, ~/.guardian_runtime/usage.json
 │   Output:
 │     License: gdn_live_****...****abcd
 │     Plan: starter
@@ -328,31 +328,31 @@ guardian (CLI root group)
 │     Last sync: 2026-06-15 09:30:00
 │     Status: ACTIVE ✅
 │
-└── guardian logs [--tail N] [--severity high]
+└── guardian_runtime logs [--tail N] [--severity high]
     Purpose: View local violation logs
     File: cli/logs.py
     Function: logs_command(tail: int, severity: str)
-    Reads: ~/.guardian/logs/*.jsonl
+    Reads: ~/.guardian_runtime/logs/*.jsonl
     Output: Pretty-printed violation log entries
 ```
 
 **Implementation detail — `main.py`:**
 
 ```python
-# guardian/cli/main.py
+# guardian_runtime/cli/main.py
 import click
 
 @click.group()
 @click.version_option()
 def cli():
-    """⛨ Guardian Runtime — Local-first AI governance."""
+    """⛨ GuardianRuntime Runtime — Local-first AI governance."""
     pass
 
 # Import and register subcommands
-from guardian.cli.init import init_command
-from guardian.cli.validate import validate_command
-from guardian.cli.status import status_command
-from guardian.cli.logs import logs_command
+from guardian_runtime.cli.init import init_command
+from guardian_runtime.cli.validate import validate_command
+from guardian_runtime.cli.status import status_command
+from guardian_runtime.cli.logs import logs_command
 
 cli.add_command(init_command, "init")
 cli.add_command(validate_command, "validate")
@@ -364,28 +364,28 @@ cli.add_command(logs_command, "logs")
 
 ### 4.2 Core Engine
 
-**Location:** `guardian/core/engine.py`  
+**Location:** `guardian_runtime/core/engine.py`  
 **Purpose:** Orchestrates the full check pipeline (input → LLM → output → log)
 
 ```
 engine.py
 │
-├── class GuardianEngine
+├── class GuardianRuntimeEngine
 │   ├── __init__(self, policy: Policy, storage: LocalStorage, license: LicenseManager)
 │   │   Initializes all sub-components from the loaded policy
 │   │
-│   ├── complete(self, model, messages, agent_id, session_id, **kwargs) → GuardianResponse
+│   ├── complete(self, model, messages, agent_id, session_id, **kwargs) → GuardianRuntimeResponse
 │   │   The main method. Full pipeline:
 │   │   │
 │   │   ├── Step 1: license.check_or_sync()
 │   │   │   Verifies license is valid. If >24hrs since last sync, pings server.
 │   │   │
 │   │   ├── Step 2: storage.check_usage_limit()
-│   │   │   Reads ~/.guardian/usage.json. If checks >= plan limit, block.
+│   │   │   Reads ~/.guardian_runtime/usage.json. If checks >= plan limit, block.
 │   │   │
 │   │   ├── Step 3: input_guard.check(user_message, agent_id)
 │   │   │   Runs PII scan → secret scan → jailbreak scan → scope check
-│   │   │   If blocked → return GuardianResponse(blocked=True)
+│   │   │   If blocked → return GuardianRuntimeResponse(blocked=True)
 │   │   │
 │   │   ├── Step 4: budget_manager.pre_check(agent_id, estimated_cost)
 │   │   │   If over budget → optionally downgrade model via router
@@ -400,12 +400,12 @@ engine.py
 │   │   │   Updates local cost tracking
 │   │   │
 │   │   ├── Step 8: storage.increment_usage()
-│   │   │   Bumps check count in ~/.guardian/usage.json
+│   │   │   Bumps check count in ~/.guardian_runtime/usage.json
 │   │   │
 │   │   ├── Step 9: logger.log(analysis_sheet)
 │   │   │   Writes to local JSONL file
 │   │   │
-│   │   └── Return: GuardianResponse(content, blocked, analysis)
+│   │   └── Return: GuardianRuntimeResponse(content, blocked, analysis)
 │   │
 │   └── get_cost_report(self, agent_id) → dict
 │       Returns spend breakdown from local budget tracking
@@ -415,7 +415,7 @@ engine.py
 
 ### 4.3 Input Guard
 
-**Location:** `guardian/guards/input_guard.py`  
+**Location:** `guardian_runtime/guards/input_guard.py`  
 **Purpose:** Pipeline that checks user input before sending to LLM
 
 ```
@@ -457,7 +457,7 @@ input_guard.py
 
 #### 4.3.1 PII Detector
 
-**Location:** `guardian/guards/validators/pii.py`  
+**Location:** `guardian_runtime/guards/validators/pii.py`  
 **Dependencies:** `re` (stdlib only — zero external deps)
 
 ```
@@ -483,7 +483,7 @@ pii.py
 │   │                Note: Add Luhn checksum validation as post-filter
 │   │
 │   ├── AADHAAR:     \b[2-9]\d{3}\s?\d{4}\s?\d{4}\b
-│   │                Example: "2345 6789 0123"
+│   │                Example: "0000 0000 0000"
 │   │                Note: Aadhaar never starts with 0 or 1
 │   │
 │   ├── PAN:         \b[A-Z]{5}\d{4}[A-Z]\b
@@ -623,7 +623,7 @@ pii.py
 
 #### 4.3.2 Jailbreak Detector
 
-**Location:** `guardian/guards/validators/jailbreak.py`  
+**Location:** `guardian_runtime/guards/validators/jailbreak.py`  
 **Dependencies:** `re` (stdlib only)
 
 ```
@@ -671,7 +671,7 @@ jailbreak.py
 
 #### 4.3.3 Scope Checker
 
-**Location:** `guardian/guards/validators/scope.py`  
+**Location:** `guardian_runtime/guards/validators/scope.py`  
 **Dependencies:** `re` (keyword matching), optionally `openai` (semantic matching)
 
 ```
@@ -699,7 +699,7 @@ scope.py
 
 ### 4.4 Output Guard
 
-**Location:** `guardian/guards/output_guard.py`  
+**Location:** `guardian_runtime/guards/output_guard.py`  
 **Purpose:** Pipeline that checks LLM response before returning to user
 
 ```
@@ -735,7 +735,7 @@ output_guard.py
 
 #### 4.4.1 Hallucination Detector
 
-**Location:** `guardian/guards/validators/hallucination.py`  
+**Location:** `guardian_runtime/guards/validators/hallucination.py`  
 **Dependencies:** `litellm` (provides a universal API to call OpenAI, Anthropic, Gemini, Ollama, etc. using developer's keys)
 
 ```
@@ -772,12 +772,12 @@ hallucination.py
 │      Ollama instance. Cost is highly variable ($0.00 for local, ~$0.0002 
 │      for gpt-4o-mini).
 │
-└── By leveraging LiteLLM, Guardian is 100% model-agnostic for judging.
+└── By leveraging LiteLLM, GuardianRuntime is 100% model-agnostic for judging.
 ```
 
 #### 4.4.2 Profanity Filter
 
-**Location:** `guardian/guards/validators/profanity.py`  
+**Location:** `guardian_runtime/guards/validators/profanity.py`  
 **Dependencies:** None (pure Python keyword list)
 
 ```
@@ -801,7 +801,7 @@ profanity.py
 
 ### 4.5 FinOps Engine
 
-**Location:** `guardian/finops/`  
+**Location:** `guardian_runtime/finops/`  
 **Purpose:** Track, limit, and optimize LLM spending locally
 
 ```
@@ -891,7 +891,7 @@ finops/
 
 ### 4.6 Tool Governor
 
-**Location:** `guardian/tools/`  
+**Location:** `guardian_runtime/tools/`  
 **Purpose:** Control which tools AI agents can invoke
 
 ```
@@ -942,7 +942,7 @@ tools/
 
 ### 4.7 Policy Engine
 
-**Location:** `guardian/core/policy.py`  
+**Location:** `guardian_runtime/core/policy.py`  
 **Dependencies:** `pyyaml`, `pydantic`
 
 ```
@@ -1015,25 +1015,25 @@ policy.py
 
 ### 4.8 Local Storage
 
-**Location:** `guardian/core/storage.py`  
+**Location:** `guardian_runtime/core/storage.py`  
 **Dependencies:** `json`, `os`, `pathlib` (all stdlib)
 
 ```
 storage.py
 │
 ├── Constants:
-│   GUARDIAN_DIR  = Path.home() / ".guardian"
-│   CONFIG_FILE   = GUARDIAN_DIR / "config.json"
-│   USAGE_FILE    = GUARDIAN_DIR / "usage.json"
-│   LOGS_DIR      = GUARDIAN_DIR / "logs"
+│   GUARDIAN_RUNTIME_DIR  = Path.home() / ".guardian_runtime"
+│   CONFIG_FILE   = GUARDIAN_RUNTIME_DIR / "config.json"
+│   USAGE_FILE    = GUARDIAN_RUNTIME_DIR / "usage.json"
+│   LOGS_DIR      = GUARDIAN_RUNTIME_DIR / "logs"
 │
 ├── class LocalStorage
 │   │
 │   ├── @staticmethod ensure_dirs()
-│   │   Creates ~/.guardian/ and ~/.guardian/logs/ if they don't exist
+│   │   Creates ~/.guardian_runtime/ and ~/.guardian_runtime/logs/ if they don't exist
 │   │
 │   ├── save_license(key: str, plan: str, limit: int, expiry: str)
-│   │   Writes: ~/.guardian/config.json
+│   │   Writes: ~/.guardian_runtime/config.json
 │   │   Content:
 │   │   {
 │   │     "license_key": "gdn_live_abc123...",
@@ -1047,7 +1047,7 @@ storage.py
 │   │   Reads config.json. Returns None if not initialized.
 │   │
 │   ├── increment_usage() → int
-│   │   Reads ~/.guardian/usage.json
+│   │   Reads ~/.guardian_runtime/usage.json
 │   │   If month has changed → reset count to 0
 │   │   Increment count by 1
 │   │   Write back
@@ -1071,26 +1071,26 @@ storage.py
 │   │   Updates last_sync in usage.json
 │   │
 │   └── get_log_path(date: str) → Path
-│       Returns: ~/.guardian/logs/2026-06-15.jsonl
+│       Returns: ~/.guardian_runtime/logs/2026-06-15.jsonl
 ```
 
 ---
 
 ### 4.9 License Manager
 
-**Location:** `guardian/core/license.py`  
+**Location:** `guardian_runtime/core/license.py`  
 **Dependencies:** `httpx` (HTTP client for daily sync)
 
 ```
 license.py
 │
-├── LICENSE_SERVER_URL = "https://guardian-ai.dev/api/validate"
+├── LICENSE_SERVER_URL = "https://guardian_runtime-ai.dev/api/validate"
 │
 ├── class LicenseManager
 │   ├── __init__(self, storage: LocalStorage)
 │   │
 │   ├── check_or_sync(self) → LicenseStatus
-│   │   Called at the START of every guardian.complete() call
+│   │   Called at the START of every guardian_runtime.complete() call
 │   │   │
 │   │   ├── 1. Read config.json → get license_key
 │   │   │      If no key → return UNINITIALIZED (SDK still works in free mode)
@@ -1124,7 +1124,7 @@ license.py
 │   │   ├── If valid → update config.json with latest plan info
 │   │   ├── If invalid → log warning, switch to free tier limits
 │   │   └── If network error → fail open (allow SDK to keep working)
-│   │       Guardian NEVER blocks your work due to our server being down
+│   │       GuardianRuntime NEVER blocks your work due to our server being down
 │   │
 │   └── is_initialized(self) → bool
 │       Returns True if config.json exists and has a key
@@ -1140,10 +1140,10 @@ license.py
     • Offline mode: Enterprise keys have expiry but no daily ping required
     • Grace period:
         - Days 1–7 after expiry: SDK continues to work (full functionality)
-        - SDK prints a warning to terminal on every guardian.complete() call:
-          "[GUARDIAN WARNING] Your license expired N day(s) ago.
-           Grace period ends in (7-N) day(s). Renew at guardian-ai.dev"
-        - Day 8+: SDK hard-blocks all calls. Returns GuardianExpiredError.
+        - SDK prints a warning to terminal on every guardian_runtime.complete() call:
+          "[GUARDIAN_RUNTIME WARNING] Your license expired N day(s) ago.
+           Grace period ends in (7-N) day(s). Renew at guardian_runtime-ai.dev"
+        - Day 8+: SDK hard-blocks all calls. Returns GuardianRuntimeExpiredError.
         - Portal reflects the same state via ExpiryWarningBanner (see §6)
         - Free plan: no expiry date — never enters grace period
     • No telemetry: we never send usage patterns, timings, or metadata
@@ -1153,17 +1153,17 @@ license.py
 
 ### 4.10 Logging System
 
-**Location:** `guardian/logging/`  
+**Location:** `guardian_runtime/logging/`  
 **Purpose:** Write all checks and violations to local files (NEVER uploaded)
 
 ```
 logging/
 │
 ├── logger.py
-│   ├── class GuardianLogger
+│   ├── class GuardianRuntimeLogger
 │   │   ├── __init__(self, sinks: list[LogSink], log_level: str)
 │   │   │
-│   │   ├── @classmethod from_policy(cls, policy) → GuardianLogger
+│   │   ├── @classmethod from_policy(cls, policy) → GuardianRuntimeLogger
 │   │   │   Reads policy.logging config
 │   │   │   Creates appropriate sinks (jsonl, console, or both)
 │   │   │
@@ -1179,10 +1179,10 @@ logging/
 ├── sinks/jsonl.py
 │   ├── class JSONLSink
 │   │   ├── __init__(self, logs_dir: Path)
-│   │   │   logs_dir defaults to ~/.guardian/logs/
+│   │   │   logs_dir defaults to ~/.guardian_runtime/logs/
 │   │   │
 │   │   └── write(self, entry: dict)
-│   │       Appends one JSON line to ~/.guardian/logs/YYYY-MM-DD.jsonl
+│   │       Appends one JSON line to ~/.guardian_runtime/logs/YYYY-MM-DD.jsonl
 │   │       Each line is a complete, self-contained JSON object:
 │   │       {
 │   │         "timestamp": "2026-06-15T10:30:00Z",
@@ -1214,7 +1214,7 @@ logging/
 
 ### 4.11 Integrations
 
-**Location:** `guardian/integrations/`
+**Location:** `guardian_runtime/integrations/`
 
 ```
 integrations/
@@ -1222,32 +1222,32 @@ integrations/
 ├── openai_wrapper.py
 │   Purpose: Wraps openai.chat.completions.create()
 │   │
-│   ├── class GuardianOpenAI
+│   ├── class GuardianRuntimeOpenAI
 │   │   Extends or wraps the official OpenAI client
 │   │   │
-│   │   └── create(self, model, messages, **kwargs) → GuardianResponse
+│   │   └── create(self, model, messages, **kwargs) → GuardianRuntimeResponse
 │   │       Internally calls self.engine.complete(...)
-│   │       Returns response that includes .guardian_analysis
+│   │       Returns response that includes .guardian_runtime_analysis
 │   │
 │   └── Developer's OpenAI API key is used directly
-│       Guardian never stores, reads, or transmits the API key
+│       GuardianRuntime never stores, reads, or transmits the API key
 │
 └── langchain.py
     Purpose: LangChain callback handler
     │
-    ├── class GuardianCallbackHandler(BaseCallbackHandler)
-    │   ├── @classmethod from_policy(cls, path) → GuardianCallbackHandler
+    ├── class GuardianRuntimeCallbackHandler(BaseCallbackHandler)
+    │   ├── @classmethod from_policy(cls, path) → GuardianRuntimeCallbackHandler
     │   │
     │   ├── on_llm_start(self, serialized, prompts, **kwargs)
     │   │   Runs input_guard.check() on each prompt
-    │   │   If blocked → raises GuardianBlockedError
+    │   │   If blocked → raises GuardianRuntimeBlockedError
     │   │
     │   └── on_llm_end(self, response, **kwargs)
     │       Runs output_guard.check() on each generation
-    │       If high severity violation → raises GuardianBlockedError
+    │       If high severity violation → raises GuardianRuntimeBlockedError
     │
-    └── class GuardianBlockedError(Exception)
-        Raised when Guardian blocks a request inside a LangChain chain
+    └── class GuardianRuntimeBlockedError(Exception)
+        Raised when GuardianRuntime blocks a request inside a LangChain chain
         Contains: violation details, severity, analysis sheet
 ```
 
@@ -1342,7 +1342,7 @@ Pages:
 │
 ├── / (Landing Page)
 │   Components: Hero, FeatureGrid, PricingPreview, Footer
-│   Purpose: Explain Guardian, link to docs, CTA to sign up
+│   Purpose: Explain GuardianRuntime, link to docs, CTA to sign up
 │
 ├── /login
 │   Components: LoginForm
@@ -1381,12 +1381,12 @@ Pages:
 │   │       If days_in_grace <= 7:
 │   │         → Red grace-period banner:
 │   │         "🚨 Your license expired {N} day(s) ago. You are in the 7-day grace period.
-│   │              Guardian is still working. Renew before grace period ends."
+│   │              GuardianRuntime is still working. Renew before grace period ends."
 │   │         CTA button: "Renew Now" → /pricing
 │   │       If days_in_grace > 7:
 │   │         → Red hard-block banner:
 │   │         "❌ Your license has expired and the grace period has ended.
-│   │              Guardian SDK is now blocked. Renew to restore access."
+│   │              GuardianRuntime SDK is now blocked. Renew to restore access."
 │   │         CTA button: "Renew Now" → /pricing
 │   │
 │   │   Component props: { expiry: string | null, plan: string }
@@ -1451,7 +1451,7 @@ components/
 ### Python SDK Data Models (Pydantic)
 
 ```python
-# All defined in guardian/core/analysis.py
+# All defined in guardian_runtime/core/analysis.py
 
 @dataclass
 class Violation:
@@ -1493,10 +1493,10 @@ class AnalysisSheet:
     session_id: str | None
 
 @dataclass
-class GuardianResponse:
+class GuardianRuntimeResponse:
     content: str               # The LLM response text (or block message)
     blocked: bool
-    analysis: AnalysisSheet    # Full Guardian Analysis Sheet
+    analysis: AnalysisSheet    # Full GuardianRuntime Analysis Sheet
     raw_response: object       # Original OpenAI response object (if not blocked)
 ```
 
@@ -1505,19 +1505,19 @@ class GuardianResponse:
 ## 8. Request Flow (End-to-End)
 
 ```
-Developer calls: guardian.complete(model="gpt-4", messages=[...], agent_id="support-bot")
+Developer calls: guardian_runtime.complete(model="gpt-4", messages=[...], agent_id="support-bot")
 │
 ├── 1. LICENSE CHECK
 │   license.py → check_or_sync()
-│   ├── Read ~/.guardian/config.json
-│   ├── If last_sync > 24h ago → POST to guardian-ai.dev/api/validate
+│   ├── Read ~/.guardian_runtime/config.json
+│   ├── If last_sync > 24h ago → POST to guardian_runtime-ai.dev/api/validate
 │   │   Sends: { key, checks_used }
 │   │   Gets: { valid, plan, limit }
 │   └── If valid → continue. If invalid → warn but don't block (grace period).
 │
 ├── 2. USAGE LIMIT CHECK
 │   storage.py → check_usage_limit()
-│   ├── Read ~/.guardian/usage.json → checks this month
+│   ├── Read ~/.guardian_runtime/usage.json → checks this month
 │   ├── Read config.json → check_limit for plan
 │   ├── If checks >= limit → BLOCK with upgrade prompt
 │   └── If checks >= 80% of limit → WARN in analysis sheet
@@ -1531,7 +1531,7 @@ Developer calls: guardian.complete(model="gpt-4", messages=[...], agent_id="supp
 │   │   If "ignore all instructions" → Violation(type="jailbreak", severity="critical")
 │   └── scope.py → check(text) → ScopeResult (if configured)
 │   │
-│   If any blocking violation → RETURN GuardianResponse(blocked=True)
+│   If any blocking violation → RETURN GuardianRuntimeResponse(blocked=True)
 │
 ├── 4. COST PRE-CHECK
 │   budget_manager.py → pre_check(agent_id, estimated_cost)
@@ -1559,15 +1559,15 @@ Developer calls: guardian.complete(model="gpt-4", messages=[...], agent_id="supp
 │
 ├── 8. INCREMENT USAGE
 │   storage.py → increment_usage()
-│   Writes to ~/.guardian/usage.json → checks: 343
+│   Writes to ~/.guardian_runtime/usage.json → checks: 343
 │
 ├── 9. LOG LOCALLY
 │   logger.py → log(analysis_sheet)
-│   jsonl.py → write({...}) to ~/.guardian/logs/2026-06-15.jsonl
+│   jsonl.py → write({...}) to ~/.guardian_runtime/logs/2026-06-15.jsonl
 │   console.py → print("[CLEAN] gpt-4 | 312 in / 89 out | $0.002")
 │
 └── 10. RETURN
-    GuardianResponse(
+    GuardianRuntimeResponse(
       content = "The capital of France is Paris.",
       blocked = False,
       analysis = AnalysisSheet(input=..., output=..., session_budget=...),
@@ -1582,7 +1582,7 @@ Developer calls: guardian.complete(model="gpt-4", messages=[...], agent_id="supp
 Complete annotated schema with every possible field:
 
 ```yaml
-# Full Guardian Policy Schema — all fields shown
+# Full GuardianRuntime Policy Schema — all fields shown
 # Only 'version' and 'agents' are required. Everything else is optional.
 
 version: "1.0"                    # REQUIRED. Schema version.
@@ -1671,10 +1671,10 @@ logging:
 
 ## 10. Local File System Layout
 
-Everything Guardian stores on the developer's machine:
+Everything GuardianRuntime stores on the developer's machine:
 
 ```
-~/.guardian/                          # Created by `guardian init`
+~/.guardian_runtime/                                  # Created by `guardian_runtime init`
 │
 ├── config.json                      # License key & plan info
 │   {
@@ -1683,7 +1683,7 @@ Everything Guardian stores on the developer's machine:
 │     "check_limit": 10000,
 │     "expiry": "2027-01-15",
 │     "initialized_at": "2026-06-15T10:30:00Z",
-│     "server_url": "https://guardian-ai.dev/api"
+│     "server_url": "https://guardian_runtime-ai.dev/api"
 │   }
 │
 ├── usage.json                       # Monthly check counter
@@ -1815,7 +1815,7 @@ tests/
 │   │   • Test argument validation
 │   │
 │   ├── test_storage.py
-│   │   • Use tmp_path fixture (pytest) to mock ~/.guardian
+│   │   • Use tmp_path fixture (pytest) to mock ~/.guardian_runtime
 │   │   • Test config read/write
 │   │   • Test usage increment and monthly reset
 │   │
@@ -1826,18 +1826,18 @@ tests/
 │
 ├── integration/ (may use real OpenAI key from env, run with --integration flag)
 │   ├── test_full_flow.py
-│   │   • Load real YAML → create Guardian → complete() with mock/real LLM
+│   │   • Load real YAML → create GuardianRuntime → complete() with mock/real LLM
 │   │   • Verify analysis sheet is populated correctly
 │   │
 │   └── test_langchain.py
-│       • Run LangChain chain with GuardianCallbackHandler
-│       • Verify PII in prompt raises GuardianBlockedError
+│       • Run LangChain chain with GuardianRuntimeCallbackHandler
+│       • Verify PII in prompt raises GuardianRuntimeBlockedError
 │
 └── conftest.py
     Shared fixtures:
     ├── mock_openai_client — returns canned responses
     ├── sample_policy — loads policies/minimal.yaml
-    ├── tmp_guardian_dir — creates temporary ~/.guardian in tmp_path
+    ├── tmp_guardian_runtime_dir — creates temporary ~/.guardian_runtime in tmp_path
     └── pii_test_cases — parametrized PII test data
 ```
 
@@ -1846,7 +1846,7 @@ tests/
 ## 14. Security Model
 
 ```
-WHAT GUARDIAN ACCESSES:
+WHAT GUARDIAN_RUNTIME ACCESSES:
 ├── Developer's prompts → read locally, never transmitted to us
 ├── Developer's LLM responses → read locally, never transmitted to us
 ├── Developer's OpenAI API key → used locally via openai library, never read by us
@@ -1869,15 +1869,15 @@ WHAT WE NEVER STORE:
 ├── Log contents
 └── Policy file contents
 
-NETWORK REQUESTS GUARDIAN MAKES:
+NETWORK REQUESTS GUARDIAN_RUNTIME MAKES:
 ├── To OpenAI/Anthropic → developer's own LLM call (their API key)
-├── To guardian-ai.dev/api/validate → once per day, { key, count } only
+├── To guardian_runtime-ai.dev/api/validate → once per day, { key, count } only
 └── That's it. Two destinations. Nothing else. Ever.
 
 KEY SECURITY:
 ├── Raw key shown to user once at signup (never retrievable again)
 ├── Stored hashed (SHA-256) in Supabase
-├── Stored in plaintext locally at ~/.guardian/config.json
+├── Stored in plaintext locally at ~/.guardian_runtime/config.json
 │   (same as how SSH keys work in ~/.ssh/)
 ├── Transmitted over HTTPS only
 └── Rate limited: 10 validate calls per key per day
@@ -1887,24 +1887,27 @@ KEY SECURITY:
 
 ## 15. Dependency Map
 
-### Python SDK: What installs when you `pip install guardian-ai`
+### Python SDK: What installs when you `pip install guardian-runtime`
 
 ```
-guardian-ai
-├── openai >= 1.0          # LLM client (wrapping OpenAI calls)
-│   └── httpx              # (transitive) HTTP client
-├── tiktoken >= 0.5        # Token counting
-│   └── regex              # (transitive) Advanced regex
-├── pyyaml >= 6.0          # YAML policy file parsing
-├── pydantic >= 2.0        # Data validation for policy schema
-├── httpx >= 0.25          # HTTP client for daily license sync
-└── click >= 8.0           # CLI framework
+guardian-runtime
+├── openai >= 1.0              # LLM client (OpenAI wrapper)
+├── anthropic >= 0.40          # Anthropic wrapper
+├── google-genai >= 0.8.0      # Gemini wrapper
+├── tiktoken >= 0.5            # Token counting
+├── pyyaml >= 6.0              # YAML policy file parsing
+├── pydantic >= 2.0            # Data validation for policy schema
+├── httpx >= 0.25              # HTTP client for daily license sync
+├── click >= 8.0               # CLI framework
+├── fastapi >= 0.100           # Dashboard web server
+├── uvicorn >= 0.23            # ASGI server for dashboard
+└── markitdown[all] >= 0.0.1   # Document extraction & conversion
 
 Optional extras:
-├── guardian-ai[presidio]  # Microsoft Presidio for NER-based PII
+├── guardian-runtime[presidio] # Microsoft Presidio for NER-based PII
 │   ├── presidio-analyzer
 │   └── presidio-anonymizer
-└── guardian-ai[langchain] # LangChain integration
+└── guardian-runtime[langchain] # LangChain integration
     └── langchain-core >= 0.1
 
 Dev dependencies (not shipped):
@@ -1918,7 +1921,7 @@ Dev dependencies (not shipped):
 ### Portal: What installs in the Next.js project
 
 ```
-guardian-portal (Next.js)
+guardian_runtime-portal (Next.js)
 ├── next >= 14              # Framework
 ├── react, react-dom        # UI
 ├── typescript              # Language

@@ -1,4 +1,4 @@
-# Production-oriented Guardian policy.
+# Production-oriented GuardianRuntime policy.
 
 version: "1.0"
 name: "production"

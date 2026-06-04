@@ -1,0 +1,49 @@
+# GuardianRuntime policy — Local Development Mode
+# ==========================================
+# Use this policy when building and testing on your local machine.
+#
+# Key difference from production policies:
+#   interactive_mode: warn_ask
+#
+# When GuardianRuntime detects something suspicious (a secret key, PII, jailbreak),
+# instead of silently blocking the request, it will PAUSE and ask you:
+#
+#   🚨 GUARDIAN_RUNTIME SECURITY ALERT
+#   GuardianRuntime detected the following issues in your prompt:
+#     • [SECRET] Detected secret in input
+#
+#   Do you still want to send this prompt to Gemini? [y/N]
+#
+# Press 'y' to override and send anyway (useful when you are intentionally
+# testing a known bad prompt). Press 'n' or Enter to abort.
+#
+# ⚠️  WARNING: Never use this policy in a deployed/production application.
+#              Use policies/gemini.yaml or policies/production.yaml instead.
+#
+# Set: export GEMINI_API_KEY=your_key
+# Get a key: https://aistudio.google.com/apikey
+
+version: "1.0"
+name: "dev"
+
+# This is the key that enables the warn-and-ask interactive mode
+interactive_mode: warn_ask
+
+agents:
+  default:
+    llm:
+      provider: gemini
+      default_model: gemini-2.5-flash
+    input_guard:
+      pii_detection: true
+      pii_entities: [aadhaar, pan, upi_id, credit_card, ssn, email, phone, secret]
+      jailbreak_detection: true
+      pii_action: block
+    output_guard:
+      pii_detection: true
+    optimizer:
+      enabled: true
+      whitespace_normalization: true
+      max_history_messages: 10
+    cost:
+      max_input_tokens: 8000
