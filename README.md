@@ -54,26 +54,26 @@ Everything happens locally on your CPU. It costs zero API fees and takes less th
        👤 USER INPUT / APP LOGIC
                  │
                  ▼
- ┌───────────────────────────────┐
- │ 🛡 GUARDIAN RUNTIME (Local)    │
- │                               │
- │  1. Input Guard (PII/Secrets) │ ──(Blocks Threats)
- │  2. Token Optimizer           │ ──(Reduces Cost)
- │  3. FinOps Limits             │ ──(Enforces Budgets)
- └───────────────┬───────────────┘
+ ┌──────────────────────────────────────┐
+ │ 🛡 GUARDIAN RUNTIME (Local Proxy)     │
+ │                                      │
+ │  1. Input Guard (PII/Secrets)        │ ──(Blocks Threats)
+ │  2. Token Optimizer                  │ ──(Reduces Cost)
+ │  3. FinOps Limits                    │ ──(Enforces Budgets)
+ └───────────────┬──────────────────────┘
                  │ (Cleaned & Optimized)
                  ▼
-       ☁️ LLM API (OpenAI / Anthropic)
+      ☁️ LLM API (OpenAI/Anthropic)
                  │
                  ▼
- ┌───────────────────────────────┐
- │ 🛡 GUARDIAN RUNTIME (Local)    │
- │                               │
- │  1. Output Guard (Auditor)    │ ──(Flags Hallucinated Secrets/PII)
- └───────────────┬───────────────┘
+ ┌──────────────────────────────────────┐
+ │ 🛡 GUARDIAN RUNTIME (Local Proxy)     │
+ │                                      │
+ │  1. Output Guard (Auditor)           │ ──(Flags Leaks/PII)
+ └───────────────┬──────────────────────┘
                  │ (Safe Response)
                  ▼
-         💻 USER SCREEN
+           💻 USER SCREEN
 ```
 
 ---
