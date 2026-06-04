@@ -36,7 +36,7 @@ class OutputGuard:
                     type="secret" if is_secret else "output_pii",
                     severity="critical" if is_secret else "high",
                     detail=f"Detected {match.pii_type.value} in model output",
-                    action="blocked",
+                    action="flagged",
                     metadata={"pii_type": match.pii_type.value},
                 )
             )

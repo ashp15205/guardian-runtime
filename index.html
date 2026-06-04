@@ -394,7 +394,7 @@
             justify-content: center;
             gap: 0;
             flex-wrap: wrap;
-            max-width: 1100px;
+            max-width: 1300px;
             margin: 0 auto;
         }
 
@@ -455,6 +455,22 @@
             color: var(--green);
         }
 
+        .pipe-node[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            border: 1px solid var(--green);
+            color: var(--green);
+            padding: 6px 12px;
+            font-family: var(--mono);
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
         /* ── FEATURES GRID ── */
         .features {
             padding: 100px 48px;
@@ -481,6 +497,19 @@
 
         .feature-card:hover {
             background: rgba(0, 255, 136, 0.03);
+        }
+
+        .feature-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            opacity: 0.8;
+            margin-top: 8px;
         }
 
         .feature-num {
@@ -620,7 +649,7 @@
 
         .usecase-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 16px;
         }
 
@@ -729,7 +758,6 @@
             position: relative;
             z-index: 1;
             text-align: center;
-            border-top: 1px solid var(--border);
         }
 
         .cta-title {
@@ -924,10 +952,11 @@
     <nav>
         <div class="nav-logo">GUARDIAN<span>-RUNTIME</span></div>
         <ul class="nav-links">
+            <li><a href="#why-guardian">ABOUT</a></li>
             <li><a href="#pipeline">HOW IT WORKS</a></li>
             <li><a href="#features">FEATURES</a></li>
             <li><a href="#quickstart">QUICKSTART</a></li>
-            <li><a href="#usecases">USE CASES</a></li>
+            <li><a href="#integration">INTEGRATIONS</a></li>
         </ul>
         <a href="https://github.com/ashp15205/guardian-runtime" class="nav-cta">⬡ GITHUB</a>
     </nav>
@@ -951,7 +980,7 @@
             <span class="accent">RUNTIME</span>
         </h1>
         <p class="hero-sub">
-            A Python SDK that sits between your AI app and any LLM —
+            A Python SDK that sits between your AI app and any LLM
             <strong>intercepting every prompt and response</strong> to enforce security policies,
             block data leaks, and detect threats.
             <strong>Everything runs locally.</strong>
@@ -983,6 +1012,66 @@
         </div>
     </section>
 
+    <!-- PROBLEM & SOLUTION -->
+    <section class="problem-solution relative fade-in" id="why-guardian">
+        <div class="section-header fade-in" style="margin-top: 80px;">
+            <span class="section-tag">// THE WHY, WHAT & HOW</span>
+            <h2 class="section-title">THE PROBLEM & THE SOLUTION</h2>
+        </div>
+
+        <div class="split-layout"
+            style="display: flex; flex-wrap: wrap; gap: 32px; max-width: 1200px; margin: 0 auto; padding: 0 48px 100px 48px;">
+            <!-- THE PROBLEM -->
+            <div class="split-card"
+                style="flex: 1; min-width: 300px; background: var(--bg2); padding: 40px; border: 1px solid var(--border);">
+                <div
+                    style="font-family: var(--display); font-size: 24px; color: var(--red); font-weight: 700; margin-bottom: 16px;">
+                    THE PROBLEM</div>
+                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">Data Privacy
+                    Black Boxes & Runaway Costs</h3>
+                <p
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
+                    Developers are building incredible AI applications, but they are often blindly passing raw user data
+                    to external APIs. If a user pastes a <strong>credit card</strong> into a chat, or if a developer
+                    accidentally leaves an <strong>AWS Key</strong> in a prompt, that data is instantly logged in a
+                    cloud provider's database.
+                </p>
+                <p
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
+                    Worse yet, unrestricted employee access to AI tools is causing massive budgeting crises.
+                    <strong>Companies are blowing through their annual LLM token budgets in mere months</strong> due to
+                    developers sending unoptimized, massive context windows and infinite loops to expensive models
+                    without oversight.
+                </p>
+            </div>
+
+            <!-- THE SOLUTION -->
+            <div class="split-card"
+                style="flex: 1; min-width: 300px; background: rgba(0, 255, 136, 0.02); padding: 40px; border: 1px solid var(--green);">
+                <div
+                    style="font-family: var(--display); font-size: 24px; color: var(--green); font-weight: 700; margin-bottom: 16px;">
+                    THE SOLUTION</div>
+                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">A Zero-Latency
+                    FinOps Firewall</h3>
+                <p
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
+                    Guardian acts as an invisible shield sitting directly on your own infrastructure. Before a single
+                    byte of data reaches OpenAI or Anthropic, Guardian scans, cleans, and optimizes it locally.
+                </p>
+                <p
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
+                    <strong>Data Security:</strong> It uses lightning-fast pattern matching to block PII, secrets, and
+                    jailbreaks in milliseconds.
+                </p>
+                <p style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6;">
+                    <strong>Cost Control:</strong> The built-in Token Optimizer actively strips redundant whitespace and
+                    bloat from prompts, and strict FinOps rules instantly block requests that exceed your maximum token
+                    budgets—stopping runaway spend in its tracks.
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- PIPELINE -->
     <section class="pipeline relative" id="pipeline">
         <div class="scan-line"></div>
@@ -997,7 +1086,7 @@
                 <div class="pipe-name">User Input</div>
             </div>
             <div class="pipe-arrow">──▶</div>
-            <div class="pipe-node pipe-guard">
+            <div class="pipe-node pipe-guard" data-tooltip="Blocks PII & Jailbreaks">
                 <div class="corner-tl"></div>
                 <div class="corner-tr"></div>
                 <div class="corner-bl"></div>
@@ -1007,7 +1096,11 @@
                 <div class="pipe-name">Input Guard</div>
             </div>
             <div class="pipe-arrow">──▶</div>
-            <div class="pipe-node">
+            <div class="pipe-node pipe-guard" data-tooltip="Reduces Token Costs">
+                <div class="corner-tl"></div>
+                <div class="corner-tr"></div>
+                <div class="corner-bl"></div>
+                <div class="corner-br"></div>
                 <span class="pipe-icon">⚙</span>
                 <div class="pipe-label">OPTIMIZER</div>
                 <div class="pipe-name">Token Trim</div>
@@ -1019,7 +1112,7 @@
                 <div class="pipe-name">LLM API</div>
             </div>
             <div class="pipe-arrow">──▶</div>
-            <div class="pipe-node pipe-guard">
+            <div class="pipe-node pipe-guard" data-tooltip="Validates Final Output">
                 <div class="corner-tl"></div>
                 <div class="corner-tr"></div>
                 <div class="corner-bl"></div>
@@ -1047,12 +1140,15 @@
     <section class="features" id="features">
         <div class="section-header fade-in">
             <span class="section-tag">// CAPABILITIES</span>
-            <h2 class="section-title">WHAT GUARDIAN STOPS</h2>
+            <h2 class="section-title">PLATFORM FEATURES</h2>
         </div>
         <div class="features-grid">
 
             <div class="feature-card fade-in">
-                <div class="feature-num">01</div>
+                <div class="feature-header">
+                    <div class="feature-num">01</div>
+                    <div class="feature-icon">🆔</div>
+                </div>
                 <div class="feature-title">PII Detection</div>
                 <div class="feature-desc">Scans every prompt and response for sensitive personal data before it moves.
                     Native India DPDP Act support — Aadhaar, PAN, UPI IDs. Plus SSN, credit cards, passports, emails,
@@ -1066,39 +1162,45 @@
             </div>
 
             <div class="feature-card fade-in">
-                <div class="feature-num">02</div>
+                <div class="feature-header">
+                    <div class="feature-num">02</div>
+                    <div class="feature-icon">🔑</div>
+                </div>
                 <div class="feature-title">Secret Detection</div>
-                <div class="feature-desc">Two-tier confidence engine catches exposed API keys with high accuracy. HIGH
-                    tier: known prefixes (sk-proj-, AKIA, ghp_). MEDIUM tier: generic KEY=value patterns. Never leaks
-                    credentials to an LLM.</div>
+                <div class="feature-desc">Two-tier confidence engine catches exposed API keys with high accuracy. Blocks
+                    AWS, OpenAI, GitHub, Stripe, and generic KEY=value patterns. Never leaks credentials to an LLM.
+                </div>
                 <div class="feature-tags">
                     <span class="tag">OpenAI</span>
                     <span class="tag">AWS</span>
                     <span class="tag">GitHub</span>
-                    <span class="tag">Stripe</span>
-                    <span class="tag">Razorpay</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
-                <div class="feature-num">03</div>
-                <div class="feature-title">Jailbreak Detection</div>
+                <div class="feature-header">
+                    <div class="feature-num">03</div>
+                    <div class="feature-icon">🏴‍☠️</div>
+                </div>
+                <div class="feature-title">Jailbreak Defense</div>
                 <div class="feature-desc">Pattern-matched detection for DAN variants, instruction overrides, role-play
-                    injections, encoding tricks, and system prompt extraction attempts. No ML model required — zero
-                    latency.</div>
+                    injections, encoding tricks, and system prompt extraction attempts. Zero latency validation.</div>
                 <div class="feature-tags">
                     <span class="tag">DAN</span>
                     <span class="tag">Injection</span>
                     <span class="tag">Role-play</span>
-                    <span class="tag">Encoding</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
-                <div class="feature-num">04</div>
-                <div class="feature-title">Input Optimizer</div>
-                <div class="feature-desc">Automatically trims redundant tokens from prompts before they hit the LLM.
-                    Reduces cost without changing semantics. Tracks savings per session with estimated USD saved.</div>
+                <div class="feature-header">
+                    <div class="feature-num">04</div>
+                    <div class="feature-icon">💸</div>
+                </div>
+                <div class="feature-title">Token Optimizer</div>
+                <div class="feature-desc">Automatically trims redundant tokens, conversational filler, and excessive
+                    whitespace from prompts before they hit the LLM. Reduces your API bills by 30-70% with zero semantic
+                    loss.</div>
                 <div class="feature-tags">
                     <span class="tag">Token Reduction</span>
                     <span class="tag">Cost Savings</span>
@@ -1106,52 +1208,32 @@
             </div>
 
             <div class="feature-card fade-in">
-                <div class="feature-num">05</div>
-                <div class="feature-title">FinOps &amp; Cost Tracking</div>
-                <div class="feature-desc">Real-time token counting and cost estimation per session. Per-agent spend
-                    limits enforced at the policy level. Full cost report per agent. Works across OpenAI, Anthropic, and
-                    Gemini pricing.</div>
+                <div class="feature-header">
+                    <div class="feature-num">05</div>
+                    <div class="feature-icon">📄</div>
+                </div>
+                <div class="feature-title">Document Converter</div>
+                <div class="feature-desc">Safely extracts text from massive PDFs and Docx files. Strips out token-heavy
+                    layout junk and invisible formatting, converting heavy documents into pure, LLM-friendly Markdown
+                    for RAG pipelines.</div>
                 <div class="feature-tags">
-                    <span class="tag">Token Counting</span>
-                    <span class="tag">Spend Limits</span>
-                    <span class="tag">Cost Reports</span>
+                    <span class="tag">PDF Extraction</span>
+                    <span class="tag">RAG Prep</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
-                <div class="feature-num">06</div>
-                <div class="feature-title">Multi-Provider Support</div>
-                <div class="feature-desc">One SDK for all major LLMs. Swap providers in the YAML policy — zero code
-                    changes. Full provider abstraction means your security layer travels with your stack.</div>
-                <div class="feature-tags">
-                    <span class="tag">OpenAI</span>
-                    <span class="tag">Anthropic</span>
-                    <span class="tag">Gemini</span>
+                <div class="feature-header">
+                    <div class="feature-num">06</div>
+                    <div class="feature-icon">🌍</div>
                 </div>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-num">07</div>
-                <div class="feature-title">YAML Policy Engine</div>
-                <div class="feature-desc">Declarative, per-agent rules. Enable or disable each guard independently. Set
-                    spend limits, token caps, and provider defaults. Define it once in a YAML file — Guardian enforces
-                    everywhere.</div>
+                <div class="feature-title">FinOps & Local Proxy</div>
+                <div class="feature-desc">Real-time token counting and cost estimation per session. A built-in proxy
+                    server lets you intercept traffic from any tool (Cursor, Claude Code) without modifying their source
+                    code.</div>
                 <div class="feature-tags">
-                    <span class="tag">Per-Agent Rules</span>
-                    <span class="tag">Declarative</span>
-                </div>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-num">08</div>
-                <div class="feature-title">Local Logging &amp; Proxy</div>
-                <div class="feature-desc">All violation logs stored at ~/.guardian/logs/. A built-in proxy server lets
-                    you intercept traffic from any HTTP client transparently. CLI tools: guardian status, guardian logs,
-                    guardian init.</div>
-                <div class="feature-tags">
-                    <span class="tag">Local Logs</span>
+                    <span class="tag">Cost Tracking</span>
                     <span class="tag">HTTP Proxy</span>
-                    <span class="tag">CLI</span>
                 </div>
             </div>
 
@@ -1231,8 +1313,6 @@
                         <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pii_detection: <span class="ok">true</span>
                         <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hallucination_check: <span class="val">false</span>
-                        <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost:</span>
                         <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_input_tokens: <span class="ok">4000</span>
@@ -1245,12 +1325,31 @@
             <div class="step fade-in">
                 <div class="step-num">04</div>
                 <div class="step-content">
+                    <div class="step-title">Use the CLI Tools</div>
+                    <div class="step-desc">Guardian comes with built-in terminal tools for management and local logging.
+                    </div>
+                    <div class="code-block">
+                        <span class="c"># Initialize local log directories (~/.guardian_runtime/logs)</span><br>
+                        guardian_runtime init<br><br>
+                        <span class="c"># Check system status and token usage stats</span><br>
+                        guardian_runtime status<br><br>
+                        <span class="c"># Tail live security threat logs</span><br>
+                        guardian_runtime logs --tail<br><br>
+                        <span class="c"># Start the local interception proxy</span><br>
+                        guardian_runtime proxy --port 8080
+                    </div>
+                </div>
+            </div>
+
+            <div class="step fade-in">
+                <div class="step-num">05</div>
+                <div class="step-content">
                     <div class="step-title">Or use the scan API directly</div>
                     <div class="step-desc">For simpler use-cases — scan text without the full engine.</div>
                     <div class="code-block"><span class="kw">from</span> guardian_runtime <span class="kw">import</span>
                         scan_pii, scan_secrets
                         <br><br>
-                        result = scan_pii(<span class="str">"My Aadhaar is 9876 5432 1098"</span>)
+                        result = scan_pii(<span class="str">"My Aadhaar is 0123 xxxx xxxx"</span>)
                         <br>
                         <span class="c"># result.blocked → True</span>
                         <br>
@@ -1270,76 +1369,127 @@
         </div>
     </section>
 
-    <!-- USE CASES -->
-    <section class="usecases" id="usecases">
+    <!-- INTEGRATION GUIDES -->
+    <section class="quickstart" id="integration" style="padding-top:40px;">
         <div class="section-header fade-in">
-            <span class="section-tag">// DEPLOYMENT SCENARIOS</span>
-            <h2 class="section-title">WHO USES GUARDIAN</h2>
+            <span class="section-tag">// INTEGRATION GUIDES</span>
+            <h2 class="section-title">HOW TO USE GUARDIAN</h2>
         </div>
-        <div class="usecase-grid">
-            <div class="usecase-card fade-in">
-                <span class="usecase-icon">🏥</span>
-                <div class="usecase-title">Healthcare AI</div>
-                <div class="usecase-desc">HIPAA-compliant LLM apps. Patient data never reaches the model. PHI blocked at
-                    the guard before transmission.</div>
-            </div>
-            <div class="usecase-card fade-in">
-                <span class="usecase-icon">🏦</span>
-                <div class="usecase-title">Fintech &amp; Banking</div>
-                <div class="usecase-desc">Block Aadhaar, PAN, account numbers, and API keys from entering prompts. DPDP
-                    Act compliance built-in for Indian fintechs.</div>
-            </div>
-            <div class="usecase-card fade-in">
-                <span class="usecase-icon">⚖️</span>
-                <div class="usecase-title">Legal &amp; Compliance</div>
-                <div class="usecase-desc">Audit trails stored locally. Violation logs for every blocked request.
-                    Evidence of due-diligence for regulators.</div>
-            </div>
-            <div class="usecase-card fade-in">
-                <span class="usecase-icon">🏗️</span>
-                <div class="usecase-title">Internal Dev Tools</div>
-                <div class="usecase-desc">Stop engineers from accidentally pasting .env files into Copilot or ChatGPT.
-                    Secret detection as a pre-flight layer.</div>
-            </div>
-            <div class="usecase-card fade-in">
-                <span class="usecase-icon">🤖</span>
-                <div class="usecase-title">AI Agents &amp; Pipelines</div>
-                <div class="usecase-desc">Multi-agent systems that handle user data need a security layer. Guardian sits
-                    at every node, not just the edge.</div>
-            </div>
-            <div class="usecase-card fade-in">
-                <span class="usecase-icon">🎓</span>
-                <div class="usecase-title">EdTech Platforms</div>
-                <div class="usecase-desc">Student PII stays off cloud servers. Jailbreak detection prevents policy
-                    violations in AI tutoring systems.</div>
-            </div>
-        </div>
-    </section>
 
-    <!-- COMPLIANCE -->
-    <section class="compliance relative fade-in">
-        <div class="scan-line"></div>
-        <div class="compliance-inner">
-            <span class="section-tag">// REGULATORY COVERAGE</span>
-            <h2 class="section-title">BUILT FOR COMPLIANCE</h2>
-            <p
-                style="font-family:var(--body); font-size:15px; color:var(--text-dim); margin-top:16px; line-height:1.6;">
-                Guardian's detection is built around real regulatory requirements — not theoretical ones.
-            </p>
-            <div class="compliance-badges">
-                <div class="badge">India DPDP Act 2023</div>
-                <div class="badge">GDPR</div>
-                <div class="badge">HIPAA</div>
-                <div class="badge">CCPA</div>
+        <div class="steps">
+            <!-- Case 1: Python SDK -->
+            <div class="step fade-in">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                    <div class="step-title">Custom Python Apps (Chatbots, RAG)</div>
+                    <div class="step-desc">If you are building your own AI application in Python, use the SDK directly.
+                        This gives you full programmatic control over policies and error handling.</div>
+                    <div class="code-block">
+                        <span class="c"># 1. Install the package</span><br>
+                        pip install guardian-runtime<br><br>
+                        <span class="c"># 2. In your code, wrap your LLM calls</span><br>
+                        <span class="kw">from</span> guardian_runtime <span class="kw">import</span> GuardianRuntime<br>
+                        gr = GuardianRuntime.from_policy(<span class="str">"policy.yaml"</span>)<br><br>
+                        <span class="c"># Instead of calling OpenAI/Anthropic directly:</span><br>
+                        response = gr.complete(<br>
+                        &nbsp;&nbsp;messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span
+                            class="str">"content"</span>: <span class="str">"My SSN is 123-45-6789"</span>}]<br>
+                        )<br><br>
+                        <span class="c"># Guardian intercepts and blocks the PII locally!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case 2: Claude Code CLI -->
+            <div class="step fade-in">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                    <div class="step-title">Claude Code & CLI Assistants</div>
+                    <div class="step-desc">For CLI tools like Anthropic's Claude Code or Aider, you can't edit their
+                        source code. Instead, use Guardian's built-in Local Proxy to intercept their network requests.
+                    </div>
+                    <div class="code-block">
+                        <span class="c"># 1. Install Guardian and start the Proxy</span><br>
+                        pip install guardian-runtime<br>
+                        guardian_runtime proxy --port 8080<br><br>
+                        <span class="c"># 2. Open a new terminal and tell Claude to use the proxy</span><br>
+                        <span class="kw">export</span> ANTHROPIC_BASE_URL=http://localhost:8080<br>
+                        claude<br><br>
+                        <span class="c"># Now, if Claude tries to read a .env file and send your AWS keys,</span><br>
+                        <span class="c"># the local proxy blocks the HTTP request instantly!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case 3: Cursor IDE -->
+            <div class="step fade-in">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                    <div class="step-title">Cursor IDE & Code Editors</div>
+                    <div class="step-desc">Prevent accidental leaks of proprietary company secrets or customer PII when
+                        using Cursor's AI Chat and Composer features.</div>
+                    <div class="code-block">
+                        <span class="c"># 1. Start the proxy in your background terminal</span><br>
+                        pip install guardian-runtime<br>
+                        guardian_runtime proxy --port 8080<br><br>
+                        <span class="c"># 2. Configure Cursor Settings</span><br>
+                        - Open Cursor Settings (Cmd+,)<br>
+                        - Go to Models > Override Base URL<br>
+                        - Set it to: <span class="str">http://localhost:8080</span><br><br>
+                        <span class="c"># Every Cmd+K or chat prompt is now scanned locally.</span><br>
+                        <span class="c"># If you paste a customer's credit card, Cursor will show a</span><br>
+                        <span class="c"># local error instead of sending it to the cloud.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case 4: Document Analysis -->
+            <div class="step fade-in">
+                <div class="step-num">04</div>
+                <div class="step-content">
+                    <div class="step-title">Document Analysis (RAG Pipelines)</div>
+                    <div class="step-desc">If you process large PDFs or Word documents for RAG, they often contain
+                        massive amounts of formatting bloat and hidden PII. Use the Document Converter to clean and
+                        compress them before the LLM sees them.</div>
+                    <div class="code-block">
+                        <span class="c"># Convert heavy files into clean, token-efficient Markdown</span><br>
+                        <span class="kw">from</span> guardian_runtime <span class="kw">import</span>
+                        convert_document<br><br>
+                        doc = convert_document(<span class="str">"financial_report.pdf"</span>)<br><br>
+                        <span class="c"># You get pure Markdown with all layout junk removed:</span><br>
+                        <span class="kw">print</span>(doc.token_count) <span class="c"># See exactly how much context it
+                            uses</span><br>
+                        <span class="kw">print</span>(doc.content) <span class="c"># Feed this clean text directly to
+                            your RAG</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Case 5: Agentic Frameworks -->
+            <div class="step fade-in">
+                <div class="step-num">05</div>
+                <div class="step-content">
+                    <div class="step-title">Agentic Frameworks (LangChain / AutoGen)</div>
+                    <div class="step-desc">Building autonomous agents? Guardian acts as a security middleware for any
+                        standard LLM client. Simply override the base URL or wrap your chain's LLM node.</div>
+                    <div class="code-block">
+                        <span class="c"># LangChain Example</span><br>
+                        <span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI<br><br>
+                        <span class="c"># Start Guardian Proxy on port 8080, then point LangChain to it:</span><br>
+                        llm = ChatOpenAI(<br>
+                        &nbsp;&nbsp;model=<span class="str">"gpt-4o"</span>,<br>
+                        &nbsp;&nbsp;base_url=<span class="str">"http://localhost:8080"</span><br>
+                        )<br><br>
+                        <span class="c"># The agent's chain will now be intercepted locally at every step.</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- CTA -->
     <section class="cta-section relative fade-in">
-        <div class="scan-line"></div>
         <div class="cta-title">DEPLOY IN 60 SECONDS</div>
-        <div class="cta-sub">// FREE · OPEN SOURCE · LOCAL-FIRST · APACHE-2.0</div>
+        <div class="cta-sub">// FREE · OPEN SOURCE · LOCAL-FIRST · MIT LICENSE</div>
         <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
             <a href="https://github.com/ashp15205/guardian-runtime" class="btn-primary">⬡ GITHUB REPO</a>
             <a href="#quickstart" class="btn-secondary">READ THE DOCS</a>
@@ -1347,7 +1497,7 @@
     </section>
 
     <footer class="footer">
-        <div class="footer-copy">© 2026 GUARDIAN RUNTIME — APACHE-2.0 LICENSE</div>
+        <div class="footer-copy">© 2026 GUARDIAN RUNTIME — MIT LICENSE</div>
         <div class="footer-links">
             <a href="https://github.com/ashp15205/guardian-runtime">GitHub</a>
             <a href="https://github.com/ashp15205/guardian-runtime/issues">Issues</a>
