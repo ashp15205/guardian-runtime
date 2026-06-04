@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardian-runtime"
-version = "0.2.2"
+version = "0.2.3"
 description = "Local-first runtime governance layer for AI systems"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{ name = "Ashish Patil", email = "ashishtp2005@gmail.com" }]
 keywords = [
   "ai", "llm", "governance", "guardrails", "finops",
@@ -17,7 +17,6 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -36,6 +35,7 @@ dependencies = [
   "click>=8.0",
   "fastapi>=0.100",
   "uvicorn>=0.23",
+  "markitdown>=0.0.1",
 ]
 
 [project.optional-dependencies]
@@ -46,9 +46,6 @@ dev = [
   "ruff>=0.1",
   "mypy>=1.0",
 ]
-optimizer = [
-  "markitdown>=0.0.1",
-]
 presidio = [
   "presidio-analyzer>=2.2",
   "presidio-anonymizer>=2.2",
@@ -56,13 +53,13 @@ presidio = [
 langchain = [
   "langchain-core>=0.1",
 ]
-all = ["guardian-runtime[optimizer,presidio,langchain]"]
+all = ["guardian-runtime[presidio,langchain]"]
 
 [project.urls]
-Homepage = "https://guardian-ai.dev"
-Documentation = "https://guardian-ai.dev/docs"
-Repository = "https://github.com/guardian-ai/guardian-runtime"
-Issues = "https://github.com/guardian-ai/guardian-runtime/issues"
+Homepage = "https://github.com/ashp15205/guardian-runtime"
+Documentation = "https://github.com/ashp15205/guardian-runtime#readme"
+Repository = "https://github.com/ashp15205/guardian-runtime"
+Issues = "https://github.com/ashp15205/guardian-runtime/issues"
 
 [project.scripts]
 guardian = "guardian.cli.main:cli"
@@ -72,14 +69,14 @@ packages = ["guardian"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 ignore = ["E501"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = false
 ignore_missing_imports = true
 

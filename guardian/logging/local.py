@@ -63,6 +63,10 @@ class LocalLogger:
             "output_tokens": response.output_tokens,
             "estimated_cost_usd": response.estimated_cost_usd,
         }
+        if response.optimization:
+            metadata["original_input_tokens"] = response.optimization.get("original_tokens", response.input_tokens)
+            metadata["saved_tokens"] = response.optimization.get("saved_tokens", 0)
+            
         self.log_event(event, agent_id, session_id, response.violations, metadata)
 
     def read_logs(self, tail: int = 50) -> list[dict]:

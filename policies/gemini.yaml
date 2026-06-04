@@ -9,7 +9,7 @@ agents:
   default:
     llm:
       provider: gemini
-      default_model: gemini-2.0-flash
+      default_model: gemini-2.5-flash
     input_guard:
       pii_detection: true
       pii_entities: [aadhaar, pan, upi_id, credit_card, ssn, email, phone, secret]

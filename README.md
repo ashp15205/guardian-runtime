@@ -1,115 +1,63 @@
-# Guardian Runtime
+<p align="center">
+  <h1 align="center">🛡️ Guardian Runtime</h1>
+  <p align="center"><strong>The local-first AI firewall for developers.</strong></p>
+  <p align="center">Cut LLM token costs · Block data leaks · Stop jailbreaks — all on your machine.</p>
+</p>
 
-**Cut LLM token costs. Block data leaks. Ship safer AI.**
+<p align="center">
+  <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/v/guardian-runtime.svg?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=flat-square" alt="Python"></a>
+  <a href="https://github.com/ashp15205/guardian-runtime"><img src="https://img.shields.io/badge/tests-111%20passed-brightgreen?style=flat-square" alt="Tests"></a>
+  <a href="https://github.com/ashp15205/guardian-runtime"><img src="https://img.shields.io/badge/license-Proprietary-lightgrey?style=flat-square" alt="License"></a>
+</p>
 
-Guardian Runtime is a local-first Python SDK that sits between your AI application and any LLM. It automatically compresses prompts to reduce token costs, blocks PII and API key leaks before they reach the model, and catches jailbreak attempts — all on your machine. Your prompts never leave your infrastructure.
+---
 
-[![PyPI](https://img.shields.io/pypi/v/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
-[![Python 3.9+](https://img.shields.io/pypi/pyversions/guardian-runtime.svg)](https://pypi.org/project/guardian-runtime/)
-[![Tests](https://img.shields.io/badge/tests-111%20passed-brightgreen)](https://github.com/ashp15205/guardian-runtime)
-
+Guardian Runtime is a **Python SDK** that acts as a transparent security layer between your AI application and any LLM provider. It automatically compresses prompts to reduce token costs, blocks PII and API key leaks before they reach the model, and catches jailbreak attempts — **all running locally on your machine**. Your prompts never leave your infrastructure.
 
 ```text
-User Input
-    ↓
-[Input Optimizer]  →  saves 30–70% tokens
-    ↓
-[Input Guard]      →  blocks PII, secrets, jailbreaks
-    ↓
-   LLM             →  your model, your API key
-    ↓
-[Output Guard]     →  scans response before it reaches user
-    ↓
-Safe Response + Analysis Report
+  Your Prompt
+      │
+      ▼
+┌─────────────────────────────────────────┐
+│           GUARDIAN RUNTIME              │
+│                                         │
+│  ┌───────────┐   ┌──────────────────┐   │
+│  │ Optimizer │   │   Input Guard    │   │
+│  │           │   │                  │   │
+│  │ -30~70%   │──▶│ PII · Secrets   │   │
+│  │  tokens   │   │ Jailbreaks      │   │
+│  └───────────┘   └────────┬─────────┘   │
+│                           │             │
+│         ┌─────────────────▼──────────┐  │
+│         │       Output Guard         │  │
+│         │  Scans AI response for PII │  │
+│         └────────────────────────────┘  │
+└─────────────────────────────────────────┘
+      │
+      ▼
+  Safe Response + Cost Report
 ```
 
 ---
 
-## Why Guardian?
+## 🚀 Quick Start
 
-Observability tools (Langfuse, LangSmith, Helicone) log what went wrong — after it happened. Guardian stops it before it happens, on your machine.
-
-| | Observability Tools | Guardian Runtime |
-|---|---|---|
-| When it acts | After the LLM call | **Before and after** |
-| Your data path | Sent to their cloud | **Stays on your machine** |
-| PII in prompt | Logged | **Blocked** |
-| Exposed API keys | Not detected | **Blocked** |
-| Token costs | Tracked | **Actively reduced** |
-| Jailbreak attempts | Logged | **Blocked** |
-
----
-
-## Install
+### 1. Install
 
 ```bash
 pip install guardian-runtime
 ```
 
-Optional extras:
-```bash
-pip install guardian-runtime[optimizer]   # PDF/DOCX → markdown conversion
-pip install guardian-runtime[dev]         # testing tools
-```
+> Requires **Python 3.10+**. Includes the document converter (PDF/DOCX → Markdown) out of the box.
 
-Requires **Python 3.9+**
-
-## Supported Providers
-
-| Provider | Environment Variable | Policy file | Default Model |
-|---|---|---|---|
-| Google Gemini | `GEMINI_API_KEY` | `policies/gemini.yaml` | `gemini-2.0-flash` |
-| Anthropic Claude | `ANTHROPIC_API_KEY` | `policies/anthropic.yaml` | `claude-3-5-haiku-latest` |
-| OpenAI | `OPENAI_API_KEY` | `policies/minimal.yaml` | `gpt-4o-mini` |
-
-Override provider at runtime:
-```python
-response = guardian.complete(
-    provider="anthropic",
-    model="claude-3-5-haiku-latest",
-    messages=[...]
-)
-```
-
----
-
-## Features
-
-### Security & Privacy
-
-- **PII Detection** — Aadhaar (`xxxx xxxx xxxx`), PAN (`XXXXX0000X`), UPI (`name@bank`), SSN (`xxx-xx-xxxx`), credit cards, email, phone, passport numbers
-- **Secret Detection** — OpenAI keys (`sk-...`), AWS access keys (`AKIA...`), GitHub tokens (`ghp_...`), Stripe keys (`sk_live_...`), Razorpay keys (`rzp_live_...`), Groq keys (`gsk_...`), generic `.env` patterns
-- **Jailbreak Detection** — 40+ patterns covering DAN variants, instruction overrides, role-play injections, encoding tricks, and system prompt extraction attempts
-- **Output Guard** — scans LLM responses for PII and secrets before they reach users
-- **Action modes** — `block`, `redact`, or `flag` per entity type
-
-### Cost Optimization
-
-- **Prompt compression** — strips redundant whitespace, deduplicates system prompts, removes empty messages
-- **History trimming** — keeps last N turns, always preserves system prompt
-- **Document conversion** — PDF, DOCX, XLSX → clean markdown (30–70% token savings)
-- **Token budget enforcement** — warn or block when input exceeds your defined limit
-- **Cost estimation** — every response includes token count and USD cost estimate
-
-### Governance
-
-- **YAML policy engine** — define rules per agent, no code changes needed to update policies
-- **Multi-agent support** — different rules for different bots
-- **Block / redact / flag modes** — choose the right action per violation type
-- **Local audit logs** — full JSONL log at `~/.guardian/logs/` — never uploaded anywhere
-
-### CLI
+### 2. Set your API key
 
 ```bash
-guardian init --key gdn_free_xxxxx       # optional license setup
-guardian validate policies/gemini.yaml   # check policy syntax
-guardian status                          # view usage this month
-guardian logs --tail 20                  # view recent violations
+export GEMINI_API_KEY="your-google-ai-studio-key"   # free tier works!
 ```
 
----
-
-## Policy Example
+### 3. Create a policy file (`policy.yaml`)
 
 ```yaml
 version: "1.0"
@@ -117,7 +65,7 @@ agents:
   default:
     llm:
       provider: gemini
-      default_model: gemini-2.0-flash
+      default_model: gemini-2.5-flash
     input_guard:
       pii_detection: true
       jailbreak_detection: true
@@ -128,19 +76,108 @@ agents:
       enabled: true
       whitespace_normalization: true
       max_history_messages: 10
-      deduplicate_system_prompts: true
     cost:
       max_input_tokens: 8000
 ```
 
-Validate before use:
-```bash
-guardian validate policies/gemini.yaml
+### 4. Use it
+
+```python
+from guardian import Guardian
+
+guardian = Guardian.from_policy("policy.yaml")
+
+response = guardian.complete(
+    messages=[{"role": "user", "content": "Summarize this document for me."}]
+)
+
+print(response.content)              # safe, validated response
+print(response.input_tokens)         # tokens consumed
+print(response.estimated_cost_usd)   # cost in USD
+print(response.optimization)         # token savings breakdown
 ```
 
 ---
 
-## Analysis Report
+## ✨ Why Guardian?
+
+Observability tools (Langfuse, LangSmith, Helicone) **log** what went wrong — _after_ it happened.  
+Guardian **stops** it _before_ it happens, **on your machine**.
+
+| | Observability Tools | Guardian Runtime |
+|---|---|---|
+| **When it acts** | After the LLM call | **Before and after** |
+| **Your data** | Sent to their cloud | **Stays on your machine** |
+| **PII in prompt** | Logged | **Blocked** |
+| **Exposed API keys** | Not detected | **Blocked** |
+| **Token costs** | Tracked | **Actively reduced** |
+| **Jailbreak attempts** | Logged | **Blocked** |
+
+---
+
+## 🔌 Supported Providers
+
+Works out-of-the-box with the Big 3 LLM providers:
+
+| Provider | Environment Variable | Default Model |
+|---|---|---|
+| **Google Gemini** | `GEMINI_API_KEY` | `gemini-2.5-flash` |
+| **Anthropic Claude** | `ANTHROPIC_API_KEY` | `claude-3-5-haiku-latest` |
+| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o-mini` |
+
+Override provider at runtime:
+```python
+response = guardian.complete(
+    provider="anthropic",
+    model="claude-sonnet-4-20250514",
+    messages=[...]
+)
+```
+
+---
+
+## 🛡️ Security & Privacy Features
+
+### PII Detection
+Detects and blocks sensitive personal data with specialized patterns:
+
+| Category | Detected Entities |
+|---|---|
+| **India (DPDP Act)** | Aadhaar (`xxxx xxxx xxxx`), PAN (`XXXXX0000X`), UPI (`name@bank`) |
+| **Global** | SSN, Credit Cards, Email, Phone, Passport |
+| **Action modes** | `block`, `redact`, or `flag` per entity type |
+
+### Secret Leak Prevention
+Stops developers from accidentally sending credentials to an LLM:
+
+- OpenAI keys (`sk-...`) · AWS access keys (`AKIA...`) · GitHub tokens (`ghp_...`)
+- Stripe keys (`sk_live_...`) · Razorpay keys (`rzp_live_...`) · Groq keys (`gsk_...`)
+- Generic `.env` variable patterns
+
+### Jailbreak Detection
+40+ regex patterns covering:
+- DAN variants and instruction overrides
+- Role-play injections and encoding tricks
+- System prompt extraction attempts
+
+### Output Guard
+Scans LLM responses for PII and secrets **before** they reach your users.
+
+---
+
+## 📉 Cost Optimization
+
+| Feature | How it saves |
+|---|---|
+| **Prompt Compression** | Strips redundant whitespace, deduplicates system prompts, removes empty messages |
+| **History Trimming** | Keeps last N turns, always preserves system prompt |
+| **Document Conversion** | PDF, DOCX, XLSX, PPTX → clean Markdown (**30–70% token savings**) |
+| **Token Budget Enforcement** | Warn or block when input exceeds your defined limit |
+| **Cost Estimation** | Every response includes token count and USD cost estimate |
+
+---
+
+## 📊 Analysis Report
 
 Every `guardian.complete()` call returns a full analysis:
 
@@ -155,25 +192,19 @@ print(response.estimated_cost_usd)   # cost in USD
 print(response.optimization)         # tokens saved, savings %
 ```
 
-Example output:
-```python
+Example optimization result:
+```json
 {
-  "blocked": False,
-  "input_tokens": 620,
-  "estimated_cost_usd": 0.0004,
-  "optimization": {
-    "original_tokens": 1840,
-    "optimized_tokens": 620,
-    "savings_pct": 0.66,
-    "actions_taken": ["whitespace_normalization", "history_trimming"]
-  },
-  "violations": []
+  "original_tokens": 1840,
+  "optimized_tokens": 620,
+  "savings_pct": 0.66,
+  "actions_taken": ["whitespace_normalization", "history_trimming"]
 }
 ```
 
 ---
 
-## Compliance
+## ⚖️ Compliance Coverage
 
 Guardian's detection covers major data protection regulations:
 
@@ -184,11 +215,40 @@ Guardian's detection covers major data protection regulations:
 | **HIPAA** (US Health) | Sensitive personal data blocking |
 | **CCPA** (California) | Consumer data protection |
 
-> Guardian is an assistive compliance tool, not legal advice. Always consult qualified counsel for regulatory requirements.
+> **Note:** Guardian is an assistive compliance tool, not legal advice. Always consult qualified counsel for regulatory requirements.
 
 ---
 
-## Local-First Architecture
+## 🖥️ CLI
+
+Guardian comes with a built-in command line interface:
+
+```bash
+guardian init --key gdn_free_xxxxx       # optional license setup
+guardian validate policies/gemini.yaml   # check policy syntax
+guardian status                          # view usage, tokens, and costs
+guardian logs --tail 20                  # view recent violations
+```
+
+Example `guardian status` output:
+```text
+License: not configured (offline free tier)
+Plan: free
+Checks this month: 1 / 10000
+Status: ACTIVE
+
+--- Usage Analytics ---
+Original Input Tokens:  1,840
+Optimized Input Tokens: 620 (-1,220 saved)
+Total Output Tokens:    19
+Estimated Cost:         $0.000420 USD
+```
+
+---
+
+## 🏗️ Local-First Architecture
+
+Everything runs on your machine. Nothing is uploaded.
 
 ```text
 Your Machine
@@ -200,19 +260,15 @@ Your Machine
 │       └── YYYY-MM-DD.jsonl
 ```
 
-What Guardian's servers **never** receive:
-- Your prompts
-- Your LLM responses
-- Your violation details
-- Your API keys (OpenAI, Anthropic, etc.)
-
-What the optional daily sync sends (once per day, HTTPS only):
-- Your hashed license key
-- A single number: how many checks you ran
+**What Guardian's servers never receive:**
+- ❌ Your prompts
+- ❌ Your LLM responses
+- ❌ Your violation details
+- ❌ Your API keys (OpenAI, Anthropic, etc.)
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```text
 guardian/
@@ -222,18 +278,21 @@ guardian/
 ├── optimizer/      prompt compression, document converter
 ├── providers/      openai, gemini, anthropic
 ├── finops/         token counter, cost calculator
+├── proxy/          localhost reverse proxy server
 ├── logging/        local JSONL logger
+├── dashboard/      usage dashboard
 └── cli/            init, validate, status, logs
 ```
 
 ---
 
-## Development
+## 🧪 Development
 
 ```bash
 git clone https://github.com/ashp15205/guardian-runtime.git
 cd guardian-runtime
-pip install -e ".[dev,optimizer]"
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
 pytest tests/ -q    # 111 tests
 ```
 
@@ -241,10 +300,15 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full technical specification.
 
 ---
 
-## Privacy
+## 🔒 Privacy
 
 - All scanning runs **on your infrastructure**
 - Logs stored locally at `~/.guardian/logs/`
 - Optional license sync sends **only** a hashed key + check count — never prompts or responses
 
+---
 
+<p align="center">
+  <strong>Built with ❤️ for developers who care about AI safety and cost.</strong><br>
+  <a href="https://pypi.org/project/guardian-runtime/">PyPI</a> · <a href="https://github.com/ashp15205/guardian-runtime">GitHub</a>
+</p>

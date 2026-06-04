@@ -15,7 +15,7 @@ from guardian.core.policy import load_policy, OptimizerConfig
 from guardian.optimizer import DocumentConverter, InputOptimizer, OptimizeResult, ConversionResult
 
 # Version matches pyproject.toml
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 __all__ = [
     "Guardian",
     "GuardianEngine",
