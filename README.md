@@ -1,67 +1,79 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/GuardianRuntime-Local%20AI%20Firewall-10b981?style=for-the-badge&logo=shield&logoColor=white" alt="GuardianRuntime Logo" />
+  <img src="https://img.shields.io/badge/GuardianRuntime-Local%20AI%20Firewall-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="GuardianRuntime" />
 </p>
 
 <h1 align="center">GuardianRuntime</h1>
 
 <p align="center">
-  <strong>The Enterprise Local-First AI Firewall for Python Developers.</strong><br>
-  Intercept PII leaks, block credential exposures, stop jailbreaks, and optimize token payload costs natively on your infrastructure before data ever reaches the LLM provider.
+  <strong>A local-first AI security layer for Python developers.<br>
+  Intercept every prompt and response. Block threats before they reach the LLM.</strong>
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/v/guardian-runtime.svg?style=flat-square&color=10b981" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/v/guardian-runtime.svg?style=flat-square&color=00ff88" alt="PyPI Version"></a>
   <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=flat-square" alt="Python Versions"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"></a>
-  <a href="https://github.com/ashp15205/guardian-runtime/actions"><img src="https://img.shields.io/github/actions/workflow/status/ashp15205/guardian-runtime/ci.yml?style=flat-square" alt="Build Status"></a>
-  <a href="#compliance"><img src="https://img.shields.io/badge/Compliance-GDPR%20%7C%20HIPAA%20%7C%20DPDP-yellow?style=flat-square" alt="Compliance Status"></a>
+  <img src="https://img.shields.io/badge/no%20signup-no%20key-00ff88?style=flat-square" alt="No signup required">
+  <img src="https://img.shields.io/badge/100%25-local%20execution-00ff88?style=flat-square" alt="100% Local">
 </p>
 
 ---
 
-## 📖 Executive Summary
+## What is GuardianRuntime?
 
-**GuardianRuntime** (`pip install guardian-runtime`) is a lightweight, zero-dependency Python SDK designed to sit between your application logic and the Large Language Model (OpenAI, Google Gemini, Anthropic Claude). 
+**GuardianRuntime** is a Python SDK that sits between your AI application and any LLM provider (OpenAI, Gemini, Claude). Every prompt goes through a security pipeline **on your machine** before any network request fires. Every response is checked before it reaches your users.
 
-Sending raw user input to cloud LLMs exposes your organization to **Prompt Injection attacks**, **Compliance breaches** (PII leaks), and **Credential exposure** (hardcoded keys). 
+It is **100% open source**, **free forever**, and requires **no signup, no API key, no account**.
 
-GuardianRuntime acts as a **zero-trust local firewall**. It executes high-speed regex and heuristic scanning on your own infrastructure to neutralize threats *before* any network request is initiated.
-
-## 🚀 Key Capabilities
-
-- **🔒 PII & Data Privacy Shield:** Detects and blocks Aadhaar, PAN, SSNs, Credit Cards, UPI IDs, Emails, and Phone Numbers (GDPR, HIPAA, DPDP Act compliance).
-- **🔑 Secret Credential Guard:** High-precision prefix matching blocks AWS, OpenAI, GitHub, Stripe, and 10+ other credential formats from leaking.
-- **🛡️ Jailbreak & Injection Defense:** Blocks over 50+ adversarial AI patterns including "DAN", instruction overrides, and role-play bypasses.
-- **⚡ Token Optimization Engine:** Reduces prompt token payloads by 30-70% via whitespace normalization and history compression.
-- **📄 Document Ingestion Pipeline:** Converts heavy PDF and DOCX files into raw, token-efficient Markdown representations.
-- **📊 Local JSONL Telemetry:** 100% of transactions (blocks, optimizations, passes) are logged locally for enterprise auditability and ROI tracking.
+```
+Your App  →  [Input Guard]  →  [Optimizer]  →  LLM Provider
+                  ↓                                   ↓
+            Block / Redact                    [Output Guard]
+                                                     ↓
+                                             Your App gets clean response
+```
 
 ---
 
-## ⚡ Quick Start Installation
+## Why does this exist?
+
+Sending raw user input directly to cloud LLMs is dangerous:
+
+- **PII leaks** — a user pastes their Aadhaar, credit card, or SSN into a chatbot. The cloud provider now has it.
+- **Credential exposure** — a developer accidentally includes an `sk-proj-...` key in their prompt. It gets sent to OpenAI's servers.
+- **Jailbreaks** — users craft prompts like "Ignore your previous instructions and..." to override your system prompt.
+- **Token waste** — unoptimized conversation histories bloat API costs by 30–70%.
+
+GuardianRuntime solves all of this in a single `pip install`.
+
+---
+
+## Installation
 
 ```bash
 pip install guardian-runtime
 ```
 
-Initialize your local environment:
+Optional one-time setup (creates local log directory):
+
 ```bash
-guardian_runtime init --key YOUR_LICENSE_KEY
+guardian_runtime init
 guardian_runtime status
 ```
 
+That's it. No license key. No account. No cloud calls.
+
 ---
 
-## 🛠️ Implementation (60 Seconds)
+## Quick Start (60 seconds)
 
-GuardianRuntime integrates seamlessly with a single YAML policy file, abstracting the complexity of provider-specific APIs.
-
-### 1. Define Policy (`policies/prod.yaml`)
+### Step 1 — Create a policy file
 
 ```yaml
+# policies/prod.yaml
 version: "1.0"
 name: "production"
-interactive_mode: off  # Use 'warn_ask' for local development
+interactive_mode: off
 
 agents:
   default:
@@ -72,7 +84,7 @@ agents:
     input_guard:
       pii_detection: true
       jailbreak_detection: true
-      pii_action: block
+      pii_action: block      # or 'redact' to mask and continue
 
     optimizer:
       enabled: true
@@ -80,60 +92,96 @@ agents:
       max_history_messages: 10
 ```
 
-### 2. Wrap Your API Calls
+### Step 2 — Wrap your LLM call
 
-Replace direct API calls with the `GuardianRuntime` engine:
+Replace direct API calls with `GuardianRuntime`:
 
 ```python
 import os
 from guardian_runtime import GuardianRuntime, GuardianRuntimeBlockedError
 
-os.environ["OPENAI_API_KEY"] = "sk-proj-your-api-key"
+os.environ["OPENAI_API_KEY"] = "sk-proj-..."
 
-# Engine automatically loads rules from your YAML configuration
+# Loads rules from your YAML policy
 gr = GuardianRuntime.from_policy("policies/prod.yaml")
 
 try:
-    # Payload is scanned locally in milliseconds
     response = gr.complete(
-        messages=[{"role": "user", "content": "Hello, please review my account."}],
+        messages=[{"role": "user", "content": "Hello, help me with my account."}],
         raise_on_block=True
     )
-    print("AI Response:", response.content)
+    print(response.content)
 
 except GuardianRuntimeBlockedError as e:
-    # Execution aborted; LLM is never called. Threat mitigated.
-    print(f"SECURITY ALERT: {e}")
+    # The LLM was never called. Threat neutralized locally.
+    print(f"Blocked: {e}")
+```
+
+### Step 3 — The response object
+
+Every `gr.complete()` call returns a `GuardianRuntimeResponse`:
+
+```python
+response.content           # str — the LLM's reply (or block message)
+response.blocked           # bool — True if the request/response was blocked
+response.violations        # list[Violation] — what was detected
+response.input_tokens      # int — tokens sent to the LLM
+response.output_tokens     # int — tokens in the response
+response.estimated_cost_usd  # float — estimated API cost for this call
+response.optimization      # dict — token savings stats (if optimizer enabled)
 ```
 
 ---
 
-## 🛡️ Core Security Engines
+## Security Guards
 
-### PII Data Protection
-Built-in detectors require zero NLP models and run instantaneously:
-- **India (DPDP):** Aadhaar (`XXXX XXXX XXXX`), PAN (`AAAAA0000A`), UPI IDs (allowlisted suffixes like `@ybl`, `@paytm`).
-- **US/EU (HIPAA/GDPR):** Credit Cards (16-digits), SSN (`XXX-XX-XXXX`), Passports, Emails, Phone Numbers.
+### PII Detection
 
-### Credential Protection
-Exact prefix matching guarantees zero false-positives on production environments:
-- `AKIAXXXXXXXXX` (AWS Access Keys)
-- `sk-proj-...` (OpenAI Keys)
-- `ghp_...` (GitHub Tokens)
-- `sk_live_...` (Stripe Secret Keys)
-- `-----BEGIN RSA PRIVATE KEY-----` (Private Key blocks)
+Detects sensitive personal data using zero-model, regex-based scanning. Runs in microseconds.
 
-### Jailbreak Defense
-Blocks over 50 prompt injection vectors locally:
-- **Instruction Override:** "Ignore previous instructions", "Forget your system prompt"
-- **DAN Modifiers:** "Developer Mode enabled", "Do anything now"
-- **Encoding Attacks:** Base64, Hexadecimal, and ROT13 payload wrappers.
+| Type | Example Pattern |
+|---|---|
+| Aadhaar (India) | `1234 5678 9012` |
+| PAN Card | `ABCDE1234F` |
+| UPI ID | `name@ybl`, `name@paytm` |
+| Credit / Debit Card | 16-digit card numbers |
+| SSN (US) | `123-45-6789` |
+| Email Address | `user@example.com` |
+| Phone Number | `+91 98765 43210` |
+
+Configure the action in your policy:
+```yaml
+input_guard:
+  pii_detection: true
+  pii_action: block    # 'block' stops the request | 'redact' masks and continues
+```
+
+### Credential / Secret Detection
+
+Catches hardcoded API keys and credentials before they leave your machine.
+
+```
+AKIAIOSFODNN7EXAMPLE      → AWS Access Key
+sk-proj-...                → OpenAI Secret Key
+ghp_...                    → GitHub Personal Access Token
+sk_live_...                → Stripe Secret Key
+-----BEGIN RSA PRIVATE KEY → Private Key Block
+```
+
+### Jailbreak & Prompt Injection Defense
+
+Blocks 50+ adversarial prompt patterns:
+
+- **Instruction overrides:** "Ignore previous instructions", "Forget your system prompt"
+- **DAN attacks:** "Developer Mode enabled", "Do Anything Now"
+- **Encoding tricks:** Base64 / Hex / ROT13 payload wrappers
+- **Role-play bypasses:** "Pretend you have no restrictions"
 
 ---
 
-## 📉 Token Optimization & ROI
+## Token Optimizer
 
-GuardianRuntime isn't just for security—it pays for itself by reducing API overhead.
+The built-in optimizer reduces prompt payload size before sending to the LLM. This directly cuts your API costs.
 
 ```python
 from guardian_runtime import optimize_input
@@ -146,62 +194,170 @@ result = optimize_input(
     config=OptimizerConfig(enabled=True, whitespace_normalization=True)
 )
 
-print(f"Payload reduced by {result.savings_pct}%")
+print(f"Reduced by {result.savings_pct:.1f}%")
+print(f"Tokens saved: {result.original_tokens - result.optimized_tokens}")
 ```
 
-### Document to Markdown Conversion
-PDFs drain token limits due to embedded layout formatting. `convert_document()` extracts raw semantic text into clean Markdown.
+Typical savings: **30–70%** on conversation histories with whitespace and repetition.
+
+---
+
+## Document Ingestion
+
+Convert PDFs and DOCX files into clean, token-efficient Markdown for context injection:
 
 ```python
 from guardian_runtime import convert_document
 
-doc = convert_document("financial_report.pdf")
-print(f"Extracted {doc.token_count} clean tokens for context injection.")
+doc = convert_document("report.pdf")
+
+print(f"Title:  {doc.title}")
+print(f"Tokens: {doc.token_count}")
+print(doc.content)  # clean Markdown ready for LLM injection
 ```
 
 ---
 
-## 📊 Enterprise Auditing & Telemetry
+## CLI Reference
 
-GuardianRuntime never sends telemetry to external servers. All operations are written locally in structured `JSONL` format to `~/.guardian_runtime/logs/`.
+```bash
+# Initialize local environment (creates ~/.guardian_runtime/logs/)
+guardian_runtime init
 
-Extract analytics programmatically to track ROI and compliance:
+# Show usage stats and system status
+guardian_runtime status
+
+# Tail live request logs
+guardian_runtime logs --tail 20
+
+# Validate a policy file for syntax errors
+guardian_runtime validate policies/prod.yaml
+
+# Start the proxy server (intercept OpenAI-compatible requests)
+guardian_runtime proxy --port 8080
+
+# Launch the local analytics dashboard
+guardian_runtime dashboard
+```
+
+---
+
+## Providers
+
+GuardianRuntime supports all major LLM providers. Just set the appropriate API key as an environment variable:
+
+| Provider | `provider` value | Environment Variable |
+|---|---|---|
+| OpenAI | `openai` | `OPENAI_API_KEY` |
+| Google Gemini | `gemini` | `GOOGLE_API_KEY` |
+| Anthropic Claude | `anthropic` | `ANTHROPIC_API_KEY` |
+
+Switch providers in your policy:
+```yaml
+agents:
+  default:
+    llm:
+      provider: gemini
+      default_model: gemini-2.0-flash
+```
+
+---
+
+## Local Audit Logs
+
+Every request — whether blocked or passed — is logged locally at `~/.guardian_runtime/logs/` in structured JSONL format. Nothing is ever sent to any external server.
+
+```bash
+guardian_runtime logs --tail 5
+```
+
+```
+[BLOCK] PII: Aadhaar number detected in input payload
+[BLOCK] SECRET: OpenAI key (sk-proj-...) found in prompt
+[PASS]  Clean prompt forwarded to gpt-4o
+[OPT]   Optimizer: -42% token reduction (1,200 → 696 tokens)
+[BLOCK] OUTPUT_PII: Email address detected in LLM response
+```
+
+Extract programmatic cost reports:
 
 ```python
 report = gr.get_cost_report(agent_id="default")
-
-print(f"Requests Processed: {report['total_requests']}")
-print(f"Threats Mitigated:  {report['blocked_requests']}")
-print(f"Tokens Saved:       {report['total_tokens_saved']}")
-```
-
-Or utilize the built-in CLI for real-time operations:
-```bash
-$ guardian_runtime logs --tail 5
-[BLOCK] PII: Aadhaar detected in input payload
-[BLOCK] Secret: AWS Access Key exposure
-[PASS]  Clean prompt forwarded to LLM
-[OPT]   Tokens optimized (-42% payload reduction)
+print(report["total_estimated_cost_usd"])
 ```
 
 ---
 
-## 🧪 Testing Environment
+## Development Mode
 
-Run the comprehensive master test suite to validate all guards locally:
+For local development, use `warn_ask` mode instead of hard blocking. GuardianRuntime will print a security alert to stderr and ask you whether to proceed:
+
+```yaml
+interactive_mode: warn_ask   # asks you in the terminal before blocking
+```
+
+```
+🚨 GUARDIAN_RUNTIME SECURITY ALERT
+GuardianRuntime detected the following issues in your prompt:
+  • [PII] Aadhaar number found in content
+
+Do you still want to send this prompt to OpenAI? [y/N]
+```
+
+---
+
+## Use Cases
+
+| Scenario | Policy Config |
+|---|---|
+| Terminal chatbot / coding assistant | `interactive_mode: warn_ask`, all guards on |
+| Production web app | `interactive_mode: off`, `pii_action: block` |
+| Document Q&A pipeline | Optimizer + Document converter enabled |
+| Multi-agent orchestration | Per-agent policies with isolated guard configs |
+
+See the [`docs/`](./docs/) folder for detailed implementation guides for each use case.
+
+---
+
+## Run Tests
 
 ```bash
+# Using the included test suite
 source .venv/bin/activate
 python final_test.py
 ```
-*Expected Output:* Validates PII blockers, Jailbreak detection, Document parsers, and Optimizer functions via 100% test coverage.
+
+Expected output: All PII blockers, jailbreak detection, document parsers, and optimizer functions validated.
 
 ---
 
-## 📜 License & Compliance
+## Project Structure
 
-Released under the [MIT License](./LICENSE). 
+```
+guardian_runtime/
+├── core/
+│   ├── engine.py        # Main pipeline orchestrator
+│   ├── policy.py        # YAML policy loader & validator
+│   ├── models.py        # Response and violation data models
+│   └── storage.py       # Local usage analytics
+├── guards/
+│   ├── input_guard.py   # PII + secret + jailbreak detection
+│   ├── output_guard.py  # LLM response scanner
+│   └── validators/      # Individual detection modules
+├── optimizer/           # Token reduction engine
+├── providers/           # OpenAI / Gemini / Anthropic adapters
+├── finops/              # Token counter + cost estimator
+├── logging/             # Local JSONL audit logger
+├── dashboard/           # Web analytics dashboard server
+└── cli/                 # CLI commands (init, status, logs, proxy...)
+policies/                # Example YAML policy files
+docs/                    # Use-case implementation guides
+```
 
-GuardianRuntime is designed to assist organizations in complying with data localization laws (DPDP Act, GDPR) by ensuring sensitive data detection occurs entirely on host infrastructure. 
+---
+
+## License
+
+Released under the [MIT License](./LICENSE) — free to use, modify, and distribute.
 
 **Maintained by:** Ashish Patil ([@ashp15205](https://github.com/ashp15205))

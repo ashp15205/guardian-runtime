@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Runtime — Local-First AI Security</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --green: #00ff88;
+            --green-dim: #00cc66;
+            --green-dark: #003322;
+            --red: #ff3333;
+            --amber: #ffaa00;
+            --bg: #030a06;
+            --bg2: #060f09;
+            --border: rgba(0, 255, 136, 0.15);
+            --border-bright: rgba(0, 255, 136, 0.4);
+            --text: #c8ffd8;
+            --text-dim: #5a8a6a;
+            --mono: 'Share Tech Mono', monospace;
+            --display: 'Orbitron', sans-serif;
+            --body: 'Rajdhani', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-size: 16px;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* ── Scanline overlay ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.08) 2px,
+                    rgba(0, 0, 0, 0.08) 4px);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ── Grid bg ── */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 48px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(3, 10, 6, 0.9);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-logo {
+            font-family: var(--display);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .nav-logo span {
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        .nav-cta {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--green);
+            border: 1px solid var(--green);
+            padding: 8px 20px;
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .nav-cta:hover {
+            background: var(--green);
+            color: var(--bg);
+        }
+
+        /* ── STATUS BAR ── */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 6px 48px;
+            border-top: 1px solid var(--border);
+            background: rgba(3, 10, 6, 0.95);
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 48px;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero-tag {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--green);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-bright);
+            padding: 6px 16px;
+            display: inline-block;
+        }
+
+        .hero-title {
+            font-family: var(--display);
+            font-size: clamp(48px, 8vw, 100px);
+            font-weight: 900;
+            line-height: 0.9;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .hero-title .accent {
+            color: var(--green);
+            display: block;
+            -webkit-text-stroke: 1px var(--green);
+        }
+
+        .hero-sub {
+            font-family: var(--body);
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-dim);
+            max-width: 600px;
+            line-height: 1.5;
+            margin-bottom: 48px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-sub strong {
+            color: var(--text);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 64px;
+        }
+
+        .btn-primary {
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 14px 32px;
+            background: var(--green);
+            color: var(--bg);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.2s;
+            clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+        }
+
+        .btn-primary:hover {
+            background: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 14px 32px;
+            border: 1px solid var(--border-bright);
+            color: var(--green);
+            text-decoration: none;
+            transition: all 0.2s;
+            clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--green);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        /* ── Terminal code block ── */
+        .terminal {
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 20px 28px;
+            font-family: var(--mono);
+            font-size: 13px;
+            text-align: left;
+            width: 100%;
+            max-width: 640px;
+            position: relative;
+            line-height: 1.8;
+        }
+
+        .terminal::before {
+            content: '● ● ●';
+            display: block;
+            color: var(--text-dim);
+            font-size: 10px;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .terminal .prompt {
+            color: var(--green-dim);
+        }
+
+        .terminal .cmd {
+            color: var(--text);
+        }
+
+        .terminal .comment {
+            color: var(--text-dim);
+        }
+
+        .terminal .output {
+            color: var(--green);
+        }
+
+        .terminal .warn {
+            color: var(--amber);
+        }
+
+        .terminal .block {
+            color: var(--red);
+        }
+
+        .terminal .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: var(--green);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ── PIPELINE DIAGRAM ── */
+        .pipeline {
+            padding: 100px 48px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-tag {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .section-title {
+            font-family: var(--display);
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        .pipeline-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pipe-node {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 20px 24px;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        .pipe-node:hover {
+            border-color: var(--green);
+        }
+
+        .pipe-node.active {
+            border-color: var(--green);
+        }
+
+        .pipe-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .pipe-label {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .pipe-name {
+            font-family: var(--body);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 4px;
+        }
+
+        .pipe-arrow {
+            font-family: var(--mono);
+            font-size: 20px;
+            color: var(--green);
+            padding: 0 8px;
+            opacity: 0.6;
+        }
+
+        .pipe-guard {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid var(--green);
+        }
+
+        .pipe-guard .pipe-label {
+            color: var(--green);
+        }
+
+        /* ── FEATURES GRID ── */
+        .features {
+            padding: 100px 48px;
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .feature-card {
+            background: var(--bg2);
+            padding: 32px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .feature-card:hover {
+            background: rgba(0, 255, 136, 0.03);
+        }
+
+        .feature-num {
+            font-family: var(--display);
+            font-size: 48px;
+            font-weight: 900;
+            color: rgba(0, 255, 136, 0.1);
+            line-height: 1;
+            margin-bottom: 8px;
+            letter-spacing: -2px;
+        }
+
+        .feature-title {
+            font-family: var(--body);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            font-family: var(--body);
+            font-size: 14px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border: 1px solid var(--border-bright);
+            color: var(--green-dim);
+            text-transform: uppercase;
+        }
+
+        /* ── QUICKSTART ── */
+        .quickstart {
+            padding: 100px 48px;
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .step {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .step-num {
+            font-family: var(--display);
+            font-size: 64px;
+            font-weight: 900;
+            color: var(--green);
+            line-height: 1;
+            opacity: 0.3;
+        }
+
+        .step-content {}
+
+        .step-title {
+            font-family: var(--body);
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .step-desc {
+            font-family: var(--body);
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--green);
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .code-block .c {
+            color: var(--text-dim);
+        }
+
+        .code-block .kw {
+            color: var(--amber);
+        }
+
+        .code-block .str {
+            color: #88ffaa;
+        }
+
+        .code-block .val {
+            color: var(--red);
+        }
+
+        .code-block .ok {
+            color: var(--green);
+        }
+
+        /* ── USE CASES ── */
+        .usecases {
+            padding: 100px 48px;
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .usecase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .usecase-card {
+            border: 1px solid var(--border);
+            padding: 24px;
+            position: relative;
+            background: var(--bg2);
+            transition: all 0.3s;
+        }
+
+        .usecase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--green);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .usecase-card:hover::before {
+            opacity: 1;
+        }
+
+        .usecase-card:hover {
+            border-color: var(--border-bright);
+        }
+
+        .usecase-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .usecase-title {
+            font-family: var(--body);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .usecase-desc {
+            font-family: var(--body);
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* ── COMPLIANCE ── */
+        .compliance {
+            padding: 80px 48px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .compliance-inner {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .compliance-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .badge {
+            border: 1px solid var(--border-bright);
+            padding: 12px 24px;
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--green);
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .badge::after {
+            content: '✓';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--green);
+            color: var(--bg);
+            width: 16px;
+            height: 16px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* ── CTA FOOTER ── */
+        .cta-section {
+            padding: 120px 48px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .cta-title {
+            font-family: var(--display);
+            font-size: clamp(32px, 5vw, 64px);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+
+        .cta-sub {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+        }
+
+        .footer {
+            padding: 24px 48px 48px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-copy {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--green);
+        }
+
+        /* ── Animations ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── CORNER DECORATIONS ── */
+        .corner-tl,
+        .corner-tr,
+        .corner-bl,
+        .corner-br {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+
+        .corner-tl {
+            top: 0;
+            left: 0;
+            border-top: 2px solid var(--green);
+            border-left: 2px solid var(--green);
+        }
+
+        .corner-tr {
+            top: 0;
+            right: 0;
+            border-top: 2px solid var(--green);
+            border-right: 2px solid var(--green);
+        }
+
+        .corner-bl {
+            bottom: 0;
+            left: 0;
+            border-bottom: 2px solid var(--green);
+            border-left: 2px solid var(--green);
+        }
+
+        .corner-br {
+            bottom: 0;
+            right: 0;
+            border-bottom: 2px solid var(--green);
+            border-right: 2px solid var(--green);
+        }
+
+        /* Glitch effect on title */
+        @keyframes glitch {
+
+            0%,
+            100% {
+                clip-path: none;
+                transform: none;
+            }
+
+            92% {
+                clip-path: none;
+                transform: none;
+            }
+
+            93% {
+                clip-path: rect(10px, 9999px, 20px, 0);
+                transform: translate(-4px, 0);
+            }
+
+            94% {
+                clip-path: rect(40px, 9999px, 60px, 0);
+                transform: translate(4px, 0);
+            }
+
+            95% {
+                clip-path: none;
+                transform: none;
+            }
+
+            96% {
+                clip-path: rect(5px, 9999px, 15px, 0);
+                transform: translate(-2px, 0);
+            }
+
+            97% {
+                clip-path: none;
+                transform: none;
+            }
+        }
+
+        .hero-title {
+            animation: glitch 8s infinite;
+        }
+
+        /* Animated threat scanner */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--green), transparent);
+            animation: scan 4s linear infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 0.4;
+            }
+
+            95% {
+                opacity: 0.4;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        .relative {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">GUARDIAN<span>-RUNTIME</span></div>
+        <ul class="nav-links">
+            <li><a href="#pipeline">HOW IT WORKS</a></li>
+            <li><a href="#features">FEATURES</a></li>
+            <li><a href="#quickstart">QUICKSTART</a></li>
+            <li><a href="#usecases">USE CASES</a></li>
+        </ul>
+        <a href="https://github.com/ashp15205/guardian-runtime" class="nav-cta">⬡ GITHUB</a>
+    </nav>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+        <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
+        <div class="status-item">ZERO NETWORK CALLS</div>
+        <div class="status-item">APACHE-2.0 · FREE &amp; OPEN SOURCE</div>
+        <div class="status-item">v0.2.4</div>
+        <div class="status-item" id="threat-counter">THREATS INTERCEPTED: <span id="count"
+                style="color:var(--green)">0</span></div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero relative">
+        <div class="scan-line"></div>
+        <div class="hero-tag">⬡ LOCAL-FIRST · ZERO DATA EXPOSURE · OPEN SOURCE</div>
+        <h1 class="hero-title">
+            GUARDIAN
+            <span class="accent">RUNTIME</span>
+        </h1>
+        <p class="hero-sub">
+            A Python SDK that sits between your AI app and any LLM —
+            <strong>intercepting every prompt and response</strong> to enforce security policies,
+            block data leaks, and detect threats.
+            <strong>Everything runs locally.</strong>
+        </p>
+        <div class="hero-actions">
+            <a href="https://github.com/ashp15205/guardian-runtime" class="btn-primary">pip install guardian-runtime</a>
+            <a href="#quickstart" class="btn-secondary">VIEW QUICKSTART</a>
+        </div>
+
+        <div class="terminal">
+            <span class="prompt">$ </span><span class="cmd">python -c "from guardian_runtime import GuardianRuntime; gr
+                = GuardianRuntime()"</span>
+            <br>
+            <span class="output">✓ Guardian Runtime initialized — local-only mode</span>
+            <br><br>
+            <span class="comment"># Input guard fires automatically</span>
+            <br>
+            <span class="warn">⚠ [PII_DETECTED] Aadhaar number found in prompt — BLOCKED</span>
+            <br>
+            <span class="warn">⚠ [SECRET_DETECTED] OpenAI key sk-proj-... found — BLOCKED</span>
+            <br>
+            <span class="warn">⚠ [JAILBREAK] Instruction override attempt — BLOCKED</span>
+            <br><br>
+            <span class="comment"># Output guard fires on LLM response</span>
+            <br>
+            <span class="output">✓ Response clean. Cost: $0.0012 | Tokens: 847 in / 203 out</span>
+            <br>
+            <span class="prompt">$ </span><span class="cursor"></span>
+        </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="pipeline relative" id="pipeline">
+        <div class="scan-line"></div>
+        <div class="section-header fade-in">
+            <span class="section-tag">// ARCHITECTURE</span>
+            <h2 class="section-title">THE SECURITY PIPELINE</h2>
+        </div>
+        <div class="pipeline-flow fade-in">
+            <div class="pipe-node">
+                <span class="pipe-icon">👤</span>
+                <div class="pipe-label">SOURCE</div>
+                <div class="pipe-name">User Input</div>
+            </div>
+            <div class="pipe-arrow">──▶</div>
+            <div class="pipe-node pipe-guard">
+                <div class="corner-tl"></div>
+                <div class="corner-tr"></div>
+                <div class="corner-bl"></div>
+                <div class="corner-br"></div>
+                <span class="pipe-icon">🛡</span>
+                <div class="pipe-label">GUARDIAN</div>
+                <div class="pipe-name">Input Guard</div>
+            </div>
+            <div class="pipe-arrow">──▶</div>
+            <div class="pipe-node">
+                <span class="pipe-icon">⚙</span>
+                <div class="pipe-label">OPTIMIZER</div>
+                <div class="pipe-name">Token Trim</div>
+            </div>
+            <div class="pipe-arrow">──▶</div>
+            <div class="pipe-node">
+                <span class="pipe-icon">🤖</span>
+                <div class="pipe-label">TARGET</div>
+                <div class="pipe-name">LLM API</div>
+            </div>
+            <div class="pipe-arrow">──▶</div>
+            <div class="pipe-node pipe-guard">
+                <div class="corner-tl"></div>
+                <div class="corner-tr"></div>
+                <div class="corner-bl"></div>
+                <div class="corner-br"></div>
+                <span class="pipe-icon">🔍</span>
+                <div class="pipe-label">GUARDIAN</div>
+                <div class="pipe-name">Output Guard</div>
+            </div>
+            <div class="pipe-arrow">──▶</div>
+            <div class="pipe-node">
+                <span class="pipe-icon">✅</span>
+                <div class="pipe-label">CLEAN</div>
+                <div class="pipe-name">Safe Response</div>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:40px; font-family:var(--mono); font-size:11px; color:var(--text-dim); letter-spacing:2px; max-width:700px; margin-left:auto; margin-right:auto;"
+            class="fade-in">
+            EVERY PROMPT IS SCANNED BEFORE IT LEAVES YOUR MACHINE.<br>
+            EVERY RESPONSE IS VALIDATED BEFORE IT REACHES YOUR USER.<br>
+            <span style="color:var(--green)">ZERO DATA LEAVES YOUR INFRASTRUCTURE.</span>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+        <div class="section-header fade-in">
+            <span class="section-tag">// CAPABILITIES</span>
+            <h2 class="section-title">WHAT GUARDIAN STOPS</h2>
+        </div>
+        <div class="features-grid">
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">01</div>
+                <div class="feature-title">PII Detection</div>
+                <div class="feature-desc">Scans every prompt and response for sensitive personal data before it moves.
+                    Native India DPDP Act support — Aadhaar, PAN, UPI IDs. Plus SSN, credit cards, passports, emails,
+                    phone numbers.</div>
+                <div class="feature-tags">
+                    <span class="tag">DPDP Act</span>
+                    <span class="tag">GDPR</span>
+                    <span class="tag">HIPAA</span>
+                    <span class="tag">CCPA</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">02</div>
+                <div class="feature-title">Secret Detection</div>
+                <div class="feature-desc">Two-tier confidence engine catches exposed API keys with high accuracy. HIGH
+                    tier: known prefixes (sk-proj-, AKIA, ghp_). MEDIUM tier: generic KEY=value patterns. Never leaks
+                    credentials to an LLM.</div>
+                <div class="feature-tags">
+                    <span class="tag">OpenAI</span>
+                    <span class="tag">AWS</span>
+                    <span class="tag">GitHub</span>
+                    <span class="tag">Stripe</span>
+                    <span class="tag">Razorpay</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">03</div>
+                <div class="feature-title">Jailbreak Detection</div>
+                <div class="feature-desc">Pattern-matched detection for DAN variants, instruction overrides, role-play
+                    injections, encoding tricks, and system prompt extraction attempts. No ML model required — zero
+                    latency.</div>
+                <div class="feature-tags">
+                    <span class="tag">DAN</span>
+                    <span class="tag">Injection</span>
+                    <span class="tag">Role-play</span>
+                    <span class="tag">Encoding</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">04</div>
+                <div class="feature-title">Input Optimizer</div>
+                <div class="feature-desc">Automatically trims redundant tokens from prompts before they hit the LLM.
+                    Reduces cost without changing semantics. Tracks savings per session with estimated USD saved.</div>
+                <div class="feature-tags">
+                    <span class="tag">Token Reduction</span>
+                    <span class="tag">Cost Savings</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">05</div>
+                <div class="feature-title">FinOps &amp; Cost Tracking</div>
+                <div class="feature-desc">Real-time token counting and cost estimation per session. Per-agent spend
+                    limits enforced at the policy level. Full cost report per agent. Works across OpenAI, Anthropic, and
+                    Gemini pricing.</div>
+                <div class="feature-tags">
+                    <span class="tag">Token Counting</span>
+                    <span class="tag">Spend Limits</span>
+                    <span class="tag">Cost Reports</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">06</div>
+                <div class="feature-title">Multi-Provider Support</div>
+                <div class="feature-desc">One SDK for all major LLMs. Swap providers in the YAML policy — zero code
+                    changes. Full provider abstraction means your security layer travels with your stack.</div>
+                <div class="feature-tags">
+                    <span class="tag">OpenAI</span>
+                    <span class="tag">Anthropic</span>
+                    <span class="tag">Gemini</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">07</div>
+                <div class="feature-title">YAML Policy Engine</div>
+                <div class="feature-desc">Declarative, per-agent rules. Enable or disable each guard independently. Set
+                    spend limits, token caps, and provider defaults. Define it once in a YAML file — Guardian enforces
+                    everywhere.</div>
+                <div class="feature-tags">
+                    <span class="tag">Per-Agent Rules</span>
+                    <span class="tag">Declarative</span>
+                </div>
+            </div>
+
+            <div class="feature-card fade-in">
+                <div class="feature-num">08</div>
+                <div class="feature-title">Local Logging &amp; Proxy</div>
+                <div class="feature-desc">All violation logs stored at ~/.guardian/logs/. A built-in proxy server lets
+                    you intercept traffic from any HTTP client transparently. CLI tools: guardian status, guardian logs,
+                    guardian init.</div>
+                <div class="feature-tags">
+                    <span class="tag">Local Logs</span>
+                    <span class="tag">HTTP Proxy</span>
+                    <span class="tag">CLI</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- QUICKSTART -->
+    <section class="quickstart" id="quickstart">
+        <div class="section-header fade-in">
+            <span class="section-tag">// DEPLOY IN MINUTES</span>
+            <h2 class="section-title">QUICKSTART</h2>
+        </div>
+
+        <div class="steps">
+
+            <div class="step fade-in">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                    <div class="step-title">Install</div>
+                    <div class="step-desc">Zero external dependencies for core detection. Optional extras for proxy and
+                        dashboard.</div>
+                    <div class="code-block">pip install guardian-runtime</div>
+                </div>
+            </div>
+
+            <div class="step fade-in">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                    <div class="step-title">Wrap your LLM call</div>
+                    <div class="step-desc">Drop Guardian between your app and any LLM. One import, one object, fully
+                        governed calls.</div>
+                    <div class="code-block"><span class="kw">from</span> guardian_runtime <span class="kw">import</span>
+                        GuardianRuntime
+                        <br><br>
+                        gr = GuardianRuntime()
+                        <br><br>
+                        <span class="c"># Your normal LLM call — now governed</span>
+                        <br>
+                        response = gr.complete(
+                        <br>
+                        &nbsp;&nbsp;model=<span class="str">"gpt-4o"</span>,
+                        <br>
+                        &nbsp;&nbsp;messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span
+                            class="str">"content"</span>: user_input}]
+                        <br>
+                        )
+                        <br><br>
+                        <span class="c"># response.blocked → True if threat detected</span>
+                        <br>
+                        <span class="c"># response.violations → list of what was caught</span>
+                        <br>
+                        <span class="c"># response.estimated_cost_usd → spend this call</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step fade-in">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                    <div class="step-title">Configure your policy (optional)</div>
+                    <div class="step-desc">Declarative YAML. Per-agent rules. Enable only what you need.</div>
+                    <div class="code-block"><span class="c">version: "1.0"</span>
+                        <br>
+                        <span class="kw">agents:</span>
+                        <br>
+                        &nbsp;&nbsp;<span class="kw">default:</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">input_guard:</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pii_detection: <span class="ok">true</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;secret_detection: <span class="ok">true</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jailbreak_detection: <span class="ok">true</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">output_guard:</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pii_detection: <span class="ok">true</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hallucination_check: <span class="val">false</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost:</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_input_tokens: <span class="ok">4000</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;session_budget_usd: <span class="ok">1.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step fade-in">
+                <div class="step-num">04</div>
+                <div class="step-content">
+                    <div class="step-title">Or use the scan API directly</div>
+                    <div class="step-desc">For simpler use-cases — scan text without the full engine.</div>
+                    <div class="code-block"><span class="kw">from</span> guardian_runtime <span class="kw">import</span>
+                        scan_pii, scan_secrets
+                        <br><br>
+                        result = scan_pii(<span class="str">"My Aadhaar is 9876 5432 1098"</span>)
+                        <br>
+                        <span class="c"># result.blocked → True</span>
+                        <br>
+                        <span class="c"># result.type → AADHAAR</span>
+                        <br>
+                        <span class="c"># result.severity → HIGH</span>
+                        <br><br>
+                        result = scan_secrets(<span class="str">"key = sk-proj-abc123..."</span>)
+                        <br>
+                        <span class="c"># result.blocked → True</span>
+                        <br>
+                        <span class="c"># result.type → OPENAI_KEY</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- USE CASES -->
+    <section class="usecases" id="usecases">
+        <div class="section-header fade-in">
+            <span class="section-tag">// DEPLOYMENT SCENARIOS</span>
+            <h2 class="section-title">WHO USES GUARDIAN</h2>
+        </div>
+        <div class="usecase-grid">
+            <div class="usecase-card fade-in">
+                <span class="usecase-icon">🏥</span>
+                <div class="usecase-title">Healthcare AI</div>
+                <div class="usecase-desc">HIPAA-compliant LLM apps. Patient data never reaches the model. PHI blocked at
+                    the guard before transmission.</div>
+            </div>
+            <div class="usecase-card fade-in">
+                <span class="usecase-icon">🏦</span>
+                <div class="usecase-title">Fintech &amp; Banking</div>
+                <div class="usecase-desc">Block Aadhaar, PAN, account numbers, and API keys from entering prompts. DPDP
+                    Act compliance built-in for Indian fintechs.</div>
+            </div>
+            <div class="usecase-card fade-in">
+                <span class="usecase-icon">⚖️</span>
+                <div class="usecase-title">Legal &amp; Compliance</div>
+                <div class="usecase-desc">Audit trails stored locally. Violation logs for every blocked request.
+                    Evidence of due-diligence for regulators.</div>
+            </div>
+            <div class="usecase-card fade-in">
+                <span class="usecase-icon">🏗️</span>
+                <div class="usecase-title">Internal Dev Tools</div>
+                <div class="usecase-desc">Stop engineers from accidentally pasting .env files into Copilot or ChatGPT.
+                    Secret detection as a pre-flight layer.</div>
+            </div>
+            <div class="usecase-card fade-in">
+                <span class="usecase-icon">🤖</span>
+                <div class="usecase-title">AI Agents &amp; Pipelines</div>
+                <div class="usecase-desc">Multi-agent systems that handle user data need a security layer. Guardian sits
+                    at every node, not just the edge.</div>
+            </div>
+            <div class="usecase-card fade-in">
+                <span class="usecase-icon">🎓</span>
+                <div class="usecase-title">EdTech Platforms</div>
+                <div class="usecase-desc">Student PII stays off cloud servers. Jailbreak detection prevents policy
+                    violations in AI tutoring systems.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPLIANCE -->
+    <section class="compliance relative fade-in">
+        <div class="scan-line"></div>
+        <div class="compliance-inner">
+            <span class="section-tag">// REGULATORY COVERAGE</span>
+            <h2 class="section-title">BUILT FOR COMPLIANCE</h2>
+            <p
+                style="font-family:var(--body); font-size:15px; color:var(--text-dim); margin-top:16px; line-height:1.6;">
+                Guardian's detection is built around real regulatory requirements — not theoretical ones.
+            </p>
+            <div class="compliance-badges">
+                <div class="badge">India DPDP Act 2023</div>
+                <div class="badge">GDPR</div>
+                <div class="badge">HIPAA</div>
+                <div class="badge">CCPA</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section relative fade-in">
+        <div class="scan-line"></div>
+        <div class="cta-title">DEPLOY IN 60 SECONDS</div>
+        <div class="cta-sub">// FREE · OPEN SOURCE · LOCAL-FIRST · APACHE-2.0</div>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+            <a href="https://github.com/ashp15205/guardian-runtime" class="btn-primary">⬡ GITHUB REPO</a>
+            <a href="#quickstart" class="btn-secondary">READ THE DOCS</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-copy">© 2026 GUARDIAN RUNTIME — APACHE-2.0 LICENSE</div>
+        <div class="footer-links">
+            <a href="https://github.com/ashp15205/guardian-runtime">GitHub</a>
+            <a href="https://github.com/ashp15205/guardian-runtime/issues">Issues</a>
+            <a href="https://github.com/ashp15205/guardian-runtime/blob/main/CHANGELOG.md">Changelog</a>
+        </div>
+    </footer>
+
+    <script>
+        // Intersection Observer for fade-ins
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Threat counter animation
+        let count = 0;
+        const target = 2847391;
+        const el = document.getElementById('count');
+        function animateCount() {
+            const step = Math.ceil((target - count) / 20);
+            count = Math.min(count + step, target);
+            el.textContent = count.toLocaleString();
+            if (count < target) setTimeout(animateCount, 30);
+        }
+        setTimeout(animateCount, 1000);
+
+        // Live incrementing counter (fake but fun)
+        setInterval(() => {
+            count += Math.floor(Math.random() * 3) + 1;
+            el.textContent = count.toLocaleString();
+        }, 2000);
+    </script>
+</body>
+
+</html>

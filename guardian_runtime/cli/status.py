@@ -1,5 +1,6 @@
-"""guardian_runtime status — show license and usage."""
+"""guardian_runtime status — show current usage and system state."""
 
+import json
 import click
 
 from guardian_runtime.core.storage import LocalStorage
@@ -7,35 +8,25 @@ from guardian_runtime.core.storage import LocalStorage
 
 @click.command("status")
 def status_command() -> None:
-    """Show current license, plan, and usage."""
+    """Show current usage analytics and active guards."""
     storage = LocalStorage()
-    config = storage.load_license()
     usage = storage.get_usage()
-    allowed, used, limit = storage.check_usage_limit()
+    checks = usage.get("checks", 0)
 
-    if config:
-        key = config.get("license_key", "")
-        masked = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else key
-        click.echo(f"License: {masked}")
-        click.echo(f"Plan: {config.get('plan', 'free')}")
-    else:
-        click.echo("License: not configured (offline free tier)")
-        click.echo("Plan: free")
-
-    click.echo(f"Checks this month: {used} / {limit}")
-    click.echo(f"Last sync: {usage.get('last_sync') or 'never'}")
-    click.echo(f"Status: {'ACTIVE' if allowed else 'LIMIT REACHED'}")
+    click.echo("⛨  GuardianRuntime — System Status")
+    click.echo("─" * 40)
+    click.echo(f"Status:       ACTIVE (open source, no limits)")
+    click.echo(f"Checks this month: {checks:,}")
 
     # Aggregate tokens and cost from logs
     from guardian_runtime.logging.local import LOGS_DIR
-    import json
-    
+
     total_original_in = 0
     total_in = 0
     total_saved = 0
     total_out = 0
     total_cost = 0.0
-    
+
     if LOGS_DIR.exists():
         for log_file in LOGS_DIR.glob("*.jsonl"):
             try:
@@ -44,17 +35,17 @@ def status_command() -> None:
                         continue
                     data = json.loads(line)
                     meta = data.get("metadata", {})
-                    
+
                     in_tok = meta.get("input_tokens", 0)
                     total_in += in_tok
                     total_out += meta.get("output_tokens", 0)
                     total_cost += meta.get("estimated_cost_usd", 0.0)
-                    
+
                     total_original_in += meta.get("original_input_tokens", in_tok)
                     total_saved += meta.get("saved_tokens", 0)
             except Exception:
                 pass
-                
+
     click.echo("\n--- Usage Analytics ---")
     click.echo(f"Original Input Tokens:  {total_original_in:,}")
     click.echo(f"Optimized Input Tokens: {total_in:,} (-{total_saved:,} saved)")

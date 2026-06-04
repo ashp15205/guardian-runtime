@@ -4,7 +4,6 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-from guardian_runtime.core.license import LicenseManager
 from guardian_runtime.core.models import GuardianRuntimeBlockedError, GuardianRuntimeResponse, Violation
 from guardian_runtime.core.policy import InteractiveMode, LLMProvider, Policy
 from guardian_runtime.core.storage import LocalStorage
@@ -21,20 +20,18 @@ DEFAULT_BLOCK_MESSAGE = "Request blocked by GuardianRuntime Runtime policy."
 
 
 class GuardianRuntimeEngine:
-    """Orchestrates: license check → input guard → LLM → output guard → log."""
+    """Orchestrates: input guard → LLM → output guard → log."""
 
     def __init__(
         self,
         policy: Policy,
         storage: LocalStorage | None = None,
-        license_manager: LicenseManager | None = None,
         logger: LocalLogger | None = None,
         providers: dict[str, ChatProvider] | None = None,
         openai_client: Any | None = None,
     ) -> None:
         self.policy = policy
         self.storage = storage or LocalStorage()
-        self.license = license_manager or LicenseManager(self.storage)
         self.logger = logger or LocalLogger()
         self.input_guard = InputGuard()
         self.output_guard = OutputGuard()
@@ -64,23 +61,6 @@ class GuardianRuntimeEngine:
 
         provider_name = self._resolve_provider_name(agent_policy, provider)
         model_name = model or self._resolve_model(agent_policy, provider_name)
-
-        if not self.license.check_or_sync():
-            violations.append(
-                Violation(
-                    type="usage_limit",
-                    severity="high",
-                    detail="Monthly GuardianRuntime check limit exceeded",
-                    action="blocked",
-                )
-            )
-            response = self._blocked_response(
-                violations, model_name, provider=provider_name
-            )
-            self._finalize(response, agent_id, session_id, count_usage=False)
-            if raise_on_block:
-                raise GuardianRuntimeBlockedError(response)
-            return response
 
         input_tokens = count_messages_tokens(messages, model_name)
         
