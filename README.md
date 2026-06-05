@@ -10,6 +10,14 @@
 </p>
 
 <p align="center">
+  <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/v/guardian-runtime.svg?style=for-the-badge&color=00ff88&logo=pypi&logoColor=white" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=for-the-badge&logo=python&logoColor=white" alt="Python Versions"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/no%20signup-no%20API%20key-00ff88?style=for-the-badge" alt="No signup required">
+  <img src="https://img.shields.io/badge/100%25-local%20execution-00ff88?style=for-the-badge" alt="100% Local">
+</p>
+
+<p align="center">
   🌐 <strong>Website & Docs:</strong> <a href="https://ashp15205.github.io/guardian-runtime/">https://ashp15205.github.io/guardian-runtime/</a><br>
   📦 <strong>Available on PyPI:</strong> <a href="https://pypi.org/project/guardian-runtime/">https://pypi.org/project/guardian-runtime/</a>
 </p>
