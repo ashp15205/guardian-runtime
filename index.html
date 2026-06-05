@@ -1008,6 +1008,95 @@
             position: relative;
             overflow: hidden;
         }
+
+        /* ── MOBILE RESPONSIVENESS ── */
+        @media (max-width: 768px) {
+            nav {
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 12px;
+                position: static;
+            }
+
+            .nav-links {
+                position: static;
+                transform: none;
+                gap: 16px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero,
+            .pipeline,
+            .features,
+            .quickstart,
+            .usecases,
+            .compliance,
+            footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .hero-title {
+                font-size: clamp(36px, 12vw, 60px);
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                text-align: center;
+            }
+
+            .status-bar {
+                padding: 8px 12px;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                font-size: 9px;
+                position: static;
+            }
+
+            .step {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .step-num {
+                font-size: 40px;
+                margin-bottom: 8px;
+            }
+
+            .terminal,
+            .code-block {
+                padding: 16px;
+                font-size: 11px;
+                overflow-x: auto;
+                max-width: calc(100vw - 40px);
+            }
+
+            .pipeline-flow {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .pipe-arrow {
+                transform: rotate(90deg);
+                margin: 8px auto;
+                display: block;
+                text-align: center;
+            }
+
+            .compliance-badges {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
     </style>
 </head>
 
@@ -1374,7 +1463,8 @@
                         <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost:</span>
                         <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daily_budget: <span class="ok">10.00</span> <span class="c"># Strict daily budget limit in USD ($)</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daily_budget: <span class="ok">10.00</span> <span
+                            class="c"># Strict daily budget limit in USD ($)</span>
                         <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_input_tokens: <span class="ok">50000</span>
                         <br>
