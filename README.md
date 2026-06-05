@@ -1,6 +1,5 @@
 <p align="center">
   <img src="https://img.shields.io/badge/GuardianRuntime-Local%20AI%20Firewall-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="GuardianRuntime" />
-  <a href="https://github.com/ashp15205/guardian-runtime/actions"><img src="https://img.shields.io/github/actions/workflow/status/ashp15205/guardian-runtime/ci.yml?branch=main&style=for-the-badge" alt="CI Status"></a>
 </p>
 
 <h1 align="center">Guardian Runtime</h1>
