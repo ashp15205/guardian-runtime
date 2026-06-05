@@ -56,7 +56,7 @@
                  │
                  ▼
  ┌──────────────────────────────────────┐
- │ 🛡 GUARDIAN RUNTIME (Local Proxy)     │
+ │   GUARDIAN RUNTIME (Local Proxy)     │
  │                                      │
  │  1. Input Guard (PII/Secrets)        │ ──(Blocks Threats)
  │  2. Token Optimizer                  │ ──(Reduces Cost)
@@ -68,7 +68,7 @@
                  │
                  ▼
  ┌──────────────────────────────────────┐
- │ 🛡 GUARDIAN RUNTIME (Local Proxy)     │
+ │  GUARDIAN RUNTIME (Local Proxy)      │
  │                                      │
  │  1. Output Guard (Auditor)           │ ──(Flags Leaks/PII)
  └───────────────┬──────────────────────┘
