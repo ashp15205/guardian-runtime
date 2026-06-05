@@ -11,6 +11,7 @@ from guardian_runtime.cli.dashboard import dashboard_command
 from guardian_runtime.cli.scan import scan_command
 from guardian_runtime.cli.convert import convert_command
 from guardian_runtime.cli.analytics import analytics_command
+from guardian_runtime.cli.clean import clean_command
 
 
 @click.group()
@@ -28,3 +29,4 @@ cli.add_command(dashboard_command, "dashboard")
 cli.add_command(scan_command, "scan")
 cli.add_command(convert_command, "convert")
 cli.add_command(analytics_command, "analytics")
+cli.add_command(clean_command, "clean")

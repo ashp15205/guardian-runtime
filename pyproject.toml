@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardian-runtime"
-version = "1.0.10"
+version = "1.0.11"
 description = "Local-first runtime governance layer for AI systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -53,6 +53,7 @@ langchain = [
 openai = ["openai>=1.0"]
 anthropic = ["anthropic>=0.40"]
 google = ["google-genai>=0.8.0"]
+gemini = ["google-genai>=0.8.0"]
 docs = ["markitdown[all]>=0.0.1"]
 all = ["guardian-runtime[presidio,langchain]"]
 

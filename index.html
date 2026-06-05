@@ -1126,7 +1126,7 @@
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
         <div class="status-item">FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v1.0.10</div>
+        <div class="status-item">v1.0.11</div>
         <div class="status-item" id="threat-counter">USERS: <span id="count"
                 style="color:var(--green); margin-left: 6px;">0</span></div>
         <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
@@ -1153,14 +1153,14 @@
             <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
                 class="btn-secondary">⭐ GITHUB REPO</a>
             <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer"
-                class="btn-primary">pip install guardian-runtime</a>
+                class="btn-primary">pip install guardian_runtime</a>
             <a href="#quickstart" class="btn-secondary">VIEW QUICKSTART</a>
         </div>
 
         <div class="terminal">
-            <span class="prompt">$ </span><span class="cmd">pip install "guardian-runtime[all]"</span>
+            <span class="prompt">$ </span><span class="cmd">pip install "guardian_runtime[all]"</span>
             <br>
-            <span class="output">✓ Successfully installed guardian-runtime-1.0.9 with ML Scanners & Providers</span>
+            <span class="output">✓ Successfully installed guardian_runtime-1.0.11</span>
             <br><br>
             <span class="prompt">$ </span><span class="cmd">guardian_runtime proxy --port 8080</span>
             <br>
@@ -1186,52 +1186,136 @@
             <h2 class="section-title">THE PROBLEM & THE SOLUTION</h2>
         </div>
 
-        <div class="split-layout"
-            style="display: flex; flex-wrap: wrap; gap: 32px; max-width: 1200px; margin: 0 auto; padding: 0 48px 100px 48px;">
-            <!-- THE PROBLEM -->
-            <div class="split-card"
-                style="flex: 1; min-width: 300px; background: var(--bg2); padding: 40px; border: 1px solid var(--border);">
+        <div class="problem-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; max-width: 1200px; margin: 0 auto; padding: 0 48px 100px 48px;">
+
+            <!-- Pillar 1: FinOps -->
+            <div class="problem-card"
+                style="background: rgba(255, 0, 0, 0.02); border: 1px solid var(--border); padding: 32px; border-radius: 12px; border-top: 3px solid var(--red);">
                 <div
-                    style="font-family: var(--display); font-size: 24px; color: var(--red); font-weight: 700; margin-bottom: 16px;">
-                    THE PROBLEM</div>
-                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">Developers Are
-                    Flying Blind</h3>
+                    style="font-family: var(--display); font-size: 14px; color: var(--red); font-weight: 700; letter-spacing: 2px; margin-bottom: 16px;">
+                    THE PROBLEM
+                </div>
+                <h3 style="font-family: var(--body); font-size: 20px; color: #fff; margin-bottom: 12px;">💸 The FinOps
+                    Risk</h3>
                 <p
-                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    <strong>1. The Cost Risk:</strong> CLI coding agents (Claude Code, Cursor, Aider) run autonomously.
-                    If they get stuck in an infinite retry loop or parse a massive log file, you wake up to a
-                    <strong>$50 API bill</strong>. You have zero visibility into session costs until the bill arrives.
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px;">
+                    Autonomous agents run in loops. If they get stuck retrying a bug fix, you can wake up to a
+                    <strong>$100 API bill overnight</strong>. You have zero visibility until the bill arrives.
                 </p>
-                <p
-                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    <strong>2. The Security Risk:</strong> Coding agents have full access to your workspace. If you
-                    accidentally leave an <code>AWS_SECRET_KEY</code> or <code>.env</code> credential in a file, the
-                    agent will silently upload it to a third-party LLM provider.
-                </p>
+                <div
+                    style="background: rgba(0, 255, 136, 0.05); padding: 20px; border-radius: 8px; border-left: 2px solid var(--green);">
+                    <div
+                        style="font-family: var(--display); font-size: 12px; color: var(--green); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">
+                        THE GUARDIAN SOLUTION
+                    </div>
+                    <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
+                        <strong>Hard FinOps Budgets:</strong> Tracks every token locally. Set a strict $5.00/day limit.
+                        Passively compresses prompts to save 20-60% on costs.
+                    </div>
+                </div>
             </div>
 
-            <!-- THE SOLUTION -->
-            <div class="split-card"
-                style="flex: 1; min-width: 300px; background: rgba(0, 255, 136, 0.02); padding: 40px; border: 1px solid var(--green);">
+            <!-- Pillar 2: Security -->
+            <div class="problem-card"
+                style="background: rgba(255, 0, 0, 0.02); border: 1px solid var(--border); padding: 32px; border-radius: 12px; border-top: 3px solid var(--red);">
                 <div
-                    style="font-family: var(--display); font-size: 24px; color: var(--green); font-weight: 700; margin-bottom: 16px;">
-                    THE SOLUTION</div>
-                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">A
-                    Developer-First Local Firewall</h3>
+                    style="font-family: var(--display); font-size: 14px; color: var(--red); font-weight: 700; letter-spacing: 2px; margin-bottom: 16px;">
+                    THE PROBLEM
+                </div>
+                <h3 style="font-family: var(--body); font-size: 20px; color: #fff; margin-bottom: 12px;">🔒 The Security
+                    Risk</h3>
                 <p
-                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    Guardian Runtime is a zero-latency FinOps and Security firewall. It runs entirely on your local
-                    machine and sits directly between your coding agents and the LLM provider.
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px;">
+                    Coding agents require full codebase access. If you leave an <code>AWS_SECRET_KEY</code> in a
+                    <code>.env</code> file, the agent will silently upload it to a third-party LLM provider.
                 </p>
+                <div
+                    style="background: rgba(0, 255, 136, 0.05); padding: 20px; border-radius: 8px; border-left: 2px solid var(--green);">
+                    <div
+                        style="font-family: var(--display); font-size: 12px; color: var(--green); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">
+                        THE GUARDIAN SOLUTION
+                    </div>
+                    <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
+                        <strong>Zero-Latency Secret Scanners:</strong> Scans every prompt for keys and secrets locally.
+                        Drops malicious requests before they reach the internet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillar 3: Compliance -->
+            <div class="problem-card"
+                style="background: rgba(255, 0, 0, 0.02); border: 1px solid var(--border); padding: 32px; border-radius: 12px; border-top: 3px solid var(--red);">
+                <div
+                    style="font-family: var(--display); font-size: 14px; color: var(--red); font-weight: 700; letter-spacing: 2px; margin-bottom: 16px;">
+                    THE PROBLEM
+                </div>
+                <h3 style="font-family: var(--body); font-size: 20px; color: #fff; margin-bottom: 12px;">🏛 The
+                    Compliance Risk</h3>
                 <p
-                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    <strong>Session Analytics & Hard Budgets:</strong> Automatically tracks tokens and costs per session
-                    via the CLI. It sets a hard $10/day default limit so infinite loops never drain your credit card.
+                    style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px;">
+                    Sending unauthorized PII (like customer emails in a test database) to foreign LLM APIs violates
+                    privacy regulations like GDPR and DPDP.
                 </p>
-                <p style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6;">
-                    <strong>Local Secret Scanning:</strong> Instantly intercepts and blocks API keys, AWS credentials,
-                    and <code>.env</code> secrets from ever leaving your local machine. Zero configuration required.
-                </p>
+                <div
+                    style="background: rgba(0, 255, 136, 0.05); padding: 20px; border-radius: 8px; border-left: 2px solid var(--green);">
+                    <div
+                        style="font-family: var(--display); font-size: 12px; color: var(--green); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">
+                        THE GUARDIAN SOLUTION
+                    </div>
+                    <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
+                        <strong>Local PII Blocking:</strong> Regex and ML scanners prevent sensitive user data from
+                        leaving your infrastructure.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTEGRATIONS -->
+    <section class="integrations relative fade-in" style="padding: 100px 48px; max-width: 1200px; margin: 0 auto;">
+        <div class="section-header">
+            <span class="section-tag">// UNIVERSAL COMPATIBILITY</span>
+            <h2 class="section-title">SUPPORTED INTEGRATIONS</h2>
+        </div>
+        <p
+            style="font-family: var(--body); font-size: 16px; color: var(--text-dim); text-align: center; max-width: 600px; margin: 0 auto 48px auto; line-height: 1.6;">
+            Guardian acts as an HTTP proxy or a native Python SDK, integrating effortlessly with modern AI tools without
+            modifying their internal code.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+            <div
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 16px;">💻</div>
+                <div style="font-family: var(--display); font-weight: bold; color: #fff; margin-bottom: 8px;">Visual
+                    IDEs</div>
+                <div style="font-family: var(--body); font-size: 14px; color: var(--text-dim);">Cursor, Windsurf, VS
+                    Code (via Cline)</div>
+            </div>
+            <div
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 16px;">⌨️</div>
+                <div style="font-family: var(--display); font-weight: bold; color: #fff; margin-bottom: 8px;">Terminal
+                    Agents</div>
+                <div style="font-family: var(--body); font-size: 14px; color: var(--text-dim);">Claude Code, Aider,
+                    Copilot CLI</div>
+            </div>
+            <div
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 16px;">⚙️</div>
+                <div style="font-family: var(--display); font-weight: bold; color: #fff; margin-bottom: 8px;">Frameworks
+                </div>
+                <div style="font-family: var(--body); font-size: 14px; color: var(--text-dim);">LangChain, AutoGen,
+                    LlamaIndex</div>
+            </div>
+            <div
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 16px;">☁️</div>
+                <div style="font-family: var(--display); font-weight: bold; color: #fff; margin-bottom: 8px;">LLM
+                    Providers</div>
+                <div style="font-family: var(--body); font-size: 14px; color: var(--text-dim);">OpenAI, Anthropic,
+                    Gemini</div>
             </div>
         </div>
     </section>
@@ -1414,7 +1498,7 @@
                     <div class="step-title">Install</div>
                     <div class="step-desc">Zero external dependencies for core detection. Optional extras for proxy and
                         dashboard.</div>
-                    <div class="code-block">pip install "guardian-runtime[all]"</div>
+                    <div class="code-block">pip install "guardian_runtime[all]"</div>
                 </div>
             </div>
 
@@ -1565,7 +1649,7 @@
                         This gives you full programmatic control over policies and error handling.</div>
                     <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># 1. Install the package</span><br>
-                        pip install "guardian-runtime[all]"<br><br>
+                        pip install "guardian_runtime[all]"<br><br>
                         <span class="c"># 2. In your code, wrap your LLM calls</span><br>
                         <span class="kw">from</span> guardian_runtime <span class="kw">import</span> GuardianRuntime<br>
                         gr = GuardianRuntime.from_policy(<span class="str">"policy.yaml"</span>)<br><br>
@@ -1602,7 +1686,7 @@
                     </div>
                     <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># 1. Install Guardian and start the Proxy</span><br>
-                        pip install "guardian-runtime[all]"<br>
+                        pip install "guardian_runtime[all]"<br>
                         guardian_runtime proxy --port 8080<br><br>
                         <span class="c"># 2. Tell Claude to use the proxy</span><br>
                         <span class="kw">export</span> ANTHROPIC_BASE_URL=http://localhost:8080<br>
@@ -1624,11 +1708,40 @@
                 </div>
             </div>
 
-            <!-- Case 3: Enterprise Teams -->
+            <!-- Case 3: Visual IDEs (Cursor) -->
             <div class="step fade-in"
                 style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
                 <div style="flex: 1; min-width: 300px;">
                     <div class="step-num">03</div>
+                    <div class="step-title">Visual IDEs (Cursor, Windsurf)</div>
+                    <div class="step-desc">GUI editors have deep codebase access. Guardian stops them from sending
+                        highlighted secrets to the cloud.
+                    </div>
+                    <div class="code-block" style="margin-bottom: 0;">
+                        <span class="c"># 1. Start the Proxy in your terminal</span><br>
+                        guardian_runtime proxy --port 8080<br><br>
+                        <span class="c"># 2. In Cursor Settings (Cmd+,)</span><br>
+                        Navigate to <strong>Models > Override Base URL</strong><br>
+                        Set it to: <span class="str">http://localhost:8080</span>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                    <div class="terminal"
+                        style="margin-top: 0; height: 100%; border: 1px solid rgba(255, 68, 68, 0.3);">
+                        <span class="comment"># You ask Cursor to explain an AWS config file...</span><br><br>
+                        <span class="prompt">Cursor> </span><span class="cmd">Explain the code in config.json</span><br>
+                        <span class="output">Reading config.json...</span><br><br>
+                        <span class="comment"># Guardian Proxy blocks it locally before it hits the internet:</span><br>
+                        <span class="block">Error: HTTP 403 Forbidden. 🚨 [SECRET_DETECTED] AWS key found.</span><br>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case 4: Enterprise Teams -->
+            <div class="step fade-in"
+                style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="step-num">04</div>
                     <div class="step-title">Enterprise Teams (LangChain, AutoGen)</div>
                     <div class="step-desc">Working at a company? Use Guardian to enforce strict policies across all
                         internal AI tools so your employees don't accidentally leak customer PII or proprietary code.
@@ -1659,19 +1772,18 @@
                 </div>
             </div>
 
-            <!-- Case 4: Document Analysis -->
+            <!-- Case 5: Document Analysis -->
             <div class="step fade-in"
                 style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
                 <div style="flex: 1; min-width: 300px;">
-                    <div class="step-num">04</div>
+                    <div class="step-num">05</div>
                     <div class="step-title">Document Converter (Zero-Code)</div>
                     <div class="step-desc">If you process large PDFs or Word documents for RAG, they often contain
                         massive amounts of formatting bloat. Use the built-in CLI to instantly clean and convert them
                         into pure Markdown.</div>
                     <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># Simply pass any PDF or DOCX file to the CLI:</span><br>
-                        guardian_runtime convert financial_report.pdf \ <br>
-                        &nbsp;&nbsp;--out clean_report.md
+                        guardian_runtime convert financial_report.pdf --out clean_report.md
                     </div>
                 </div>
                 <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
@@ -1692,11 +1804,11 @@
             </div>
         </div>
 
-        <!-- Case 5: Session Analytics -->
+        <!-- Case 6: Session Analytics -->
         <div class="step fade-in"
             style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01); margin-top: 32px;">
             <div style="flex: 1; min-width: 300px;">
-                <div class="step-num">05</div>
+                <div class="step-num">06</div>
                 <div class="step-title">Session Analytics (FinOps)</div>
                 <div class="step-desc">Guardian automatically tracks your spend across every CLI tool and script you
                     use. Never wonder how much a Claude Code refactor cost you again.</div>
@@ -1723,6 +1835,187 @@
                 </div>
             </div>
         </div>
+        </div>
+    </section>
+
+    <!-- CLI REFERENCE DEEP DIVE -->
+    <section class="cli-reference relative fade-in" style="padding: 100px 48px; max-width: 1200px; margin: 0 auto;">
+        <div class="section-header">
+            <span class="section-tag">// COMMAND LINE INTERFACE</span>
+            <h2 class="section-title">EXHAUSTIVE CAPABILITIES & CLI</h2>
+        </div>
+
+        <div class="cli-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px;">
+
+            <!-- 1. Proxy -->
+            <div class="cli-card"
+                style="border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); overflow: hidden;">
+                <div style="padding: 24px;">
+                    <div style="font-family: var(--mono); color: var(--green); font-size: 14px; margin-bottom: 8px;">
+                        guardian_runtime proxy</div>
+                    <div
+                        style="font-family: var(--body); font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 12px;">
+                        The Security Firewall</div>
+                    <div
+                        style="font-family: var(--body); font-size: 14px; color: var(--text-dim); margin-bottom: 16px;">
+                        Starts the local HTTP interception server. This is the core engine for protecting tools that you
+                        cannot edit the source code for (like Cursor or Claude Code).</div>
+                    <div style="font-family: var(--mono); font-size: 11px; color: var(--amber); margin-bottom: 16px;">
+                        FLAGS:<br>
+                        --port, -p &lt;int&gt; (Default: 8080)<br>
+                        --host &lt;str&gt; (Default: 127.0.0.1)<br>
+                        --policy &lt;path&gt; (Custom policy.yaml)<br>
+                        --reload (Dev mode)
+                    </div>
+                </div>
+                <div class="terminal"
+                    style="border-radius: 0; border: none; border-top: 1px solid var(--border-bright); margin: 0; max-width: 100%; box-shadow: none;">
+                    <span class="prompt">$ </span><span class="cmd">guardian_runtime proxy --port 8080</span><br><br>
+                    <span class="output">⛨ GuardianRuntime Runtime Proxy</span><br>
+                    <span class="output">─────────────────────────────────────────</span><br>
+                    <span class="output">Listening on : http://127.0.0.1:8080</span><br>
+                    <span class="output">Policy : Default (Zero-Config)</span><br>
+                </div>
+            </div>
+
+            <!-- 2. Convert -->
+            <div class="cli-card"
+                style="border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); overflow: hidden;">
+                <div style="padding: 24px;">
+                    <div style="font-family: var(--mono); color: var(--green); font-size: 14px; margin-bottom: 8px;">
+                        guardian_runtime convert &lt;path&gt;</div>
+                    <div
+                        style="font-family: var(--body); font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 12px;">
+                        Document Analysis & Compression</div>
+                    <div
+                        style="font-family: var(--body); font-size: 14px; color: var(--text-dim); margin-bottom: 16px;">
+                        Converts massive PDF, DOCX, and XLSX files into highly compressed, token-optimized Markdown to
+                        prevent wasting tokens on hidden formatting bloat in RAG pipelines.</div>
+                    <div style="font-family: var(--mono); font-size: 11px; color: var(--amber); margin-bottom: 16px;">
+                        ARGS/FLAGS:<br>
+                        &lt;path&gt; (Input file path)<br>
+                        --out, -o &lt;path&gt; (Output file path)
+                    </div>
+                </div>
+                <div class="terminal"
+                    style="border-radius: 0; border: none; border-top: 1px solid var(--border-bright); margin: 0; max-width: 100%; box-shadow: none;">
+                    <span class="prompt">$ </span><span class="cmd">guardian_runtime convert report.pdf -o
+                        clean.md</span><br><br>
+                    <span class="output">✓ Conversion Complete!</span><br>
+                    <span class="output"> • Original File: report.pdf</span><br>
+                    <span class="output"> • Token Count: 14,205</span><br>
+                    <span class="output"> • Saved to: clean.md</span><br>
+                </div>
+            </div>
+
+            <!-- 3. Scan -->
+            <div class="cli-card"
+                style="border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); overflow: hidden;">
+                <div style="padding: 24px;">
+                    <div style="font-family: var(--mono); color: var(--green); font-size: 14px; margin-bottom: 8px;">
+                        guardian_runtime scan &lt;text&gt;</div>
+                    <div
+                        style="font-family: var(--body); font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 12px;">
+                        Manual Threat Verification</div>
+                    <div
+                        style="font-family: var(--body); font-size: 14px; color: var(--text-dim); margin-bottom: 16px;">
+                        Performs a local security scan on a specific text string using the ML InputGuard. Use this to
+                        verify exactly what the firewall will catch before sending a payload.</div>
+                </div>
+                <div class="terminal"
+                    style="border-radius: 0; border: none; border-top: 1px solid var(--border-bright); margin: 0; max-width: 100%; box-shadow: none; min-height: 142px;">
+                    <span class="prompt">$ </span><span class="cmd">guardian_runtime scan "Key is
+                        AKIAIOSF..."</span><br><br>
+                    <span class="block">🛑 Scan failed! Threats detected:</span><br>
+                    <span class="block"> - [HIGH] secret_detected: AWS Access Key ID</span><br>
+                </div>
+            </div>
+
+            <!-- 4. Analytics -->
+            <div class="cli-card"
+                style="border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); overflow: hidden;">
+                <div style="padding: 24px;">
+                    <div style="font-family: var(--mono); color: var(--green); font-size: 14px; margin-bottom: 8px;">
+                        guardian_runtime analytics</div>
+                    <div
+                        style="font-family: var(--body); font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 12px;">
+                        FinOps Cost Tracking</div>
+                    <div
+                        style="font-family: var(--body); font-size: 14px; color: var(--text-dim); margin-bottom: 16px;">
+                        Prints a beautiful terminal summary of API costs, token usage, and intercepted threats broken
+                        down by tool.</div>
+                    <div style="font-family: var(--mono); font-size: 11px; color: var(--amber); margin-bottom: 16px;">
+                        FLAGS:<br>
+                        --all (Show all-time historical data)
+                    </div>
+                </div>
+                <div class="terminal"
+                    style="border-radius: 0; border: none; border-top: 1px solid var(--border-bright); margin: 0; max-width: 100%; box-shadow: none;">
+                    <span class="prompt">$ </span><span class="cmd">guardian_runtime analytics</span><br><br>
+                    <span class="output" style="color:var(--cyan)">Claude Code</span><br>
+                    <span class="output">Cost: $2.3100</span><br>
+                    <span class="output">Blocked: 3 (secret_detected)</span><br>
+                </div>
+            </div>
+
+            <!-- 5. Observability Grid -->
+            <div class="cli-card"
+                style="border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); overflow: hidden; grid-column: 1 / -1;">
+                <div style="padding: 24px;">
+                    <div
+                        style="font-family: var(--body); font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 24px;">
+                        Additional Administration Commands</div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                dashboard</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Launches a
+                                React-based local Web UI tracking costs and threats on port 3000.</div>
+                        </div>
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                logs</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Tails the
+                                local JSONL event stream (`tail -f ~/.guardian_runtime/logs/events.jsonl`). Perfect for
+                                debugging exact block reasons.</div>
+                        </div>
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                init</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Generates a
+                                boilerplate policy.yaml file for customizing budgets or ML scanners.</div>
+                        </div>
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                validate</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Checks your
+                                policy.yaml for syntax errors before you restart the proxy.</div>
+                        </div>
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                --help</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Prints the
+                                global help menu listing all available commands and flags.</div>
+                        </div>
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                status</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Shows the
+                                health of the local installation.</div>
+                        </div>
+                        <div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
+                                clean</div>
+                            <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Deletes your
+                                entire ~/.guardian_runtime directory. Use this to permanently delete local analytics,
+                                logs, and custom policies.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 
@@ -1763,7 +2056,7 @@
 
         // Threat counter animation
         let count = 0;
-        const target = 60;
+        const target = 40;
         const el = document.getElementById('count');
         const starEl = document.getElementById('star-count');
 

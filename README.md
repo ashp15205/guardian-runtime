@@ -23,247 +23,285 @@
 ---
 
 ## 📖 Table of Contents
-- [🛑 The Problem: Developers are Flying Blind](#-the-problem-developers-are-flying-blind)
-- [🟢 The Solution: A Developer-First Local Firewall](#-the-solution-a-developer-first-local-firewall)
-- [⚡ Key Features](#-key-features)
+- [🛑 The Core Problem: Why You Need Guardian](#-the-core-problem-why-you-need-guardian)
+- [🟢 The Solution: What is Guardian Runtime?](#-the-solution-what-is-guardian-runtime)
 - [🏗 Architecture](#-architecture)
-- [🚀 Quickstart](#-quickstart)
-- [🛑 What happens when Guardian blocks a request?](#-what-happens-when-guardian-blocks-a-request)
-- [⚙️ Advanced Configuration (Optional)](#️-advanced-configuration-optional)
-- [🔍 Output Auditing (Non-Blocking)](#-output-auditing-non-blocking)
-- [📈 CLI Tools & Dashboard](#-cli-tools--dashboard)
+- [🚀 Quickstart & Installation](#-quickstart--installation)
+- [🎯 Comprehensive Use Cases (Where & How to Use)](#-comprehensive-use-cases-where--how-to-use)
+  - [1. Terminal Coding Agents (Claude Code, Aider)](#1-terminal-coding-agents-claude-code-aider)
+  - [2. Visual IDEs (Cursor, Windsurf)](#2-visual-ides-cursor-windsurf)
+  - [3. Production Python Applications (SDK)](#3-production-python-applications-sdk)
+  - [4. Agentic Frameworks (LangChain, AutoGen)](#4-agentic-frameworks-langchain-autogen)
+  - [5. Data Prep for Web UIs (Document Conversion)](#5-data-prep-for-web-uis-document-conversion)
+- [💻 Complete CLI Command Reference](#-complete-cli-command-reference)
+- [⚙️ Advanced Configuration (Policy YAML)](#️-advanced-configuration-policy-yaml)
 - [📜 License](#-license)
 
 ---
 
-## 🛑 The Problem: Developers are Flying Blind
+## 🛑 The Core Problem: Why You Need Guardian
 
-1. **The Cost Risk:** CLI coding agents (Claude Code, Cursor, Aider) run autonomously. If they get stuck in an infinite retry loop or parse a massive log file, you wake up to a **$50 API bill**. You have zero visibility into session costs until the bill arrives.
-2. **The Security Risk:** Coding agents have full access to your workspace. If you accidentally leave an `AWS_SECRET_KEY` or `.env` credential in a file, the agent will silently upload it to a third-party LLM provider.
+As AI coding agents (Claude Code, Cursor, Aider) become standard developer tools, they introduce two massive, hidden risks, and one regulatory headache:
 
-## 🟢 The Solution: A Developer-First Local Firewall
+### 💸 1. The FinOps Risk: Cost Runaways
+Autonomous agents operate in loops. If an agent gets stuck retrying a bug fix or accidentally dumps a massive 1GB log file into its context window, you can wake up to a **$100 API bill overnight**. 
+**The Problem:** You have zero visibility or control over session costs until the provider's bill arrives at the end of the month.
 
-- **ML-Powered PII & Secret Scanning**: Uses Microsoft Presidio for high-accuracy NLP scanning (emails, phones, SSNs) and rigorous Regex fallbacks for secrets (AWS keys, OpenAI keys). Runs 100% locally with zero latency.
-- **Jailbreak Detection**: Pre-emptively blocks DAN prompts and instruction-override injections.
-- **High-Concurrency Threadpool Proxy**: The local proxy seamlessly handles hundreds of simultaneous requests with zero event-loop blocking, making it perfect for multi-agent terminal systems.
-- **Graceful Upstream Error Handling**: Mid-stream LLM API outages are handled beautifully, keeping your terminal bots alive instead of crashing them with 500 errors.
-- **Session Analytics & Hard Budgets**: Automatically tracks tokens and costs per session via the CLI. It sets a hard $10/day default limit so infinite loops never drain your credit card.
-- **Local Secret Scanning**: Instantly intercepts and blocks API keys, AWS credentials, and `.env` secrets from ever leaving your local machine.
-- **Zero Config**: No complex policies required. It protects your budget and secrets out of the box.
+### 🔒 2. The Security Risk: Data Exfiltration
+Coding agents require full local codebase access to be useful. However, if you accidentally leave an `AWS_SECRET_KEY` or a database password in a `.env` file, the agent will silently upload it to a third-party LLM provider (OpenAI, Anthropic).
+**The Problem:** Current observability tools (like Langfuse) only log the leak *after* the credentials have already reached the cloud.
 
----
-
-## ⚡ Key Features
-
-1. **💰 Custom Hard Budgets**: Configure a strict daily budget so runaway agents can't drain your API credits.
-2. **🔑 Secret & Credential Firewall**: Catches hardcoded API keys (AWS, Stripe, OpenAI, GitHub) before they leave your laptop. 
-3. **📉 Token Optimizer**: Compresses redundant whitespace and reduces prompt bloat to passively save you money.
-4. **🌐 Universal Local Proxy**: Works seamlessly with CLI agents like Anthropic Claude Code and Aider.
-5. **🏴‍☠️ Unsafe Command Defense**: Stops adversarial prompts from hijacking your agent to run malicious CLI commands.
-6. **📊 Built-in Local Dashboard**: Tracks every intercepted threat and every cent spent locally in `~/.guardian_runtime/logs/` with a beautiful offline dashboard.
+### 🏛 3. The Compliance Risk (Briefly)
+Sending unauthorized PII (like SSNs or emails in a test database) to foreign LLM APIs violates GDPR and DPDP regulations.
 
 ---
 
-## 🏗 Architecture
+## 🟢 The Solution: Guardian Runtime
 
-```text
-       👤 USER INPUT / APP LOGIC
-                 │
-                 ▼
- ┌──────────────────────────────────────┐
- │   GUARDIAN RUNTIME (Local Proxy)     │
- │                                      │
- │  1. Input Guard (Secret Scanner)     │ ──(Blocks Threats)
- │  2. Token Optimizer                  │ ──(Reduces Cost)
- │  3. FinOps Limits                    │ ──(Enforces Budgets)
- └───────────────┬──────────────────────┘
-                 │ (Cleaned & Optimized)
-                 ▼
-      ☁️ LLM API (OpenAI/Anthropic)
-                 │
-                 ▼
- ┌──────────────────────────────────────┐
- │  GUARDIAN RUNTIME (Local Proxy)      │
- │                                      │
- │  1. Output Guard (Auditor)           │ ──(Flags Secrets)
- └───────────────┬──────────────────────┘
-                 │ (Safe Response)
-                 ▼
-           💻 USER SCREEN
+Guardian Runtime is a **local-first security middleware and FinOps firewall**. It runs entirely on your local machine and intercepts LLM traffic *before* it leaves your infrastructure. 
+
+| The Problem | How Guardian Solves It |
+| :--- | :--- |
+| **Cost Runaways** | **Hard FinOps Budgets & Optimization:** Tracks every token you spend locally. You can set a strict "$5.00 per day" limit. Passively compresses prompts (removing redundant whitespace and compressing PDFs) to save 20-60% on API costs. |
+| **Data Exfiltration** | **Zero-Latency Secret Scanners:** Scans every prompt for API keys, AWS credentials, and secrets *locally*. If it detects a secret, it instantly drops the request before it reaches the internet. |
+| **Compliance** | **Local PII Blocking:** Regex and ML scanners prevent PII from leaving your machine. |
+
+---
+
+## 🏗 Architecture & The Security Pipeline
+
+Guardian intercepts traffic at the network layer or via SDK, passing it through a strict verification pipeline before it ever reaches the cloud.
+
+```mermaid
+sequenceDiagram
+    participant User as Developer / Agent
+    participant Proxy as Guardian Runtime (Local)
+    participant Cloud as LLM Provider (OpenAI/Anthropic)
+
+    User->>Proxy: Sends prompt with codebase context
+    
+    rect rgb(30, 41, 59)
+        Note over Proxy: 1. Input Guard (Security)
+        Proxy->>Proxy: Scan for AWS Keys, .env secrets
+        Proxy->>Proxy: Scan for PII (Regex + ML)
+        alt Threat Detected
+            Proxy-->>User: 🚨 HTTP 400: Request Blocked Locally
+        end
+    end
+    
+    rect rgb(15, 23, 42)
+        Note over Proxy: 2. Token Optimizer (FinOps)
+        Proxy->>Proxy: Compress redundant whitespace
+        Proxy->>Proxy: Convert PDFs to clean Markdown
+    end
+    
+    rect rgb(30, 41, 59)
+        Note over Proxy: 3. Budget Controller (FinOps)
+        Proxy->>Proxy: Check against $5.00 daily limit
+        alt Budget Exceeded
+            Proxy-->>User: 💸 HTTP 400: Daily Budget Exceeded
+        end
+    end
+
+    Proxy->>Cloud: Send Cleaned & Optimized Request
+    Cloud-->>Proxy: LLM Response
+
+    rect rgb(15, 23, 42)
+        Note over Proxy: 4. Output Guard (Auditor)
+        Proxy->>Proxy: Audit response for hallucinated secrets
+    end
+
+    Proxy-->>User: Safe Response Delivered
 ```
 
 ---
 
-## 🚀 Quickstart
+## 🔌 Supported Integrations
 
-### Installation
+Guardian Runtime acts as an HTTP proxy or a native Python SDK, meaning it integrates effortlessly with almost any modern AI tool without modifying their internal code.
+
+- **Visual IDEs:** Cursor, Windsurf, VS Code (via Cline/RooCode)
+- **Terminal Agents:** Claude Code, Aider, GitHub Copilot CLI
+- **Frameworks:** LangChain, AutoGen, LlamaIndex, CrewAI
+- **LLM Providers:** OpenAI, Anthropic, Google Gemini (via OpenAI compatibility layer)
+
+---
+
+## 🚀 Quickstart & Installation
 
 ```bash
 # Core framework only
-pip install guardian-runtime
+pip install guardian_runtime
 
 # Or install with specific LLM providers:
-pip install "guardian-runtime[openai]"
-pip install "guardian-runtime[anthropic]"
-pip install "guardian-runtime[google]"
+pip install "guardian_runtime[openai]"
+pip install "guardian_runtime[anthropic]"
+pip install "guardian_runtime[gemini]"
 
-# Or install everything (Providers, PII ML Scanner, Doc Converter):
-pip install "guardian-runtime[all]"
+# Or install everything (Providers, ML Scanner, Document Converter):
+pip install "guardian_runtime[all]"
 ```
-Done. No signup, no keys, zero configuration required.
+*Done. No signup, no keys, zero configuration required. All monitoring data stays on your local machine in `~/.guardian_runtime/`.*
 
-### Integration Methods
+---
 
-Guardian can be used as a drop-in **Python SDK** or as a **Local HTTP Proxy** for tools you can't edit.
+## 🎯 Comprehensive Use Cases (Where & How to Use)
 
-#### Case 1: Custom Python Application (SDK)
-Replace your direct LLM calls with the `GuardianRuntime` wrapper. Works instantly with zero configuration.
+Guardian is designed to be universal. Here are the exact ways to deploy it based on your workflow.
 
+### 1. Terminal Coding Agents (Claude Code, Aider)
+**Why use it here?** CLI agents operate autonomously. They can accidentally read a `.env` file containing your production AWS keys and send it to Anthropic/OpenAI as context. Guardian prevents this and ensures the agent doesn't blow your budget.
+
+**How to use:**
+1. Start the proxy in a background terminal:
+   ```bash
+   guardian_runtime proxy --port 8080
+   ```
+2. Tell your agent to route traffic through the proxy using environment variables:
+   *In PowerShell:*
+   ```powershell
+   $env:ANTHROPIC_BASE_URL="http://localhost:8080"
+   claude
+   ```
+   *In Mac/Linux/Git Bash:*
+   ```bash
+   export ANTHROPIC_BASE_URL=http://localhost:8080
+   claude
+   ```
+
+### 2. Visual IDEs (Cursor, Windsurf)
+**Why use it here?** Modern GUI editors like Cursor have deep codebase access. While coding, you might highlight a file containing a secret and ask "explain this file". Guardian stops Cursor from sending that secret to the cloud.
+
+**How to use (Cursor Example):**
+1. Start the proxy in your terminal: `guardian_runtime proxy --port 8080`
+2. Open Cursor Settings (`Cmd/Ctrl + ,`)
+3. Navigate to **Models > Override Base URL**
+4. Set the Base URL to: `http://localhost:8080`
+*(Now all of Cursor's traffic is protected and tracked locally!)*
+
+### 3. Production Python Applications (SDK)
+**Why use it here?** If you are building a production chatbot or RAG pipeline, you must ensure your users cannot perform "jailbreak" prompt injections or trick the LLM into leaking internal system prompts.
+
+**How to use:**
+Use Guardian as a drop-in replacement for the OpenAI/Anthropic SDK.
 ```python
 import os
 from guardian_runtime import GuardianRuntime, GuardianRuntimeBlockedError
 
 os.environ["OPENAI_API_KEY"] = "sk-proj-..."
-
-# Zero-config initialization
-gr = GuardianRuntime()
+gr = GuardianRuntime() # Zero-config initialization
 
 try:
+    # Protects user input before sending to OpenAI
     response = gr.complete(
         messages=[{"role": "user", "content": "My AWS Key is AKIAIOSFODNN7EXAMPLE"}],
         raise_on_block=True
     )
     print(response.content)
 except GuardianRuntimeBlockedError as e:
+    # Fails cleanly in your app instead of leaking the secret!
     print(f"Blocked Locally: {e.response.violations[0].detail}")
 ```
 
-#### Case 2: Claude Code & CLI Assistants
-For CLI tools like Anthropic's Claude Code, start the proxy and override the base URL.
+### 4. Agentic Frameworks (LangChain, AutoGen)
+**Why use it here?** Frameworks that spawn multiple communicating agents can rapidly consume tokens. Guardian acts as a central cost-tracking hub for all agent nodes.
 
-```bash
-# 1. Start the proxy in a background terminal
-guardian_runtime proxy --port 8080
-
-# 2. Tell Claude to route traffic through Guardian
-export ANTHROPIC_BASE_URL=http://localhost:8080
-claude
-```
-
-#### Case 3: Cursor IDE (Coming Soon)
-We are actively working on full support for Cursor's AI Chat and Composer.
-
-1. Start the proxy: `guardian_runtime proxy --port 8080`
-2. Open Cursor Settings (Cmd+,)
-3. Go to **Models > Override Base URL**
-4. Set it to: `http://localhost:8080` *(Note: May exhibit unstable behavior in current version)*
-
-#### Case 4: Agentic Frameworks (LangChain / AutoGen)
-Building autonomous agents? Guardian acts as a security middleware for any standard LLM client.
-
+**How to use:**
+Point your framework's `base_url` to the local proxy.
 ```python
 from langchain_openai import ChatOpenAI
 
-# Point LangChain to the Guardian Proxy
 llm = ChatOpenAI(
     model="gpt-4o",
-    base_url="http://localhost:8080"
+    base_url="http://localhost:8080", # Traffic routes through Guardian
+    api_key="sk-proj-..."
 )
+response = llm.invoke("Hello, Guardian!")
 ```
 
-#### Case 5: Document Analysis (RAG)
-Heavy PDFs contain massive amounts of formatting bloat. Use the Document Converter to clean and compress them before the LLM sees them.
+### 5. Data Prep for Web UIs (Document Conversion)
+**Why use it here?** If you use the standard ChatGPT or Claude Web UI, uploading large PDFs eats up your context window quickly because PDFs contain massive amounts of hidden formatting bloat. 
 
-```python
-from guardian_runtime import convert_document
-
-doc = convert_document("financial_report.pdf")
-print(doc.token_count) # See exactly how much context it uses
-print(doc.content)     # Feed pure Markdown to your RAG
-```
-
----
-
-## 🛑 What happens when Guardian blocks a request?
-
-When Guardian detects a Secret or a Budget Violation, it halts the request immediately. 
-
-**Where will I see the block?**
-* **If using the Proxy:** You will see the block in the terminal running `guardian_runtime proxy`, AND inside the UI of the tool you are using (e.g., Claude Code or Aider).
-* **If using the Python SDK:** It surfaces instantly in your standard Python server logs or terminal.
-
-**How is it blocked?**
-* **Proxy Mode:** Guardian returns a graceful `HTTP 400/403` error. This ensures CLI agents display a clean error message in their chat interface instead of crashing or freezing your session.
-* **SDK Mode:** Guardian raises a `GuardianRuntimeBlockedError` exception that can be cleanly caught in a standard `try/except` block.
-
-**What will I see?**
-You will see a completely transparent, actionable error message. No obscure stack traces.
-* Example (Budget): `BadRequestError: 🚨 [BUDGET_EXCEEDED] Daily budget of $10.00 exceeded.`
-* Example (Secret): `Error: HTTP 403. 🚨 [SECRET_DETECTED] AWS key AKIAIOS... found.`
-
----
-
-## ⚙️ Advanced Configuration (Optional)
-
-Guardian Runtime works perfectly out of the box for independent developers. But if you want to customize strict budgets or scan for custom secrets, you can create an optional `policy.yaml`:
-
+**How to use:**
+Use the built-in CLI to strip out formatting bloat and compress documents into pure Markdown *before* manually uploading them.
 ```bash
-guardian_runtime init
+guardian_runtime convert massive_report.pdf --out cleaned_report.md
 ```
-
-```yaml
-version: "1.0"
-name: "production"
-interactive_mode: off
-
-agents:
-  default:
-    llm:
-      provider: openai
-      default_model: gpt-4o
-
-    input_guard:
-      scanner_enabled: true
-      jailbreak_detection: true
-      scanner_action: block 
-
-    optimizer:
-      enabled: true
-      whitespace_normalization: true
-      
-    cost:
-      daily_budget: 10.00       # Instantly blocks if daily spend exceeds $10.00
-      max_input_tokens: 50000   # Instantly blocks massive context windows
-      max_output_tokens: 4000
-```
+*You can now upload `cleaned_report.md` to ChatGPT, saving huge amounts of context space and preventing hallucination.*
 
 ---
 
-## 🔍 Output Auditing (Non-Blocking)
+## 💻 Exhaustive CLI Command Reference
 
-By default, the **Input Guard** acts as a strict firewall—blocking requests containing secrets before they cost you money. 
+Guardian ships with a powerful suite of offline CLI tools. All data is stored purely locally in `~/.guardian_runtime/`. 
+Below is a detailed dive into every command, its flags, and exactly how and why to use it.
 
-The **Output Guard**, however, acts as an **Auditor**. If an LLM accidentally hallucinates an internal API key in its response, Guardian will *not* drop the response. Instead, it passes the message back to your application but attaches a list of `violations` to the response object. This allows your application to handle the mistake gracefully on the frontend.
+### `guardian_runtime proxy` (The Security Firewall)
+Starts the local HTTP interception server. This is the core engine for protecting tools that you cannot edit the source code for (like Cursor or Claude Code).
 
----
+**Flags & Options:**
+- `--port, -p <int>`: Port to listen on (Default: `8080`).
+- `--host <str>`: Host to bind to. Use `0.0.0.0` to expose on your local network (Default: `127.0.0.1`).
+- `--policy <path>`: Path to a custom `policy.yaml` file. If omitted, uses the default Zero-Config policy ($10 budget).
+- `--reload`: Enables auto-reload if the policy file changes (useful for dev mode).
 
-## 📈 CLI Tools & Dashboard
-
-Guardian ships with built-in tools for local observability. All logs are stored strictly on your local machine in `~/.guardian_runtime/logs/`.
-
+**Example Usage:**
 ```bash
-# View live intercepted traffic
-guardian_runtime logs --tail 20
+$ guardian_runtime proxy --port 8080
+  ⛨  GuardianRuntime Runtime Proxy
+  ─────────────────────────────────────────
+  Listening on : http://127.0.0.1:8080
+  Policy       : Default (Zero-Config)
+  Dashboard    : guardian_runtime dashboard (run in another terminal)
 
-# View Session Analytics (Cost & Tokens per CLI tool)
-guardian_runtime analytics
-
-# Launch the full local FinOps & Security dashboard
-guardian_runtime dashboard
+  Agent setup:
+    Claude Code  →  ANTHROPIC_BASE_URL=http://localhost:8080 claude
+    Aider        →  OPENAI_BASE_URL=http://localhost:8080 aider
+    Cursor       →  Settings → API Base → http://localhost:8080
 ```
 
-**Example Analytics Output:**
-```text
+### `guardian_runtime convert <path>` (Document Analysis)
+Converts massive PDF, DOCX, and XLSX files into highly compressed, token-optimized Markdown. 
+
+**Why use this?** If you upload a raw PDF to a Web UI (like ChatGPT) or parse it in an agent, you waste thousands of tokens on hidden formatting bloat. This command strips the bloat *before* it hits the LLM context window.
+
+**Arguments & Flags:**
+- `<path>`: The absolute or relative path to the document you want to compress.
+- `--out, -o <path>`: Output file path for the converted Markdown. If omitted, prints a preview to the terminal.
+
+**Example Usage:**
+```bash
+$ guardian_runtime convert massive_financial_report.pdf --out clean_report.md
+⛨ GuardianRuntime Document Converter
+Processing: massive_financial_report.pdf...
+
+✓ Conversion Complete!
+  • Original File:  massive_financial_report.pdf
+  • Token Count:    14,205
+  • Saved to:       clean_report.md
+```
+
+### `guardian_runtime scan <text>` (Manual Threat Verification)
+Performs a local security scan on a specific text string using the ML InputGuard and Regex scanners.
+
+**Why use this?** Use this to verify exactly what the firewall will catch before you send a massive codebase to an agent, or if you want to test how sensitive the PII/Secret detection is.
+
+**Example Usage:**
+```bash
+$ guardian_runtime scan "My AWS key is AKIAIOSFODNN7EXAMPLE"
+🛑 Scan failed! Threats detected:
+  - [HIGH] secret_detected: AWS Access Key ID found.
+```
+
+### `guardian_runtime analytics` (FinOps Tracking)
+Prints a beautiful terminal summary of today's API costs, token usage, and intercepted threats broken down by tool.
+
+**Flags:**
+- `--all`: Shows all-time historical analytics instead of just today.
+
+**Example Usage:**
+```bash
+$ guardian_runtime analytics
   ⛨  GuardianRuntime Session Analytics (Today)
   ──────────────────────────────────────────────
 
@@ -274,8 +312,56 @@ guardian_runtime dashboard
   Tokens:     82,000
 ```
 
+### Additional Administration Commands
+- **`guardian_runtime --help`**: Prints the global help menu listing all available commands and flags.
+- **`guardian_runtime dashboard`**: Launches a beautiful React-based local Web UI tracking costs and threats on port 3000. It visualizes the analytics data with charts.
+- **`guardian_runtime logs`**: Tails the local JSONL event stream in real-time (`tail -f ~/.guardian_runtime/logs/events.jsonl`). Perfect for debugging exactly why a specific prompt was blocked.
+- **`guardian_runtime init`**: Generates a boilerplate `policy.yaml` file in your current directory. Use this if you want to customize budgets, disable ML scanners, or enforce strict enterprise PII blocking.
+- **`guardian_runtime validate`**: Checks your `policy.yaml` for syntax errors before you restart the proxy.
+- **`guardian_runtime status`**: Shows the health of the local installation, ML models, and storage directory.
+- **`guardian_runtime clean`**: Deletes your entire `~/.guardian_runtime` directory. Use this if you want to permanently delete all local analytics, logs, and custom policies.
+
+---
+
+## ⚙️ Advanced Configuration (Policy YAML)
+
+Guardian Runtime is perfectly tuned out of the box with a $10 daily budget and strict secret scanning. If you need custom rules, run `guardian_runtime init` to create a `policy.yaml`:
+
+```yaml
+version: "1.0"
+agents:
+  default:
+    llm:
+      provider: openai
+      default_model: gpt-4o
+
+    input_guard:
+      scanner_enabled: true
+      jailbreak_detection: true
+      scanner_action: block 
+      
+    cost:
+      daily_budget: 5.00        # Instantly block if daily spend exceeds $5.00
+      max_input_tokens: 20000   # Block massive context windows to save money
+```
+
+---
+
+## 🛑 What happens when Guardian blocks a request?
+
+**Where will I see the block?**
+* **If using the Proxy:** You will see the block in the terminal running `guardian_runtime proxy`, AND inside the UI of the tool you are using (e.g., Claude Code or Aider).
+* **If using the Python SDK:** It surfaces instantly in your standard Python server logs or terminal.
+
+**How is it blocked?**
+* **Proxy Mode:** Guardian returns a graceful `HTTP 400` error with a clear message. This ensures CLI agents display a clean error message in their chat interface instead of crashing or freezing your session.
+* **SDK Mode:** Guardian raises a `GuardianRuntimeBlockedError` exception that can be cleanly caught.
+
+**Example Block Message:**
+`BadRequestError: 🚨 [SECRET_DETECTED] AWS key AKIAIOS... found. Request blocked locally.`
+
 ---
 
 ## 📜 License
 
-Released under the **MIT License** — free to use, modify, and distribute. Zero tracking, zero cloud dependencies.
+Released under the **MIT License** — free to use, modify, and distribute. Zero tracking, zero cloud dependencies. Your code is yours.

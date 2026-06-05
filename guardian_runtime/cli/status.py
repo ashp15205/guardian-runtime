@@ -10,13 +10,10 @@ from guardian_runtime.core.storage import LocalStorage
 def status_command() -> None:
     """Show current usage analytics and active guards."""
     storage = LocalStorage()
-    usage = storage.get_usage()
-    checks = usage.get("checks", 0)
 
     click.echo("⛨  GuardianRuntime — System Status")
     click.echo("─" * 40)
     click.echo(f"Status:       ACTIVE (open source, no limits)")
-    click.echo(f"Checks this month: {checks:,}")
 
     # Aggregate tokens and cost from logs
     from guardian_runtime.logging.local import LOGS_DIR
