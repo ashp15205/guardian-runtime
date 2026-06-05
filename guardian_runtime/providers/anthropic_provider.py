@@ -27,7 +27,7 @@ class AnthropicProvider:
             return self._client
         if Anthropic is None:
             raise ImportError(
-                "anthropic is required for Claude. Install with: pip install anthropic"
+                "Anthropic SDK not installed. Run: pip install guardian-runtime[anthropic]"
             )
         key = self._api_key or os.environ.get("ANTHROPIC_API_KEY")
         if not key:

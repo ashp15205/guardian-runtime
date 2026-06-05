@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardian-runtime"
-version = "1.0.8"
+version = "1.0.9"
 description = "Local-first runtime governance layer for AI systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -26,9 +26,6 @@ classifiers = [
 ]
 
 dependencies = [
-  "openai>=1.0",
-  "anthropic>=0.40",
-  "google-genai>=0.8.0",
   "tiktoken>=0.5",
   "pyyaml>=6.0",
   "pydantic>=2.0",
@@ -36,7 +33,6 @@ dependencies = [
   "click>=8.0",
   "fastapi>=0.100",
   "uvicorn>=0.23",
-  "markitdown[all]>=0.0.1",
 ]
 
 [project.optional-dependencies]
@@ -54,6 +50,10 @@ presidio = [
 langchain = [
   "langchain-core>=0.1",
 ]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.40"]
+google = ["google-genai>=0.8.0"]
+docs = ["markitdown[all]>=0.0.1"]
 all = ["guardian-runtime[presidio,langchain]"]
 
 [project.urls]

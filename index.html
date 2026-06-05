@@ -1037,7 +1037,7 @@
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
         <div class="status-item">FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v1.0.8</div>
+        <div class="status-item">v1.0.9</div>
         <div class="status-item" id="threat-counter">USERS: <span id="count"
                 style="color:var(--green); margin-left: 6px;">0</span></div>
         <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
@@ -1069,9 +1069,9 @@
         </div>
 
         <div class="terminal">
-            <span class="prompt">$ </span><span class="cmd">pip install guardian-runtime</span>
+            <span class="prompt">$ </span><span class="cmd">pip install "guardian-runtime[all]"</span>
             <br>
-            <span class="output">✓ Successfully installed guardian-runtime-1.0.8</span>
+            <span class="output">✓ Successfully installed guardian-runtime-1.0.9 with ML Scanners & Providers</span>
             <br><br>
             <span class="prompt">$ </span><span class="cmd">guardian_runtime proxy --port 8080</span>
             <br>
@@ -1325,7 +1325,7 @@
                     <div class="step-title">Install</div>
                     <div class="step-desc">Zero external dependencies for core detection. Optional extras for proxy and
                         dashboard.</div>
-                    <div class="code-block">pip install guardian-runtime</div>
+                    <div class="code-block">pip install "guardian-runtime[all]"</div>
                 </div>
             </div>
 
@@ -1374,7 +1374,7 @@
                         <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost:</span>
                         <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daily_budget: <span class="ok">10.00</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daily_budget: <span class="ok">10.00</span> <span class="c"># Strict daily budget limit in USD ($)</span>
                         <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_input_tokens: <span class="ok">50000</span>
                         <br>
@@ -1475,7 +1475,7 @@
                         This gives you full programmatic control over policies and error handling.</div>
                     <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># 1. Install the package</span><br>
-                        pip install guardian-runtime<br><br>
+                        pip install "guardian-runtime[all]"<br><br>
                         <span class="c"># 2. In your code, wrap your LLM calls</span><br>
                         <span class="kw">from</span> guardian_runtime <span class="kw">import</span> GuardianRuntime<br>
                         gr = GuardianRuntime.from_policy(<span class="str">"policy.yaml"</span>)<br><br>
@@ -1512,7 +1512,7 @@
                     </div>
                     <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># 1. Install Guardian and start the Proxy</span><br>
-                        pip install guardian-runtime<br>
+                        pip install "guardian-runtime[all]"<br>
                         guardian_runtime proxy --port 8080<br><br>
                         <span class="c"># 2. Tell Claude to use the proxy</span><br>
                         <span class="kw">export</span> ANTHROPIC_BASE_URL=http://localhost:8080<br>
