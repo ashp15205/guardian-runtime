@@ -22,6 +22,12 @@
 
 ---
 
+<div align="center">
+  <a href="https://ashp15205.github.io/guardian-runtime/">
+    <img src="docs/screenshot.png" alt="Guardian Runtime Dashboard" width="800">
+  </a>
+</div>
+
 ## 📖 Table of Contents
 - [🛑 The Core Problem: Why You Need Guardian](#-the-core-problem-why-you-need-guardian)
 - [🟢 The Solution: What is Guardian Runtime?](#-the-solution-what-is-guardian-runtime)
