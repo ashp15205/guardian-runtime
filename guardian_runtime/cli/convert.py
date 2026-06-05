@@ -16,15 +16,15 @@ def convert_command(path: str, out: str | None) -> None:
         
         click.secho(f"✓ Conversion Complete!", fg="green")
         click.echo(f"  • Original File:  {os.path.basename(path)}")
-        click.echo(f"  • Token Count:    {result.token_count:,}")
+        click.echo(f"  • Token Count:    {result.markdown_tokens:,}")
         
         if out:
             with open(out, "w", encoding="utf-8") as f:
-                f.write(result.content)
+                f.write(result.markdown)
             click.echo(f"  • Saved to:       {out}")
         else:
             # If no output file provided, print a preview and suggest using --out
-            preview = result.content[:500].replace("\n", " ") + "..."
+            preview = result.markdown[:500].replace("\n", " ") + "..."
             click.echo(f"  • Preview:        {preview}")
             click.echo("\nTip: Use '--out filename.md' to save the output to a file.")
             
