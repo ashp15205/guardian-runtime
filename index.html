@@ -1032,9 +1032,17 @@
             .quickstart,
             .usecases,
             .compliance,
+            .integrations,
+            .problem-grid,
+            .cli-grid,
+            .split-layout,
             footer {
-                padding-left: 20px;
-                padding-right: 20px;
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }
+
+            .problem-grid, .cli-grid {
+                grid-template-columns: 1fr !important;
             }
 
             .hero-title {
@@ -1050,6 +1058,7 @@
             .btn-secondary {
                 width: 100%;
                 text-align: center;
+                box-sizing: border-box;
             }
 
             .status-bar {
@@ -1077,6 +1086,7 @@
                 font-size: 11px;
                 overflow-x: auto;
                 max-width: calc(100vw - 40px);
+                box-sizing: border-box;
             }
 
             .pipeline-flow {
