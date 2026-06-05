@@ -47,7 +47,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     app = FastAPI(
         title="GuardianRuntime Runtime Proxy",
         description="Local AI firewall proxy for Claude Code, Aider, Cursor, and more.",
-        version="1.0.8",
+        version="1.0.9",
         docs_url="/docs",
         redoc_url=None,
     )
@@ -63,8 +63,8 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _get_guardian_runtime(provider: str) -> "GuardianRuntimeEngine":
-        """Build a GuardianRuntimeEngine for the given provider."""
+    def _get_guardian_runtime() -> "GuardianRuntimeEngine":
+        """Build a GuardianRuntimeEngine."""
         from guardian_runtime.core.engine import GuardianRuntimeEngine
         return GuardianRuntimeEngine(policy=policy, storage=storage)
 
@@ -218,7 +218,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         """Health check — verify the proxy is running."""
         return {
             "status": "ok",
-            "version": "1.0.8",
+            "version": "1.0.9",
             "policy": policy_path,
             "agents": list(policy.agents.keys()),
         }
@@ -235,7 +235,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         model: str = body.get("model", "gpt-4o")
         stream: bool = body.get("stream", False)
 
-        engine = _get_guardian_runtime("openai")
+        engine = _get_guardian_runtime()
         
         try:
             result = await run_in_threadpool(
@@ -300,7 +300,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
-        return JSONResponse(content=response_body, status_code=500 if is_error else (400 if result and result.blocked else 200))
+        return JSONResponse(content=response_body, status_code=500 if is_error else 200)
 
     # ------------------------------------------------------------------
     # POST /v1/messages  (Anthropic-compatible)
@@ -319,7 +319,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         if system:
             messages = [{"role": "system", "content": system}] + messages
 
-        engine = _get_guardian_runtime("anthropic")
+        engine = _get_guardian_runtime()
         
         try:
             result = await run_in_threadpool(
@@ -392,7 +392,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
-        return JSONResponse(content=response_body, status_code=500 if is_error else (400 if result and result.blocked else 200))
+        return JSONResponse(content=response_body, status_code=500 if is_error else 200)
 
     return app
 

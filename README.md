@@ -1,6 +1,5 @@
 <p align="center">
   <img src="https://img.shields.io/badge/GuardianRuntime-Local%20AI%20Firewall-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="GuardianRuntime" />
-  <a href="https://github.com/ashp15205/guardian-runtime/actions"><img src="https://img.shields.io/github/actions/workflow/status/ashp15205/guardian-runtime/ci.yml?branch=main&style=for-the-badge" alt="CI Status"></a>
 </p>
 
 <h1 align="center">Guardian Runtime</h1>
@@ -14,8 +13,6 @@
   <a href="https://buymeacoffee.com/ashishp05"><img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"></a>
   <a href="https://pypi.org/project/guardian-runtime/"><img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=for-the-badge&logo=python&logoColor=white" alt="Python Versions"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/no%20signup-no%20API%20key-00ff88?style=for-the-badge" alt="No signup required">
-  <img src="https://img.shields.io/badge/100%25-local%20execution-00ff88?style=for-the-badge" alt="100% Local">
 </p>
 
 <p align="center">
@@ -102,7 +99,16 @@
 ### Installation
 
 ```bash
+# Core framework only
 pip install guardian-runtime
+
+# Or install with specific LLM providers:
+pip install "guardian-runtime[openai]"
+pip install "guardian-runtime[anthropic]"
+pip install "guardian-runtime[google]"
+
+# Or install everything (Providers, PII ML Scanner, Doc Converter):
+pip install "guardian-runtime[all]"
 ```
 Done. No signup, no keys, zero configuration required.
 

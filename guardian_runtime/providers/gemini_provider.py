@@ -36,8 +36,7 @@ class GeminiProvider:
         if self._client is None:
             if genai is None:
                 raise ImportError(
-                    "google-genai is required for Gemini. "
-                    "Install with: pip install google-genai"
+                    "Google GenAI SDK not installed. Run: pip install guardian-runtime[google]"
                 )
             self._client = genai.Client(api_key=self._resolve_api_key())
         return self._client

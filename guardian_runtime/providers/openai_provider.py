@@ -4,7 +4,10 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None  # type: ignore[assignment]
 
 from guardian_runtime.providers.base import ProviderResult
 
@@ -14,12 +17,15 @@ class OpenAIProvider:
 
     name = "openai"
 
-    def __init__(self, client: OpenAI | None = None) -> None:
+    def __init__(self, client: Any | None = None) -> None:
         self._client = client
 
-    @property
-    def client(self) -> OpenAI:
+    def _get_client(self) -> Any:
         if self._client is None:
+            if OpenAI is None:
+                raise ImportError(
+                    "OpenAI SDK not installed. Run: pip install guardian-runtime[openai]"
+                )
             api_key = os.environ.get("OPENAI_API_KEY")
             if not api_key:
                 raise ValueError(
@@ -34,9 +40,10 @@ class OpenAIProvider:
         messages: list[dict[str, Any]],
         **kwargs: Any,
     ) -> ProviderResult:
+        client = self._get_client()
         reserved = {"provider", "raise_on_block"}
         llm_kwargs = {k: v for k, v in kwargs.items() if k not in reserved}
-        completion = self.client.chat.completions.create(
+        completion = client.chat.completions.create(
             model=model,
             messages=messages,
             **llm_kwargs,
