@@ -24,6 +24,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
+from starlette.concurrency import run_in_threadpool
 
 from guardian_runtime.core.policy import load_policy, Policy
 from guardian_runtime.core.storage import LocalStorage
@@ -46,7 +47,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     app = FastAPI(
         title="GuardianRuntime Runtime Proxy",
         description="Local AI firewall proxy for Claude Code, Aider, Cursor, and more.",
-        version="1.0.0",
+        version="1.0.8",
         docs_url="/docs",
         redoc_url=None,
     )
@@ -144,6 +145,30 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
             },
         }
 
+    def _provider_down_response_openai(error_msg: str, model: str) -> dict:
+        content = f"[GUARDIAN_RUNTIME ERROR] {error_msg}"
+        return {
+            "id": f"chatcmpl-guardian_runtime-{uuid.uuid4().hex[:8]}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": model,
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        }
+
+    def _provider_down_response_anthropic(error_msg: str, model: str) -> dict:
+        content = f"[GUARDIAN_RUNTIME ERROR] {error_msg}"
+        return {
+            "id": f"msg_guardian_runtime_{uuid.uuid4().hex[:8]}",
+            "type": "message",
+            "role": "assistant",
+            "content": [{"type": "text", "text": content}],
+            "model": model,
+            "stop_reason": "end_turn",
+            "stop_sequence": None,
+            "usage": {"input_tokens": 0, "output_tokens": 0},
+        }
+
     def _success_openai(guardian_runtime_response, model: str) -> dict:
         """Format a GuardianRuntimeResponse as a valid OpenAI chat.completion."""
         return {
@@ -193,7 +218,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         """Health check — verify the proxy is running."""
         return {
             "status": "ok",
-            "version": "1.0.0",
+            "version": "1.0.8",
             "policy": policy_path,
             "agents": list(policy.agents.keys()),
         }
@@ -211,27 +236,38 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         stream: bool = body.get("stream", False)
 
         engine = _get_guardian_runtime("openai")
-        result = engine.complete(
-            model=model,
-            messages=messages,
-            provider="openai",
-            raise_on_block=False,
-        )
         
+        try:
+            result = await run_in_threadpool(
+                engine.complete,
+                model=model,
+                messages=messages,
+                provider="openai",
+                raise_on_block=False,
+            )
+            is_error = False
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            response_body = _provider_down_response_openai(str(e), model)
+            result = None
+            is_error = True
+            
         tool = _identify_tool(request)
-        block_reason = result.violations[0].type if result.blocked and result.violations else None
-        storage.record_request(
-            tool=tool,
-            cost_usd=result.estimated_cost_usd or 0.0,
-            tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
-            blocked=result.blocked,
-            block_reason=block_reason
-        )
+        if not is_error and result:
+            block_reason = result.violations[0].type if result.blocked and result.violations else None
+            storage.record_request(
+                tool=tool,
+                cost_usd=result.estimated_cost_usd or 0.0,
+                tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+                blocked=result.blocked,
+                block_reason=block_reason
+            )
 
-        if result.blocked:
-            response_body = _block_response_openai(result.violations, model)
-        else:
-            response_body = _success_openai(result, model)
+            if result.blocked:
+                response_body = _block_response_openai(result.violations, model)
+            else:
+                response_body = _success_openai(result, model)
 
         if stream:
             # Emit a single chunk then [DONE] — satisfies streaming clients
@@ -264,9 +300,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
-        if result.blocked:
-            return JSONResponse(content=response_body, status_code=400)
-        return JSONResponse(content=response_body)
+        return JSONResponse(content=response_body, status_code=500 if is_error else (400 if result and result.blocked else 200))
 
     # ------------------------------------------------------------------
     # POST /v1/messages  (Anthropic-compatible)
@@ -286,27 +320,38 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
             messages = [{"role": "system", "content": system}] + messages
 
         engine = _get_guardian_runtime("anthropic")
-        result = engine.complete(
-            model=model,
-            messages=messages,
-            provider="anthropic",
-            raise_on_block=False,
-        )
         
+        try:
+            result = await run_in_threadpool(
+                engine.complete,
+                model=model,
+                messages=messages,
+                provider="anthropic",
+                raise_on_block=False,
+            )
+            is_error = False
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            response_body = _provider_down_response_anthropic(str(e), model)
+            result = None
+            is_error = True
+            
         tool = _identify_tool(request)
-        block_reason = result.violations[0].type if result.blocked and result.violations else None
-        storage.record_request(
-            tool=tool,
-            cost_usd=result.estimated_cost_usd or 0.0,
-            tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
-            blocked=result.blocked,
-            block_reason=block_reason
-        )
+        if not is_error and result:
+            block_reason = result.violations[0].type if result.blocked and result.violations else None
+            storage.record_request(
+                tool=tool,
+                cost_usd=result.estimated_cost_usd or 0.0,
+                tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+                blocked=result.blocked,
+                block_reason=block_reason
+            )
 
-        if result.blocked:
-            response_body = _block_response_anthropic(result.violations, model)
-        else:
-            response_body = _success_anthropic(result, model)
+            if result.blocked:
+                response_body = _block_response_anthropic(result.violations, model)
+            else:
+                response_body = _success_anthropic(result, model)
 
         if stream:
             def _sse():
@@ -347,8 +392,12 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
-        if result.blocked:
-            return JSONResponse(content=response_body, status_code=400)
-        return JSONResponse(content=response_body)
+        return JSONResponse(content=response_body, status_code=500 if is_error else (400 if result and result.blocked else 200))
 
     return app
+
+# Expose a default app instance so uvicorn can run it with workers=4 via import string
+# e.g., uvicorn.run("guardian_runtime.proxy.server:app", workers=4)
+# The CLI sets GUARDIAN_RUNTIME_POLICY_PATH before invoking uvicorn.
+_policy_env = os.environ.get("GUARDIAN_RUNTIME_POLICY_PATH")
+app = create_proxy_app(_policy_env)

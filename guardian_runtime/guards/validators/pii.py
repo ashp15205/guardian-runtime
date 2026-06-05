@@ -22,6 +22,27 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 
+_presidio_analyzer_singleton = None
+_presidio_attempted = False
+
+def _get_presidio():
+    global _presidio_analyzer_singleton, _presidio_attempted
+    if _presidio_attempted:
+        return _presidio_analyzer_singleton
+        
+    _presidio_attempted = True
+    try:
+        from presidio_analyzer import AnalyzerEngine
+        # Load the default NLP model (en_core_web_lg by default in presidio if available, but en_core_web_sm works)
+        _presidio_analyzer_singleton = AnalyzerEngine()
+    except ImportError:
+        pass
+    except Exception:
+        # Ignore spacy model missing errors or other failures silently
+        pass
+        
+    return _presidio_analyzer_singleton
+
 
 class PIIType(str, Enum):
     SSN = "ssn"
@@ -224,6 +245,52 @@ class PIIDetector:
                 matches.extend(self._detect_secrets(text))
                 continue
 
+        presidio = _get_presidio()
+        presidio_types = {
+            PIIType.SSN: "US_SSN",
+            PIIType.CREDIT_CARD: "CREDIT_CARD",
+            PIIType.EMAIL: "EMAIL_ADDRESS",
+            PIIType.PHONE: "PHONE_NUMBER",
+            PIIType.AADHAAR: "IN_AADHAAR",
+            PIIType.PAN: "IN_PAN"
+        }
+        presidio_reverse = {v: k for k, v in presidio_types.items()}
+        
+        # Build list of entities to scan with Presidio vs Regex
+        entities_for_presidio = []
+        entities_for_regex = []
+        
+        for pii_type in self.enabled_types:
+            if pii_type == PIIType.SECRET:
+                continue # Already handled above
+            if presidio and pii_type in presidio_types:
+                entities_for_presidio.append(presidio_types[pii_type])
+            else:
+                entities_for_regex.append(pii_type)
+                
+        # 1. Scan with Presidio if available
+        if presidio and entities_for_presidio:
+            presidio_results = presidio.analyze(
+                text=text, 
+                entities=entities_for_presidio, 
+                language="en", 
+                score_threshold=0.6
+            )
+            for r in presidio_results:
+                matched_type = presidio_reverse.get(r.entity_type)
+                if matched_type:
+                    matches.append(
+                        PIIMatch(
+                            pii_type=matched_type,
+                            matched_text=text[r.start:r.end],
+                            start=r.start,
+                            end=r.end,
+                            confidence=r.score,
+                        )
+                    )
+
+        # 2. Scan remaining types with Regex
+        for pii_type in entities_for_regex:
             pattern = PII_PATTERNS.get(pii_type)
             if not pattern:
                 continue

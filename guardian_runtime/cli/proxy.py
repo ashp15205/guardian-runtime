@@ -41,6 +41,7 @@ def proxy_command(port: int, host: str, policy: str | None, reload: bool):
     """
     import pathlib
     import sys
+    import os
 
     try:
         import uvicorn
@@ -74,14 +75,22 @@ def proxy_command(port: int, host: str, policy: str | None, reload: bool):
     click.echo(f"")
     click.echo(f"  Press Ctrl+C to stop.\n")
 
-    from guardian_runtime.proxy.server import create_proxy_app
+    # Set env var so the module-level app in server.py picks up the policy
+    if policy_arg:
+        os.environ["GUARDIAN_RUNTIME_POLICY_PATH"] = policy_arg
 
-    app = create_proxy_app(policy_arg)
+    uvicorn_kwargs = {
+        "host": host,
+        "port": port,
+        "log_level": "warning",
+    }
+    
+    if reload:
+        uvicorn_kwargs["reload"] = True
+    else:
+        uvicorn_kwargs["workers"] = 4
 
     uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        log_level="warning",  # suppress verbose uvicorn logs; GuardianRuntime logs what matters
-        reload=reload,
+        "guardian_runtime.proxy.server:app",
+        **uvicorn_kwargs
     )

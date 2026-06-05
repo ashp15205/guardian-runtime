@@ -1,5 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/GuardianRuntime-Local%20AI%20Firewall-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="GuardianRuntime" />
+  <a href="https://github.com/ashp15205/guardian-runtime/actions"><img src="https://img.shields.io/github/actions/workflow/status/ashp15205/guardian-runtime/ci.yml?branch=main&style=for-the-badge" alt="CI Status"></a>
 </p>
 
 <h1 align="center">Guardian Runtime</h1>
@@ -45,8 +46,10 @@
 
 ## 🟢 The Solution: A Developer-First Local Firewall
 
-**Guardian Runtime** is a zero-latency FinOps and Security firewall. It runs entirely on your local machine and sits directly between your coding agents and the LLM provider.
-
+- **ML-Powered PII & Secret Scanning**: Uses Microsoft Presidio for high-accuracy NLP scanning (emails, phones, SSNs) and rigorous Regex fallbacks for secrets (AWS keys, OpenAI keys). Runs 100% locally with zero latency.
+- **Jailbreak Detection**: Pre-emptively blocks DAN prompts and instruction-override injections.
+- **High-Concurrency Threadpool Proxy**: The local proxy seamlessly handles hundreds of simultaneous requests with zero event-loop blocking, making it perfect for multi-agent terminal systems.
+- **Graceful Upstream Error Handling**: Mid-stream LLM API outages are handled beautifully, keeping your terminal bots alive instead of crashing them with 500 errors.
 - **Session Analytics & Hard Budgets**: Automatically tracks tokens and costs per session via the CLI. It sets a hard $10/day default limit so infinite loops never drain your credit card.
 - **Local Secret Scanning**: Instantly intercepts and blocks API keys, AWS credentials, and `.env` secrets from ever leaving your local machine.
 - **Zero Config**: No complex policies required. It protects your budget and secrets out of the box.

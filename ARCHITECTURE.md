@@ -45,7 +45,8 @@ Guardian Runtime is a **local-first runtime governance layer** for AI applicatio
 ### 2.1 The Local Proxy (`guardian_runtime/proxy/server.py`)
 A fast, lightweight FastAPI server that mimics the `/v1/chat/completions` endpoint of the OpenAI API.
 - **Function**: Intercepts requests from local agents (Claude Code, Cursor).
-- **Execution**: Deserializes the payload, pushes it through the `GuardianRuntimeEngine`, and streams the response back to the client.
+- **Execution**: Deserializes the payload, pushes it through the `GuardianRuntimeEngine` via `run_in_threadpool` for robust multi-worker concurrency, and streams the response back to the client.
+- **Resilience**: Features automatic upstream downtime intercepts, converting API crashes into graceful SSE error events instead of 500 errors.
 
 ### 2.2 The Engine (`guardian_runtime/core/engine.py`)
 The central nervous system of the SDK.
@@ -54,7 +55,7 @@ The central nervous system of the SDK.
 - **Output Pipeline**: Runs the response through the `OutputGuard` and updates local analytics (cost/tokens consumed).
 
 ### 2.3 The Guards (`guardian_runtime/guards/`)
-- **Input Guard (`input_guard.py`)**: Runs `PIIDetector` configured specifically for high-confidence Secret Scanning (AWS keys, OpenAI keys). Also runs `JailbreakDetector` to block malicious DAN prompts.
+- **Input Guard (`input_guard.py`)**: Runs `PIIDetector` configured specifically for high-confidence Secret Scanning (AWS keys, OpenAI keys) using Regex, and seamlessly lazy-loads **Microsoft Presidio** for highly-accurate ML-based NLP detection of general PII. Also runs `JailbreakDetector` to block malicious DAN prompts.
 - **Output Guard (`output_guard.py`)**: An auditor that scans the LLM's response for accidentally hallucinated secrets, flagging them without dropping the connection.
 
 ### 2.4 FinOps & Storage (`guardian_runtime/core/storage.py`)

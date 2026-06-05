@@ -1037,7 +1037,7 @@
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
         <div class="status-item">FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v1.0.7</div>
+        <div class="status-item">v1.0.8</div>
         <div class="status-item" id="threat-counter">USERS: <span id="count"
                 style="color:var(--green); margin-left: 6px;">0</span></div>
         <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
@@ -1071,7 +1071,7 @@
         <div class="terminal">
             <span class="prompt">$ </span><span class="cmd">pip install guardian-runtime</span>
             <br>
-            <span class="output">✓ Successfully installed guardian-runtime-1.0.7</span>
+            <span class="output">✓ Successfully installed guardian-runtime-1.0.8</span>
             <br><br>
             <span class="prompt">$ </span><span class="cmd">guardian_runtime proxy --port 8080</span>
             <br>
@@ -1238,13 +1238,13 @@
                     <div class="feature-num">02</div>
                     <div class="feature-icon">🔑</div>
                 </div>
-                <div class="feature-title">Secret & Credential Firewall</div>
-                <div class="feature-desc">Two-tier confidence engine catches exposed API keys with high accuracy. Blocks
-                    AWS, OpenAI, GitHub, Stripe, and .env files before they ever leave your laptop.
-                </div>
+                <div class="feature-title">ML-Powered Secret Firewall</div>
+                <div class="feature-desc">Uses Microsoft Presidio for high-accuracy NLP scanning (emails, phones) and
+                    rigorous Regex fallbacks for API keys. Blocks threats locally.</div>
                 <div class="feature-tags">
-                    <span class="tag">Zero-Config</span>
-                    <span class="tag">Local Parsing</span>
+                    <span class="tag">PRESIDIO</span>
+                    <span class="tag">REGEX</span>
+                    <span class="tag">ZERO-LATENCY</span>
                 </div>
             </div>
 
@@ -1650,9 +1650,12 @@
     <footer class="footer">
         <div class="footer-copy">© 2026 GUARDIAN RUNTIME — MIT LICENSE</div>
         <div class="footer-links" style="display:flex; gap:16px; align-items:center;">
-            <a href="https://buymeacoffee.com/ashishp05" target="_blank" rel="noopener noreferrer" style="color:#FFDD00; font-weight:bold; text-decoration:none;">☕ Buy Me A Coffee</a>
-            <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer" style="color:var(--green); font-weight:bold; text-decoration:none;">📦 PyPI</a>
-            <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer" style="color:var(--cyan); font-weight:bold; text-decoration:none;">⭐ GitHub</a>
+            <a href="https://buymeacoffee.com/ashishp05" target="_blank" rel="noopener noreferrer"
+                style="color:#FFDD00; font-weight:bold; text-decoration:none;">☕ Buy Me A Coffee</a>
+            <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer"
+                style="color:var(--green); font-weight:bold; text-decoration:none;">📦 PyPI</a>
+            <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
+                style="color:var(--cyan); font-weight:bold; text-decoration:none;">⭐ GitHub</a>
         </div>
     </footer>
 
