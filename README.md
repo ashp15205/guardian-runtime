@@ -23,32 +23,29 @@
 
 ---
 
-## 🛑 The Problem: Data Privacy Black Boxes & Runaway Costs
+## 🛑 The Problem: Developers are Flying Blind
 
-Developers are building incredible AI applications, but they are often blindly passing raw user data to external APIs. If a user pastes a **credit card** into a chat, or a developer accidentally leaves an **AWS Key** in an agent prompt, that data is instantly transmitted and logged in a cloud provider's database. Furthermore, malicious users can inject **Jailbreaks** to hijack your AI.
+1. **The Cost Risk:** CLI coding agents (Claude Code, Cursor, Aider) run autonomously. If they get stuck in an infinite retry loop or parse a massive log file, you wake up to a **$50 API bill**. You have zero visibility into session costs until the bill arrives.
+2. **The Security Risk:** Coding agents have full access to your workspace. If you accidentally leave an `AWS_SECRET_KEY` or `.env` credential in a file, the agent will silently upload it to a third-party LLM provider.
 
-Worse yet, unrestricted employee access to AI tools is causing massive budgeting crises. **Companies are blowing through their annual LLM token budgets in mere months** due to developers sending unoptimized, massive context windows and infinite loops to expensive models without oversight.
+## 🟢 The Solution: A Developer-First Local Firewall
 
-## 🟢 The Solution: A Zero-Latency FinOps Firewall
+**Guardian Runtime** is a zero-latency FinOps and Security firewall. It runs entirely on your local machine and sits directly between your coding agents and the LLM provider.
 
-**Guardian Runtime** acts as an invisible shield sitting directly on your own infrastructure. Before a single byte of data leaves your network to reach OpenAI or Anthropic, Guardian scans, cleans, and optimizes it locally.
-
-- **Data Security**: It uses lightning-fast pattern matching to block PII, secrets, and jailbreaks in milliseconds.
-- **Cost Control**: The built-in Token Optimizer actively strips redundant whitespace and bloat from prompts.
-- **FinOps Limits**: Strict FinOps rules instantly block requests that exceed your maximum token budgets—stopping runaway spend in its tracks.
-
-Everything happens locally on your CPU. It costs zero API fees and takes less than 5 milliseconds.
+- **Session Analytics & Hard Budgets**: Automatically tracks tokens and costs per session via the CLI. It sets a hard $10/day default limit so infinite loops never drain your credit card.
+- **Local Secret Scanning**: Instantly intercepts and blocks API keys, AWS credentials, and `.env` secrets from ever leaving your local machine.
+- **Zero Config**: No complex policies required. It protects your budget and secrets out of the box.
 
 ---
 
 ## ⚡ Key Features
 
-1. **🔒 PII & Data Leak Prevention**: Detects and blocks Aadhaar, PAN, SSNs, credit cards, emails, and phone numbers using local regex and NLP.
-2. **🔑 Secret & Credential Scanning**: Catches hardcoded API keys (AWS, OpenAI, GitHub) before they ever leave your machine.
-3. **💰 Token Optimizer & FinOps**: Compresses redundant whitespace and enforces maximum token budgets per request.
-4. **🏴‍☠️ Jailbreak Defense**: Defends against 50+ known adversarial prompt patterns (e.g., "Ignore previous instructions", DAN payloads).
-5. **🌐 Universal Proxy**: Works seamlessly with LangChain, Cursor IDE, Anthropic Claude Code, and any OpenAI-compatible client.
-6. **📊 Local Dashboard & Audit Logs**: Tracks every intercepted threat and token cost locally in `~/.guardian_runtime/logs/` with a beautiful built-in web dashboard.
+1. **💰 Custom Hard Budgets**: Configure a strict daily budget so runaway agents can't drain your API credits.
+2. **🔑 Secret & Credential Firewall**: Catches hardcoded API keys (AWS, Stripe, OpenAI, GitHub) before they leave your laptop. 
+3. **📉 Token Optimizer**: Compresses redundant whitespace and reduces prompt bloat to passively save you money.
+4. **🌐 Universal Local Proxy**: Works seamlessly with CLI agents like Anthropic Claude Code and Aider.
+5. **🏴‍☠️ Unsafe Command Defense**: Stops adversarial prompts from hijacking your agent to run malicious CLI commands.
+6. **📊 Built-in Local Dashboard**: Tracks every intercepted threat and every cent spent locally in `~/.guardian_runtime/logs/` with a beautiful offline dashboard.
 
 ---
 
@@ -88,15 +85,15 @@ Everything happens locally on your CPU. It costs zero API fees and takes less th
 
 ```bash
 pip install guardian-runtime
-guardian_runtime init
 ```
+Done. No signup, no keys, zero configuration required.
 
 ### Integration Methods
 
 Guardian can be used as a drop-in **Python SDK** or as a **Local HTTP Proxy** for tools you can't edit.
 
 #### Case 1: Custom Python Application (SDK)
-Replace your direct LLM calls with the `GuardianRuntime` wrapper.
+Replace your direct LLM calls with the `GuardianRuntime` wrapper. Works instantly with zero configuration.
 
 ```python
 import os
@@ -104,8 +101,8 @@ from guardian_runtime import GuardianRuntime, GuardianRuntimeBlockedError
 
 os.environ["OPENAI_API_KEY"] = "sk-proj-..."
 
-# Loads FinOps and Security rules from policy.yaml
-gr = GuardianRuntime.from_policy("policy.yaml")
+# Zero-config initialization
+gr = GuardianRuntime()
 
 try:
     response = gr.complete(
@@ -129,13 +126,13 @@ export ANTHROPIC_BASE_URL=http://localhost:8080
 claude
 ```
 
-#### Case 3: Cursor IDE
-Prevent accidental leaks of proprietary company secrets when using Cursor's AI Chat and Composer.
+#### Case 3: Cursor IDE (Coming Soon)
+We are actively working on full support for Cursor's AI Chat and Composer.
 
 1. Start the proxy: `guardian_runtime proxy --port 8080`
 2. Open Cursor Settings (Cmd+,)
 3. Go to **Models > Override Base URL**
-4. Set it to: `http://localhost:8080`
+4. Set it to: `http://localhost:8080` *(Note: May exhibit unstable behavior in current version)*
 
 #### Case 4: Agentic Frameworks (LangChain / AutoGen)
 Building autonomous agents? Guardian acts as a security middleware for any standard LLM client.
@@ -163,9 +160,32 @@ print(doc.content)     # Feed pure Markdown to your RAG
 
 ---
 
-## ⚙️ Configuration (`policy.yaml`)
+## 🛑 What happens when Guardian blocks a request?
 
-Define your security thresholds and budget rules without touching your code.
+When Guardian detects a Secret or a Budget Violation, it halts the request immediately. 
+
+**Where will I see the block?**
+* **If using the Proxy:** You will see the block in the terminal running `guardian_runtime proxy`, AND inside the UI of the tool you are using (e.g., Claude Code or Aider).
+* **If using the Python SDK:** It surfaces instantly in your standard Python server logs or terminal.
+
+**How is it blocked?**
+* **Proxy Mode:** Guardian returns a graceful `HTTP 400/403` error. This ensures CLI agents display a clean error message in their chat interface instead of crashing or freezing your session.
+* **SDK Mode:** Guardian raises a `GuardianRuntimeBlockedError` exception that can be cleanly caught in a standard `try/except` block.
+
+**What will I see?**
+You will see a completely transparent, actionable error message. No obscure stack traces.
+* Example (Budget): `BadRequestError: 🚨 [BUDGET_EXCEEDED] Daily budget of $10.00 exceeded.`
+* Example (Secret): `Error: HTTP 403. 🚨 [SECRET_DETECTED] AWS key AKIAIOS... found.`
+
+---
+
+## ⚙️ Advanced Configuration (Optional)
+
+Guardian Runtime works perfectly out of the box for independent developers. But if you want to customize strict budgets or scan for custom secrets, you can create an optional `policy.yaml`:
+
+```bash
+guardian_runtime init
+```
 
 ```yaml
 version: "1.0"
@@ -179,15 +199,16 @@ agents:
       default_model: gpt-4o
 
     input_guard:
-      pii_detection: true
+      scanner_enabled: true
       jailbreak_detection: true
-      pii_action: block 
+      scanner_action: block 
 
     optimizer:
       enabled: true
       whitespace_normalization: true
       
     cost:
+      daily_budget: 10.00       # Instantly blocks if daily spend exceeds $10.00
       max_input_tokens: 50000   # Instantly blocks massive context windows
       max_output_tokens: 4000
 ```
@@ -196,9 +217,9 @@ agents:
 
 ## 🔍 Output Auditing (Non-Blocking)
 
-By default, the **Input Guard** acts as a strict firewall—blocking requests containing secrets or PII before they cost you money. 
+By default, the **Input Guard** acts as a strict firewall—blocking requests containing secrets before they cost you money. 
 
-The **Output Guard**, however, acts as an **Auditor**. If an LLM accidentally hallucinates an internal API key or PII in its response, Guardian will *not* drop the response. Instead, it passes the message back to your application but attaches a list of `violations` to the response object. This allows your application to handle the mistake gracefully on the frontend.
+The **Output Guard**, however, acts as an **Auditor**. If an LLM accidentally hallucinates an internal API key in its response, Guardian will *not* drop the response. Instead, it passes the message back to your application but attaches a list of `violations` to the response object. This allows your application to handle the mistake gracefully on the frontend.
 
 ---
 
@@ -210,11 +231,23 @@ Guardian ships with built-in tools for local observability. All logs are stored 
 # View live intercepted traffic
 guardian_runtime logs --tail 20
 
-# Check total session cost
-guardian_runtime status
+# View Session Analytics (Cost & Tokens per CLI tool)
+guardian_runtime analytics
 
-# Launch the local FinOps & Security dashboard
+# Launch the full local FinOps & Security dashboard
 guardian_runtime dashboard
+```
+
+**Example Analytics Output:**
+```text
+  ⛨  GuardianRuntime Session Analytics (Today)
+  ──────────────────────────────────────────────
+
+  Claude Code
+  Cost:       $2.3100
+  Requests:   54
+  Blocked:    3 (3 secret_detected)
+  Tokens:     82,000
 ```
 
 ---

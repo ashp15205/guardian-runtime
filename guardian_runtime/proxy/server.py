@@ -26,15 +26,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from guardian_runtime.core.policy import load_policy, Policy
+from guardian_runtime.core.storage import LocalStorage
 
 # ---------------------------------------------------------------------------
 # App factory — called with the loaded policy so tests can inject mocks
 # ---------------------------------------------------------------------------
 
-def create_proxy_app(policy_path: str) -> FastAPI:
+def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     """Return a configured FastAPI application for the proxy."""
 
-    policy: Policy = load_policy(policy_path)
+    if policy_path is not None:
+        policy: Policy = load_policy(policy_path)
+    else:
+        policy = Policy()
+
+    storage = LocalStorage()
 
 
     app = FastAPI(
@@ -59,7 +65,22 @@ def create_proxy_app(policy_path: str) -> FastAPI:
     def _get_guardian_runtime(provider: str) -> "GuardianRuntimeEngine":
         """Build a GuardianRuntimeEngine for the given provider."""
         from guardian_runtime.core.engine import GuardianRuntimeEngine
-        return GuardianRuntimeEngine(policy=policy)
+        return GuardianRuntimeEngine(policy=policy, storage=storage)
+
+    def _identify_tool(request: Request) -> str:
+        """Heuristically identify the tool from the User-Agent."""
+        user_agent = request.headers.get("user-agent", "").lower()
+        if "anthropic" in user_agent:
+            return "Claude Code"
+        if "openai" in user_agent:
+            return "Aider"  # Many CLI tools use openai-python, but Aider is the most common here
+        if "cursor" in user_agent:
+            return "Cursor"
+        if "langchain" in user_agent:
+            return "LangChain"
+        if user_agent:
+            return f"Custom ({user_agent.split('/')[0].capitalize()})"
+        return "Unknown Agent"
 
     def _block_response_openai(violations: list, model: str) -> dict:
         """Format a GuardianRuntime block as a valid OpenAI chat.completion response."""
@@ -194,6 +215,17 @@ def create_proxy_app(policy_path: str) -> FastAPI:
             model=model,
             messages=messages,
             provider="openai",
+            raise_on_block=False,
+        )
+        
+        tool = _identify_tool(request)
+        block_reason = result.violations[0].type if result.blocked and result.violations else None
+        storage.record_request(
+            tool=tool,
+            cost_usd=result.estimated_cost_usd or 0.0,
+            tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+            blocked=result.blocked,
+            block_reason=block_reason
         )
 
         if result.blocked:
@@ -232,6 +264,8 @@ def create_proxy_app(policy_path: str) -> FastAPI:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
+        if result.blocked:
+            return JSONResponse(content=response_body, status_code=400)
         return JSONResponse(content=response_body)
 
     # ------------------------------------------------------------------
@@ -256,6 +290,17 @@ def create_proxy_app(policy_path: str) -> FastAPI:
             model=model,
             messages=messages,
             provider="anthropic",
+            raise_on_block=False,
+        )
+        
+        tool = _identify_tool(request)
+        block_reason = result.violations[0].type if result.blocked and result.violations else None
+        storage.record_request(
+            tool=tool,
+            cost_usd=result.estimated_cost_usd or 0.0,
+            tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+            blocked=result.blocked,
+            block_reason=block_reason
         )
 
         if result.blocked:
@@ -302,6 +347,8 @@ def create_proxy_app(policy_path: str) -> FastAPI:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
+        if result.blocked:
+            return JSONResponse(content=response_body, status_code=400)
         return JSONResponse(content=response_body)
 
     return app

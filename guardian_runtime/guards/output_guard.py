@@ -13,18 +13,9 @@ class OutputGuard:
         config = agent_policy.output_guard or OutputGuardConfig()
         violations: list[Violation] = []
 
-        if not config.pii_detection:
+        if not config.scanner_enabled:
             return GuardCheckResult(allowed=True)
 
-        if config.hallucination_check:
-            violations.append(
-                Violation(
-                    type="hallucination",
-                    severity="low",
-                    detail="Hallucination check enabled but not available until v1.1",
-                    action="flagged",
-                )
-            )
 
         detector = PIIDetector()
         matches = detector.detect(text)

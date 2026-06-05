@@ -49,7 +49,7 @@ class GuardianRuntimeEngine:
         agent_id: str = "default",
         session_id: str | None = None,
         provider: str | None = None,
-        raise_on_block: bool = False,
+        raise_on_block: bool = True,
         **kwargs: Any,
     ) -> GuardianRuntimeResponse:
         """Full governed LLM call. Returns GuardianRuntimeResponse."""
@@ -85,6 +85,9 @@ class GuardianRuntimeEngine:
                     
         cost_config = agent_policy.cost
         max_input = cost_config.max_input_tokens if cost_config else None
+        daily_budget = cost_config.daily_budget if cost_config else None
+        
+        # Check token limit
         if max_input is not None and input_tokens > max_input:
             violations.append(
                 Violation(
@@ -95,6 +98,23 @@ class GuardianRuntimeEngine:
                     metadata={"input_tokens": input_tokens, "limit": max_input},
                 )
             )
+            
+        # Check daily budget limit
+        if daily_budget is not None:
+            current_spend = self.storage.get_daily_spend()
+            estimated_input_cost = estimate_cost(input_tokens, 0, model_name)
+            if current_spend + estimated_input_cost > daily_budget:
+                violations.append(
+                    Violation(
+                        type="budget_exceeded",
+                        severity="critical",
+                        detail=f"Daily budget of ${daily_budget:.2f} exceeded. Current spend: ${current_spend:.2f}. Update 'daily_budget' in policy.yaml to continue.",
+                        action="blocked",
+                        metadata={"current_spend": current_spend, "budget": daily_budget},
+                    )
+                )
+
+        if any(v.action == "blocked" for v in violations):
             response = self._blocked_response(
                 violations,
                 model_name,
@@ -264,6 +284,8 @@ class GuardianRuntimeEngine:
         self.logger.log_response(response, agent_id, session_id)
         if count_usage:
             self.storage.increment_usage()
+            if response.estimated_cost_usd is not None and response.estimated_cost_usd > 0:
+                self.storage.add_spend(response.estimated_cost_usd)
 
     @staticmethod
     def _interactive_allow(violations: list[Violation], provider_name: str) -> bool:

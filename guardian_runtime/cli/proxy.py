@@ -19,9 +19,8 @@ import click
 )
 @click.option(
     "--policy",
-    default="policies/agent-proxy.yaml",
-    show_default=True,
-    help="Path to the GuardianRuntime policy YAML file.",
+    default=None,
+    help="Path to the GuardianRuntime policy YAML file (optional).",
 )
 @click.option(
     "--reload",
@@ -29,7 +28,7 @@ import click
     default=False,
     help="Enable auto-reload on policy file changes (dev mode).",
 )
-def proxy_command(port: int, host: str, policy: str, reload: bool):
+def proxy_command(port: int, host: str, policy: str | None, reload: bool):
     """
     Start the GuardianRuntime local proxy server.
 
@@ -49,17 +48,23 @@ def proxy_command(port: int, host: str, policy: str, reload: bool):
         click.echo("❌ uvicorn is not installed. Run: pip install guardian-runtime", err=True)
         sys.exit(1)
 
-    policy_path = pathlib.Path(policy)
-    if not policy_path.exists():
-        click.echo(f"❌ Policy file not found: {policy}", err=True)
-        click.echo("   Create one with: guardian_runtime validate --help", err=True)
-        sys.exit(1)
+    if policy:
+        policy_path = pathlib.Path(policy)
+        if not policy_path.exists():
+            click.echo(f"❌ Policy file not found: {policy}", err=True)
+            click.echo("   Create one with: guardian_runtime validate --help", err=True)
+            sys.exit(1)
+        policy_arg = str(policy_path)
+        policy_display = str(policy_path)
+    else:
+        policy_arg = None
+        policy_display = "Default (Zero-Config)"
 
     click.echo("\n")
     click.echo("  ⛨  GuardianRuntime Runtime Proxy")
     click.echo(f"  ─────────────────────────────────────────")
     click.echo(f"  Listening on : http://{host}:{port}")
-    click.echo(f"  Policy       : {policy}")
+    click.echo(f"  Policy       : {policy_display}")
     click.echo(f"  Dashboard    : guardian_runtime dashboard (run in another terminal)")
     click.echo(f"")
     click.echo(f"  Agent setup:")
@@ -71,7 +76,7 @@ def proxy_command(port: int, host: str, policy: str, reload: bool):
 
     from guardian_runtime.proxy.server import create_proxy_app
 
-    app = create_proxy_app(str(policy_path))
+    app = create_proxy_app(policy_arg)
 
     uvicorn.run(
         app,

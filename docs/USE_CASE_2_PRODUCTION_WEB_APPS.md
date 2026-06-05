@@ -8,30 +8,17 @@ If you deploy an AI feature on the web without an input guardrail, malicious act
 ## How GuardianRuntime Solves This
 GuardianRuntime is a **Local-First SDK**. When you install it on your FastAPI server, the firewall runs entirely inside your Python process memory. It adds ~2ms of processing time and requires zero network hops to validate a prompt.
 
-### Step 1: Create a Production Policy
-In production, you **must not** use interactive mode. Your server has no physical keyboard attached to it, so if a warning prompt appears, the server thread will hang forever waiting for `[y/N]`. We use `interactive_mode: off` to ensure strict, silent blocking.
+### Step 1: Zero-Config Production
+In production, you **must not** use interactive mode, as it will hang the server. GuardianRuntime defaults to strict, silent blocking out of the box (`interactive_mode: off`), making it perfectly safe for production deployment without any YAML file.
 
+(Optional) If you want to customize budget limits, provide a `policy.yaml`:
 ```yaml
-# policies/production.yaml
 version: "1.0"
-name: "production-app"
-
-interactive_mode: off  # Strict silent blocking for headless servers
-
 agents:
   default:
-    llm:
-      provider: openai
-      default_model: gpt-4o-mini
-    input_guard:
-      pii_detection: true
-      jailbreak_detection: true
-      pii_action: block
-    optimizer:
-      enabled: true
-      # Max token limits prevent users from pasting books and bankrupting you
     cost:
-      max_input_tokens: 4000
+      max_input_tokens: 4000  # Prevent users from pasting books and bankrupting you
+      daily_budget: 100.00
 ```
 
 ### Step 2: FastAPI Integration
@@ -41,39 +28,38 @@ Integrating GuardianRuntime into an API route is virtually identical to using th
 import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from guardian_runtime import GuardianRuntime
+from guardian_runtime import GuardianRuntime, GuardianRuntimeBlockedError
 
 app = FastAPI()
 
-# GuardianRuntime is instantiated once at startup
-guardian_runtime = GuardianRuntime.from_policy("policies/production.yaml")
+# GuardianRuntime is instantiated once at startup (zero-config)
+guardian_runtime = GuardianRuntime()
 
 class ChatRequest(BaseModel):
     message: str
 
 @app.post("/api/v1/chat")
 async def chat_endpoint(request: ChatRequest):
-    # GuardianRuntime runs the InputGuard (PII/Jailbreak) and Optimizer
-    response = guardian_runtime.complete(
-        messages=[{"role": "user", "content": request.message}]
-    )
-
-    # 1. Handle Security Violations
-    if response.blocked:
-        violation_types = [v.type for v in response.violations]
+    # GuardianRuntime runs the InputGuard (PII/Jailbreak), Optimizer, and Budget Check
+    try:
+        response = guardian_runtime.complete(
+            messages=[{"role": "user", "content": request.message}]
+        )
+        
+        # Return the safe response to the frontend
+        return {
+            "reply": response.content,
+            "metrics": {
+                "tokens_used": response.input_tokens + response.output_tokens,
+                "cost_usd": response.estimated_cost_usd
+            }
+        }
+    except GuardianRuntimeBlockedError as e:
+        violation_types = [v.type for v in e.response.violations]
         raise HTTPException(
             status_code=400, 
             detail=f"Request blocked due to security policies: {violation_types}"
         )
-
-    # 2. Return the safe response to the frontend
-    return {
-        "reply": response.content,
-        "metrics": {
-            "tokens_used": response.input_tokens + response.output_tokens,
-            "cost_usd": response.estimated_cost_usd
-        }
-    }
 ```
 
 ## Technical Flow

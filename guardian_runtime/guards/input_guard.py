@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from guardian_runtime.core.models import GuardCheckResult, Violation
-from guardian_runtime.core.policy import AgentPolicy, InputGuardConfig, PIIAction
+from guardian_runtime.core.policy import AgentPolicy, InputGuardConfig, ScannerAction
 from guardian_runtime.guards.validators.jailbreak import JailbreakDetector
 from guardian_runtime.guards.validators.pii import PIIDetector, PIIType
 
@@ -43,8 +43,8 @@ class InputGuard:
                     )
                 )
 
-        if config.pii_detection:
-            enabled = self._enabled_pii_types(config)
+        if config.scanner_enabled:
+            enabled = self._enabled_entities(config)
             detector = PIIDetector(enabled_types=enabled)
             matches = detector.detect(text)
 
@@ -55,7 +55,7 @@ class InputGuard:
                     severity = "medium"
 
                 v_type = "secret" if is_secret else "pii"
-                action = self._action_for(config.pii_action)
+                action = self._action_for(config.scanner_action)
 
                 violations.append(
                     Violation(
@@ -70,13 +70,13 @@ class InputGuard:
                     )
                 )
 
-            if matches and config.pii_action == PIIAction.REDACT:
+            if matches and config.scanner_action == ScannerAction.REDACT:
                 working_text = detector.redact(text)
 
         blocking = any(v.action == "blocked" for v in violations)
         allowed = not blocking
 
-        if config.pii_action == PIIAction.REDACT and violations and not blocking:
+        if config.scanner_action == ScannerAction.REDACT and violations and not blocking:
             return GuardCheckResult(
                 allowed=True,
                 violations=violations,
@@ -85,20 +85,20 @@ class InputGuard:
 
         return GuardCheckResult(allowed=allowed, violations=violations)
 
-    def _enabled_pii_types(self, config: InputGuardConfig) -> list[PIIType]:
+    def _enabled_entities(self, config: InputGuardConfig) -> list[PIIType]:
         types: list[PIIType] = []
-        for name in config.pii_entities:
+        for name in config.detect_entities:
             pii_type = _entity_name_to_type(name)
             if pii_type is not None:
                 types.append(pii_type)
         return types or list(PIIType)
 
     @staticmethod
-    def _action_for(pii_action: PIIAction) -> str:
-        if pii_action == PIIAction.BLOCK:
+    def _action_for(scanner_action: ScannerAction) -> str:
+        if scanner_action == ScannerAction.BLOCK:
             return "blocked"
-        if pii_action == PIIAction.FLAG:
+        if scanner_action == ScannerAction.FLAG:
             return "flagged"
-        if pii_action == PIIAction.REDACT:
+        if scanner_action == ScannerAction.REDACT:
             return "redacted"
         return "blocked"

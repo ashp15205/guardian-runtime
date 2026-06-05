@@ -22,8 +22,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 # Enums for strict validation
 # ---------------------------------------------------------------------------
 
-class PIIAction(str, Enum):
-    """Action to take when PII is detected."""
+class ScannerAction(str, Enum):
+    """The action to take when the scanner detects a violation."""
     BLOCK = "block"
     REDACT = "redact"
     FLAG = "flag"
@@ -43,12 +43,7 @@ class LogLevel(str, Enum):
     HIGH_SEVERITY = "HIGH_SEVERITY"
 
 
-class HallucinationProvider(str, Enum):
-    """Supported LLM providers for hallucination detection (BYOM)."""
-    OPENAI = "openai"
-    ANTHROPIC = "anthropic"
-    OLLAMA = "ollama"
-    GEMINI = "gemini"
+
 
 
 class LLMProvider(str, Enum):
@@ -61,7 +56,7 @@ class LLMProvider(str, Enum):
 class InteractiveMode(str, Enum):
     """Interactive terminal mode when violations are found.
 
-    - off        : Silent block / follow pii_action (default, safe for production).
+    - off        : Silent block / follow scanner_action (default, safe for production).
     - warn_ask   : Print a detailed warning and ask the developer [y/N] whether
                    to proceed.  Only suitable for local development / CLI tools.
     """
@@ -116,23 +111,23 @@ class ScopeConfig(BaseModel):
 
 class InputGuardConfig(BaseModel):
     """Configuration for the Input Guard pipeline."""
-    pii_detection: bool = True
-    pii_entities: List[str] = Field(
-        default_factory=lambda: list(VALID_PII_ENTITIES),
-        description="List of PII entity types to detect.",
+    scanner_enabled: bool = True
+    detect_entities: List[str] = Field(
+        default_factory=lambda: ["secret"],
+        description="List of entities to detect. Defaults to secrets only for developer workflows.",
     )
-    pii_action: PIIAction = PIIAction.BLOCK
+    scanner_action: ScannerAction = ScannerAction.BLOCK
     jailbreak_detection: bool = True
     scope: Optional[ScopeConfig] = None
 
-    @field_validator("pii_entities")
+    @field_validator("detect_entities")
     @classmethod
-    def validate_pii_entities(cls, v: List[str]) -> List[str]:
+    def validate_detect_entities(cls, v: List[str]) -> List[str]:
         """Ensure every entity name matches a known PIIType value."""
         invalid = [e for e in v if e not in VALID_PII_ENTITIES]
         if invalid:
             raise ValueError(
-                f"Unknown PII entities: {invalid}. "
+                f"Unknown scanner entities: {invalid}. "
                 f"Valid values: {sorted(VALID_PII_ENTITIES)}"
             )
         return v
@@ -140,10 +135,7 @@ class InputGuardConfig(BaseModel):
 
 class OutputGuardConfig(BaseModel):
     """Configuration for the Output Guard pipeline."""
-    hallucination_check: bool = False
-    hallucination_provider: HallucinationProvider = HallucinationProvider.OPENAI
-    hallucination_model: str = "gpt-4o-mini"
-    pii_detection: bool = True
+    scanner_enabled: bool = True
     profanity_filter: bool = False
     competitor_block: List[str] = Field(default_factory=list)
 
@@ -221,7 +213,7 @@ class ComplianceConfig(BaseModel):
 
 class OptimizerConfig(BaseModel):
     """Input optimization settings."""
-    enabled: bool = False
+    enabled: bool = True
     whitespace_normalization: bool = True
     max_history_messages: Optional[int] = Field(
         default=None, ge=1,
@@ -243,11 +235,11 @@ class OptimizerConfig(BaseModel):
 class AgentPolicy(BaseModel):
     """Complete policy for a single agent."""
     llm: Optional[LLMConfig] = None
-    input_guard: Optional[InputGuardConfig] = None
+    input_guard: Optional[InputGuardConfig] = Field(default_factory=InputGuardConfig)
     output_guard: Optional[OutputGuardConfig] = None
-    cost: Optional[CostConfig] = None
+    cost: Optional[CostConfig] = Field(default_factory=CostConfig)
     tools: Optional[ToolConfig] = None
-    optimizer: Optional[OptimizerConfig] = None
+    optimizer: Optional[OptimizerConfig] = Field(default_factory=OptimizerConfig)
 
 
 # ---------------------------------------------------------------------------

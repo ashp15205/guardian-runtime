@@ -15,7 +15,7 @@ from guardian_runtime.core.policy import load_policy, OptimizerConfig
 from guardian_runtime.optimizer import DocumentConverter, InputOptimizer, OptimizeResult, ConversionResult
 
 # Version matches pyproject.toml
-__version__ = "1.0.3"
+__version__ = "1.0.5"
 __all__ = [
     "GuardianRuntime",
     "GuardianRuntimeEngine",
@@ -34,7 +34,10 @@ __all__ = [
 class GuardianRuntime:
     """Main entry point for GuardianRuntime Runtime."""
 
-    def __init__(self, engine: GuardianRuntimeEngine):
+    def __init__(self, engine: GuardianRuntimeEngine | None = None):
+        if engine is None:
+            from guardian_runtime.core.policy import Policy
+            engine = GuardianRuntimeEngine(Policy())
         self._engine = engine
 
     @classmethod

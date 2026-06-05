@@ -11,11 +11,19 @@ GuardianRuntime includes a built-in `DocumentConverter` powered by Microsoft's `
 ### The Implementation
 You can use the GuardianRuntime SDK to handle the file conversion and the LLM interaction in just a few lines of code.
 
+**Method 1: Using the CLI Tool**
+Before even writing Python, developers can use the CLI to test how small the document can be compressed:
+```bash
+guardian_runtime convert financial_report.pdf --out clean_report.md
+```
+
+**Method 2: Using the Python SDK**
+
 ```python
 import os
-from guardian_runtime import GuardianRuntime, convert_document
+from guardian_runtime import GuardianRuntime, GuardianRuntimeBlockedError, convert_document
 
-guardian_runtime = GuardianRuntime.from_policy("policies/production.yaml")
+guardian_runtime = GuardianRuntime() # Zero-config protection
 
 def analyze_document(file_path: str):
     if not os.path.exists(file_path):
@@ -39,12 +47,11 @@ def analyze_document(file_path: str):
     chat_history.append({"role": "user", "content": "Please write a 3-bullet point summary of this document."})
     
     # GuardianRuntime ensures the prompt is safe and optimized before sending
-    response = guardian_runtime.complete(messages=chat_history)
-
-    if response.blocked:
-        return "Analysis blocked due to security violations in the document."
-    
-    return response.content
+    try:
+        response = guardian_runtime.complete(messages=chat_history)
+        return response.content
+    except GuardianRuntimeBlockedError as e:
+        return f"Analysis blocked due to security violations in the document: {e.response.violations[0].type}"
 ```
 
 ## Technical Flow

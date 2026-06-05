@@ -1035,7 +1035,7 @@
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
         <div class="status-item">FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v1.0.3</div>
+        <div class="status-item">v1.0.5</div>
         <div class="status-item" id="threat-counter">USERS: <span id="count"
                 style="color:var(--green); margin-left: 6px;">0</span></div>
         <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
@@ -1065,23 +1065,23 @@
         </div>
 
         <div class="terminal">
-            <span class="prompt">$ </span><span class="cmd">python -c "from guardian_runtime import GuardianRuntime; gr
-                = GuardianRuntime()"</span>
+            <span class="prompt">$ </span><span class="cmd">pip install guardian-runtime</span>
             <br>
-            <span class="output">✓ Guardian Runtime initialized — local-only mode</span>
+            <span class="output">✓ Successfully installed guardian-runtime</span>
             <br><br>
-            <span class="comment"># Input guard fires automatically</span>
+            <span class="prompt">$ </span><span class="cmd">guardian_runtime proxy --port 8080</span>
             <br>
-            <span class="warn">⚠ [PII_DETECTED] Aadhaar number found in prompt — BLOCKED</span>
-            <br>
-            <span class="warn">⚠ [SECRET_DETECTED] OpenAI key sk-proj-... found — BLOCKED</span>
-            <br>
-            <span class="warn">⚠ [JAILBREAK] Instruction override attempt — BLOCKED</span>
+            <span class="output">✓ Proxy started on port 8080. Zero-Config Mode Active.</span>
             <br><br>
-            <span class="comment"># Output guard fires on LLM response</span>
+            <span class="comment"># Claude Code tries to send an .env file...</span>
             <br>
-            <span class="output">✓ Response clean. Cost: $0.0012 | Tokens: 847 in / 203 out</span>
+            <span class="block">🚨 [SECRET_DETECTED] AWS key AKIAIOSFODNN7EXAMPLE found — BLOCKED</span>
+            <br><br>
+            <span class="comment"># Agent gets stuck in an infinite loop...</span>
             <br>
+            <span class="block">🚨 [BUDGET_EXCEEDED] Daily budget of $10.00 exceeded. Current spend: $10.05 —
+                BLOCKED</span>
+            <br><br>
             <span class="prompt">$ </span><span class="cursor"></span>
         </div>
     </section>
@@ -1101,21 +1101,19 @@
                 <div
                     style="font-family: var(--display); font-size: 24px; color: var(--red); font-weight: 700; margin-bottom: 16px;">
                     THE PROBLEM</div>
-                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">Data Privacy
-                    Black Boxes & Runaway Costs</h3>
+                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">Developers Are
+                    Flying Blind</h3>
                 <p
                     style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    Developers are building incredible AI applications, but they are often blindly passing raw user data
-                    to external APIs. If a user pastes a <strong>credit card</strong> into a chat, or if a developer
-                    accidentally leaves an <strong>AWS Key</strong> in a prompt, that data is instantly logged in a
-                    cloud provider's database.
+                    <strong>1. The Cost Risk:</strong> CLI coding agents (Claude Code, Cursor, Aider) run autonomously.
+                    If they get stuck in an infinite retry loop or parse a massive log file, you wake up to a
+                    <strong>$50 API bill</strong>. You have zero visibility into session costs until the bill arrives.
                 </p>
                 <p
                     style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    Worse yet, unrestricted employee access to AI tools is causing massive budgeting crises.
-                    <strong>Companies are blowing through their annual LLM token budgets in mere months</strong> due to
-                    developers sending unoptimized, massive context windows and infinite loops to expensive models
-                    without oversight.
+                    <strong>2. The Security Risk:</strong> Coding agents have full access to your workspace. If you
+                    accidentally leave an <code>AWS_SECRET_KEY</code> or <code>.env</code> credential in a file, the
+                    agent will silently upload it to a third-party LLM provider.
                 </p>
             </div>
 
@@ -1125,22 +1123,21 @@
                 <div
                     style="font-family: var(--display); font-size: 24px; color: var(--green); font-weight: 700; margin-bottom: 16px;">
                     THE SOLUTION</div>
-                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">A Zero-Latency
-                    FinOps Firewall</h3>
+                <h3 style="font-family: var(--body); font-size: 18px; color: #fff; margin-bottom: 16px;">A
+                    Developer-First Local Firewall</h3>
                 <p
                     style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    Guardian acts as an invisible shield sitting directly on your own infrastructure. Before a single
-                    byte of data reaches OpenAI or Anthropic, Guardian scans, cleans, and optimizes it locally.
+                    Guardian Runtime is a zero-latency FinOps and Security firewall. It runs entirely on your local
+                    machine and sits directly between your coding agents and the LLM provider.
                 </p>
                 <p
                     style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6; margin-bottom: 16px;">
-                    <strong>Data Security:</strong> It uses lightning-fast pattern matching to block PII, secrets, and
-                    jailbreaks in milliseconds.
+                    <strong>Session Analytics & Hard Budgets:</strong> Automatically tracks tokens and costs per session
+                    via the CLI. It sets a hard $10/day default limit so infinite loops never drain your credit card.
                 </p>
                 <p style="font-family: var(--body); font-size: 15px; color: var(--text-dim); line-height: 1.6;">
-                    <strong>Cost Control:</strong> The built-in Token Optimizer actively strips redundant whitespace and
-                    bloat from prompts, and strict FinOps rules instantly block requests that exceed your maximum token
-                    budgets—stopping runaway spend in its tracks.
+                    <strong>Local Secret Scanning:</strong> Instantly intercepts and blocks API keys, AWS credentials,
+                    and <code>.env</code> secrets from ever leaving your local machine. Zero configuration required.
                 </p>
             </div>
         </div>
@@ -1160,14 +1157,14 @@
                 <div class="pipe-name">User Input</div>
             </div>
             <div class="pipe-arrow">──▶</div>
-            <div class="pipe-node pipe-guard" data-tooltip="Blocks PII & Jailbreaks">
+            <div class="pipe-node pipe-guard" data-tooltip="Blocks AWS Keys & Secrets">
                 <div class="corner-tl"></div>
                 <div class="corner-tr"></div>
                 <div class="corner-bl"></div>
                 <div class="corner-br"></div>
                 <span class="pipe-icon">🛡</span>
-                <div class="pipe-label">GUARDIAN</div>
-                <div class="pipe-name">Input Guard</div>
+                <div class="pipe-label">FIREWALL</div>
+                <div class="pipe-name">Secret Guard</div>
             </div>
             <div class="pipe-arrow">──▶</div>
             <div class="pipe-node pipe-guard" data-tooltip="Reduces Token Costs">
@@ -1186,14 +1183,14 @@
                 <div class="pipe-name">LLM API</div>
             </div>
             <div class="pipe-arrow">──▶</div>
-            <div class="pipe-node pipe-guard" data-tooltip="Validates Final Output">
+            <div class="pipe-node pipe-guard" data-tooltip="Tracks $10/day limits">
                 <div class="corner-tl"></div>
                 <div class="corner-tr"></div>
                 <div class="corner-bl"></div>
                 <div class="corner-br"></div>
-                <span class="pipe-icon">🔍</span>
-                <div class="pipe-label">GUARDIAN</div>
-                <div class="pipe-name">Output Guard</div>
+                <span class="pipe-icon">💰</span>
+                <div class="pipe-label">FINOPS</div>
+                <div class="pipe-name">Budget Enforcer</div>
             </div>
             <div class="pipe-arrow">──▶</div>
             <div class="pipe-node">
@@ -1221,17 +1218,14 @@
             <div class="feature-card fade-in">
                 <div class="feature-header">
                     <div class="feature-num">01</div>
-                    <div class="feature-icon">🆔</div>
+                    <div class="feature-icon">💰</div>
                 </div>
-                <div class="feature-title">PII Detection</div>
-                <div class="feature-desc">Scans every prompt and response for sensitive personal data before it moves.
-                    Native India DPDP Act support — Aadhaar, PAN, UPI IDs. Plus SSN, credit cards, passports, emails,
-                    phone numbers.</div>
+                <div class="feature-title">Hard Local Budgets</div>
+                <div class="feature-desc">Configure a strict daily budget so runaway agents or infinite loops can't
+                    drain your API credits. Stops the bleeding instantly with zero cloud dependency.</div>
                 <div class="feature-tags">
-                    <span class="tag">DPDP Act</span>
-                    <span class="tag">GDPR</span>
-                    <span class="tag">HIPAA</span>
-                    <span class="tag">CCPA</span>
+                    <span class="tag">FinOps</span>
+                    <span class="tag">Cost Control</span>
                 </div>
             </div>
 
@@ -1240,75 +1234,72 @@
                     <div class="feature-num">02</div>
                     <div class="feature-icon">🔑</div>
                 </div>
-                <div class="feature-title">Secret Detection</div>
+                <div class="feature-title">Secret & Credential Firewall</div>
                 <div class="feature-desc">Two-tier confidence engine catches exposed API keys with high accuracy. Blocks
-                    AWS, OpenAI, GitHub, Stripe, and generic KEY=value patterns. Never leaks credentials to an LLM.
+                    AWS, OpenAI, GitHub, Stripe, and .env files before they ever leave your laptop.
                 </div>
                 <div class="feature-tags">
-                    <span class="tag">OpenAI</span>
-                    <span class="tag">AWS</span>
-                    <span class="tag">GitHub</span>
+                    <span class="tag">Zero-Config</span>
+                    <span class="tag">Local Parsing</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
                 <div class="feature-header">
                     <div class="feature-num">03</div>
-                    <div class="feature-icon">🏴‍☠️</div>
+                    <div class="feature-icon">📉</div>
                 </div>
-                <div class="feature-title">Jailbreak Defense</div>
-                <div class="feature-desc">Pattern-matched detection for DAN variants, instruction overrides, role-play
-                    injections, encoding tricks, and system prompt extraction attempts. Zero latency validation.</div>
+                <div class="feature-title">Token Optimizer</div>
+                <div class="feature-desc">Automatically trims redundant tokens, conversational filler, and excessive
+                    whitespace from prompts before they hit the LLM. Passively saves you money on every request.</div>
                 <div class="feature-tags">
-                    <span class="tag">DAN</span>
-                    <span class="tag">Injection</span>
-                    <span class="tag">Role-play</span>
+                    <span class="tag">Token Reduction</span>
+                    <span class="tag">Auto-Savings</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
                 <div class="feature-header">
                     <div class="feature-num">04</div>
-                    <div class="feature-icon">💸</div>
+                    <div class="feature-icon">🌐</div>
                 </div>
-                <div class="feature-title">Token Optimizer</div>
-                <div class="feature-desc">Automatically trims redundant tokens, conversational filler, and excessive
-                    whitespace from prompts before they hit the LLM. Reduces your API bills significantly with zero
-                    semantic
-                    loss.</div>
+                <div class="feature-title">Universal Local Proxy</div>
+                <div class="feature-desc">A built-in proxy server lets you intercept traffic from CLI agents (Claude
+                    Code, Aider) without modifying their source code. Perfect for solo developers or internal tools.
+                </div>
                 <div class="feature-tags">
-                    <span class="tag">Token Reduction</span>
-                    <span class="tag">Cost Savings</span>
+                    <span class="tag">Claude Code</span>
+                    <span class="tag">Aider</span>
+                    <span class="tag">LangChain</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
                 <div class="feature-header">
                     <div class="feature-num">05</div>
-                    <div class="feature-icon">📄</div>
+                    <div class="feature-icon">🏴‍☠️</div>
                 </div>
-                <div class="feature-title">Document Converter</div>
-                <div class="feature-desc">Safely extracts text from massive PDFs and Docx files. Strips out token-heavy
-                    layout junk and invisible formatting, converting heavy documents into pure, LLM-friendly Markdown
-                    for RAG pipelines.</div>
+                <div class="feature-title">Jailbreak & Unsafe Command Defense</div>
+                <div class="feature-desc">Pattern-matched detection for DAN variants, instruction overrides, and system
+                    prompt extraction attempts. Stops adversarial prompts from hijacking your agent.</div>
                 <div class="feature-tags">
-                    <span class="tag">PDF Extraction</span>
-                    <span class="tag">RAG Prep</span>
+                    <span class="tag">DAN</span>
+                    <span class="tag">Injection</span>
                 </div>
             </div>
 
             <div class="feature-card fade-in">
                 <div class="feature-header">
                     <div class="feature-num">06</div>
-                    <div class="feature-icon">🌍</div>
+                    <div class="feature-icon">📊</div>
                 </div>
-                <div class="feature-title">FinOps & Local Proxy</div>
-                <div class="feature-desc">Real-time token counting and cost estimation per session. A built-in proxy
-                    server lets you intercept traffic from any tool (Cursor, Claude Code) without modifying their source
-                    code.</div>
+                <div class="feature-title">Session Analytics Dashboard</div>
+                <div class="feature-desc">Automatically tracks tokens, costs, and blocked requests for all your CLI
+                    tools in real-time. Instantly view your exact daily spend with the <code>analytics</code> command.
+                </div>
                 <div class="feature-tags">
-                    <span class="tag">Cost Tracking</span>
-                    <span class="tag">HTTP Proxy</span>
+                    <span class="tag">Visibility</span>
+                    <span class="tag">CLI Metrics</span>
                 </div>
             </div>
 
@@ -1369,30 +1360,24 @@
                 <div class="step-num">03</div>
                 <div class="step-content">
                     <div class="step-title">Configure your policy (optional)</div>
-                    <div class="step-desc">Declarative YAML. Per-agent rules. Enable only what you need.</div>
+                    <div class="step-desc">Guardian works zero-config out of the box. But if you want to enforce strict
+                        budgets or enterprise PII blocking, create a <code>policy.yaml</code> file.</div>
                     <div class="code-block"><span class="c">version: "1.0"</span>
                         <br>
                         <span class="kw">agents:</span>
                         <br>
                         &nbsp;&nbsp;<span class="kw">default:</span>
                         <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">input_guard:</span>
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pii_detection: <span class="ok">true</span>
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;secret_detection: <span class="ok">true</span>
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jailbreak_detection: <span class="ok">true</span>
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">output_guard:</span>
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pii_detection: <span class="ok">true</span>
-                        <br>
                         &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">cost:</span>
                         <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_input_tokens: <span class="ok">4000</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daily_budget: <span class="ok">10.00</span>
                         <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;session_budget_usd: <span class="ok">1.00</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_input_tokens: <span class="ok">50000</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">input_guard:</span>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pii_detection: <span class="ok">true</span> <span
+                            class="c"># Opt-in for enterprise SSN/Credit Card blocking</span>
                     </div>
                 </div>
             </div>
@@ -1406,41 +1391,64 @@
                     <div class="code-block">
                         <span class="c"># Initialize local log directories (~/.guardian_runtime/logs)</span><br>
                         guardian_runtime init<br><br>
-                        <span class="c"># Check system status and token usage stats</span><br>
-                        guardian_runtime status<br><br>
+                        <span class="c"># View Session Analytics (Cost & Tokens per CLI tool)</span><br>
+                        guardian_runtime analytics<br><br>
                         <span class="c"># Tail live security threat logs</span><br>
-                        guardian_runtime logs --tail<br><br>
+                        guardian_runtime logs --tail 20<br><br>
                         <span class="c"># Start the local interception proxy</span><br>
                         guardian_runtime proxy --port 8080
                     </div>
                 </div>
             </div>
 
-            <div class="step fade-in">
-                <div class="step-num">05</div>
-                <div class="step-content">
-                    <div class="step-title">Or use the scan API directly</div>
-                    <div class="step-desc">For simpler use-cases — scan text without the full engine.</div>
-                    <div class="code-block"><span class="kw">from</span> guardian_runtime <span class="kw">import</span>
-                        scan_pii, scan_secrets
-                        <br><br>
-                        result = scan_pii(<span class="str">"My Aadhaar is 0123 xxxx xxxx"</span>)
-                        <br>
-                        <span class="c"># result.blocked → True</span>
-                        <br>
-                        <span class="c"># result.type → AADHAAR</span>
-                        <br>
-                        <span class="c"># result.severity → HIGH</span>
-                        <br><br>
-                        result = scan_secrets(<span class="str">"key = sk-proj-abc123..."</span>)
-                        <br>
-                        <span class="c"># result.blocked → True</span>
-                        <br>
-                        <span class="c"># result.type → OPENAI_KEY</span>
-                    </div>
-                </div>
-            </div>
+        </div>
+    </section>
 
+    <!-- THE INTERCEPTION EXPERIENCE -->
+    <section class="interception relative fade-in"
+        style="padding: 60px 48px; background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 60px 0;">
+        <div class="section-header" style="max-width: 1200px; margin: 0 auto 40px auto;">
+            <span class="section-tag">// MECHANICS</span>
+            <h2 class="section-title">WHAT HAPPENS WHEN GUARDIAN BLOCKS?</h2>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 32px; max-width: 1200px; margin: 0 auto;">
+            <div style="flex: 1; min-width: 250px;">
+                <h3
+                    style="color: #fff; font-family: var(--mono); font-size: 14px; letter-spacing: 1px; margin-bottom: 16px;">
+                    <span style="color: var(--green);">01.</span> WHERE WILL THEY SEE IT?
+                </h3>
+                <p style="color: var(--text-dim); font-size: 14px; line-height: 1.6;">
+                    If using the <strong>Proxy</strong>, developers see the block instantly inside the UI of their tool
+                    (e.g. Claude Code chat) <em>and</em> in the background proxy logs.<br><br>
+                    If using the <strong>SDK</strong>, it surfaces in their standard Python server logs.
+                </p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <h3
+                    style="color: #fff; font-family: var(--mono); font-size: 14px; letter-spacing: 1px; margin-bottom: 16px;">
+                    <span style="color: var(--green);">02.</span> HOW IS IT BLOCKED?
+                </h3>
+                <p style="color: var(--text-dim); font-size: 14px; line-height: 1.6;">
+                    <strong>Zero crashes.</strong> In Proxy mode, Guardian cleanly returns a standard <code
+                        style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: var(--red);">HTTP 400/403</code>
+                    error. This ensures CLI agents display an error message gracefully instead of crashing their
+                    process.<br><br>
+                    In SDK mode, it raises a standard Python Exception.
+                </p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <h3
+                    style="color: #fff; font-family: var(--mono); font-size: 14px; letter-spacing: 1px; margin-bottom: 16px;">
+                    <span style="color: var(--green);">03.</span> WHAT DO THEY SEE?
+                </h3>
+                <p style="color: var(--text-dim); font-size: 14px; line-height: 1.6;">
+                    No obscure stack traces. They see a completely transparent, actionable string telling them exactly
+                    what policy they violated.<br><br>
+                    Example: <span style="color: var(--amber);">🚨 [BUDGET_EXCEEDED] Daily budget of $10.00
+                        exceeded.</span>
+                </p>
+            </div>
         </div>
     </section>
 
@@ -1452,14 +1460,16 @@
         </div>
 
         <div class="steps">
-            <!-- Case 1: Python SDK -->
-            <div class="step fade-in">
-                <div class="step-num">01</div>
-                <div class="step-content">
+            <!-- Case 1: Custom Python Apps -->
+            <div class="step fade-in"
+                style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="step-num">01</div>
                     <div class="step-title">Custom Python Apps (Chatbots, RAG)</div>
-                    <div class="step-desc">If you are building your own AI application in Python, use the SDK directly.
+                    <div class="step-desc">If you are building your own AI application in Python, use the SDK
+                        directly.<br />
                         This gives you full programmatic control over policies and error handling.</div>
-                    <div class="code-block">
+                    <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># 1. Install the package</span><br>
                         pip install guardian-runtime<br><br>
                         <span class="c"># 2. In your code, wrap your LLM calls</span><br>
@@ -1469,95 +1479,156 @@
                         response = gr.complete(<br>
                         &nbsp;&nbsp;messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span
                             class="str">"content"</span>: <span class="str">"My SSN is 123-45-6789"</span>}]<br>
-                        )<br><br>
-                        <span class="c"># Guardian intercepts and blocks the PII locally!</span>
+                        )
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                    <div class="terminal"
+                        style="margin-top: 0; height: 100%; border: 1px solid rgba(255, 68, 68, 0.3);">
+                        <span class="prompt">$ </span><span class="cmd">python run_chatbot.py</span>
+                        <br><br>
+                        <span class="comment"># Guardian intercepts before the network call:</span><br>
+                        <span class="block">Traceback (most recent call last):</span><br>
+                        <span class="block">&nbsp;&nbsp;File "run_chatbot.py", line 12, in &lt;module&gt;</span><br>
+                        <span class="block">GuardianRuntimeBlockedError: 🚨 [PII_DETECTED] 1 Policy
+                            Violations:</span><br>
+                        <span class="block">&nbsp;&nbsp;- SSN number found in prompt. Severity: HIGH.</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Case 2: Claude Code CLI -->
-            <div class="step fade-in">
-                <div class="step-num">02</div>
-                <div class="step-content">
-                    <div class="step-title">Claude Code & CLI Assistants</div>
-                    <div class="step-desc">For CLI tools like Anthropic's Claude Code or Aider, you can't edit their
-                        source code. Instead, use Guardian's built-in Local Proxy to intercept their network requests.
+            <!-- Case 2: Solo Developers (CLI Agents) -->
+            <div class="step fade-in"
+                style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="step-num">02</div>
+                    <div class="step-title"> Developers (Claude Code or Aider Users)</div>
+                    <div class="step-desc">Stop CLI agents from getting stuck in loops and blowing your API budget.
+                        Guardian's zero-config local proxy sits between your agent and Anthropic/OpenAI.
                     </div>
-                    <div class="code-block">
+                    <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># 1. Install Guardian and start the Proxy</span><br>
                         pip install guardian-runtime<br>
                         guardian_runtime proxy --port 8080<br><br>
-                        <span class="c"># 2. Open a new terminal and tell Claude to use the proxy</span><br>
+                        <span class="c"># 2. Tell Claude to use the proxy</span><br>
                         <span class="kw">export</span> ANTHROPIC_BASE_URL=http://localhost:8080<br>
-                        claude<br><br>
-                        <span class="c"># Now, if Claude tries to read a .env file and send your AWS keys,</span><br>
-                        <span class="c"># the local proxy blocks the HTTP request instantly!</span>
+                        claude
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                    <div class="terminal"
+                        style="margin-top: 0; height: 100%; border: 1px solid rgba(255, 68, 68, 0.3);">
+                        <span class="comment"># Claude attempts to read an .env file to fix a bug...</span><br><br>
+                        <span class="prompt">Claude> </span><span class="cmd">I will check your .env file for the AWS
+                            credentials.</span><br>
+                        <span class="output">Reading .env...</span><br>
+                        <span class="output">Sending context to Anthropic...</span><br><br>
+                        <span class="comment"># Guardian Proxy blocks the HTTP request instantly:</span><br>
+                        <span class="block">Error: HTTP 403 Forbidden. 🚨 [SECRET_DETECTED] AWS key AKIAIOSFODNN7EXAMPLE
+                            found.</span><br>
                     </div>
                 </div>
             </div>
 
-            <!-- Case 3: Cursor IDE -->
-            <div class="step fade-in">
-                <div class="step-num">03</div>
-                <div class="step-content">
-                    <div class="step-title">Cursor IDE & Code Editors</div>
-                    <div class="step-desc">Prevent accidental leaks of proprietary company secrets or customer PII when
-                        using Cursor's AI Chat and Composer features.</div>
-                    <div class="code-block">
-                        <span class="c"># 1. Start the proxy in your background terminal</span><br>
-                        pip install guardian-runtime<br>
-                        guardian_runtime proxy --port 8080<br><br>
-                        <span class="c"># 2. Configure Cursor Settings</span><br>
-                        - Open Cursor Settings (Cmd+,)<br>
-                        - Go to Models > Override Base URL<br>
-                        - Set it to: <span class="str">http://localhost:8080</span><br><br>
-                        <span class="c"># Every Cmd+K or chat prompt is now scanned locally.</span><br>
-                        <span class="c"># If you paste a customer's credit card, Cursor will show a</span><br>
-                        <span class="c"># local error instead of sending it to the cloud.</span>
+            <!-- Case 3: Enterprise Teams -->
+            <div class="step fade-in"
+                style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="step-num">03</div>
+                    <div class="step-title">Enterprise Teams (LangChain, AutoGen)</div>
+                    <div class="step-desc">Working at a company? Use Guardian to enforce strict policies across all
+                        internal AI tools so your employees don't accidentally leak customer PII or proprietary code.
+                    </div>
+                    <div class="code-block" style="margin-bottom: 0;">
+                        <span class="c"># Wrap any LangChain or AutoGen client</span><br>
+                        <span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI<br><br>
+                        <span class="c"># Point your framework to the local proxy:</span><br>
+                        llm = ChatOpenAI(<br>
+                        &nbsp;&nbsp;model=<span class="str">"gpt-4o"</span>,<br>
+                        &nbsp;&nbsp;base_url=<span class="str">"http://localhost:8080"</span><br>
+                        )<br>
+                        chain.invoke({"input": user_query})
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                    <div class="terminal"
+                        style="margin-top: 0; height: 100%; border: 1px solid rgba(255, 68, 68, 0.3);">
+                        <span class="comment"># LangChain Trace:</span><br>
+                        <span class="output">[chain/start] [1:chain:AgentExecutor] Entering Chain run</span><br>
+                        <span class="output">[llm/start] [1:chain:AgentExecutor > 2:llm:ChatOpenAI] Entering LLM
+                            run</span><br><br>
+                        <span class="block">[llm/error] [1:chain:AgentExecutor > 2:llm:ChatOpenAI] [0ms] LLM run
+                            errored</span><br>
+                        <span class="block">BadRequestError: Error code: 400 - {'error': {'message': '🚨
+                            [BUDGET_EXCEEDED] Daily budget of $50.00 exceeded.', 'type': 'policy_violation'}}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Case 4: Document Analysis -->
-            <div class="step fade-in">
-                <div class="step-num">04</div>
-                <div class="step-content">
-                    <div class="step-title">Document Analysis (RAG Pipelines)</div>
+            <div class="step fade-in"
+                style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01);">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="step-num">04</div>
+                    <div class="step-title">Document Converter (Zero-Code)</div>
                     <div class="step-desc">If you process large PDFs or Word documents for RAG, they often contain
-                        massive amounts of formatting bloat and hidden PII. Use the Document Converter to clean and
-                        compress them before the LLM sees them.</div>
-                    <div class="code-block">
-                        <span class="c"># Convert heavy files into clean, token-efficient Markdown</span><br>
-                        <span class="kw">from</span> guardian_runtime <span class="kw">import</span>
-                        convert_document<br><br>
-                        doc = convert_document(<span class="str">"financial_report.pdf"</span>)<br><br>
-                        <span class="c"># You get pure Markdown with all layout junk removed:</span><br>
-                        <span class="kw">print</span>(doc.token_count) <span class="c"># See exactly how much context it
-                            uses</span><br>
-                        <span class="kw">print</span>(doc.content) <span class="c"># Feed this clean text directly to
-                            your RAG</span>
+                        massive amounts of formatting bloat. Use the built-in CLI to instantly clean and convert them
+                        into pure Markdown.</div>
+                    <div class="code-block" style="margin-bottom: 0;">
+                        <span class="c"># Simply pass any PDF or DOCX file to the CLI:</span><br>
+                        guardian_runtime convert financial_report.pdf \ <br>
+                        &nbsp;&nbsp;--out clean_report.md
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                    <div class="terminal"
+                        style="margin-top: 0; height: 100%; border: 1px solid rgba(0, 255, 136, 0.3);">
+                        <span class="prompt">$ </span><span class="cmd">guardian_runtime convert financial_report.pdf
+                            --out clean_report.md</span>
+                        <br><br>
+                        <span class="output" style="color: var(--green); font-weight:bold;">⛨ GuardianRuntime Document
+                            Converter</span><br>
+                        <span class="output">Processing: financial_report.pdf...</span><br><br>
+                        <span class="output" style="color: var(--green);">✓ Conversion Complete!</span><br>
+                        <span class="output">&nbsp;&nbsp;• Original File: financial_report.pdf</span><br>
+                        <span class="output">&nbsp;&nbsp;• Token Count: 14,205</span><br>
+                        <span class="output">&nbsp;&nbsp;• Saved to: clean_report.md</span>
                     </div>
                 </div>
             </div>
-            <!-- Case 5: Agentic Frameworks -->
-            <div class="step fade-in">
+        </div>
+
+        <!-- Case 5: Session Analytics -->
+        <div class="step fade-in"
+            style="display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; border: 1px solid var(--border); padding: 32px; border-radius: 12px; background: rgba(255,255,255,0.01); margin-top: 32px;">
+            <div style="flex: 1; min-width: 300px;">
                 <div class="step-num">05</div>
-                <div class="step-content">
-                    <div class="step-title">Agentic Frameworks (LangChain / AutoGen)</div>
-                    <div class="step-desc">Building autonomous agents? Guardian acts as a security middleware for any
-                        standard LLM client. Simply override the base URL or wrap your chain's LLM node.</div>
-                    <div class="code-block">
-                        <span class="c"># LangChain Example</span><br>
-                        <span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI<br><br>
-                        <span class="c"># Start Guardian Proxy on port 8080, then point LangChain to it:</span><br>
-                        llm = ChatOpenAI(<br>
-                        &nbsp;&nbsp;model=<span class="str">"gpt-4o"</span>,<br>
-                        &nbsp;&nbsp;base_url=<span class="str">"http://localhost:8080"</span><br>
-                        )<br><br>
-                        <span class="c"># The agent's chain will now be intercepted locally at every step.</span>
-                    </div>
+                <div class="step-title">Session Analytics (FinOps)</div>
+                <div class="step-desc">Guardian automatically tracks your spend across every CLI tool and script you
+                    use. Never wonder how much a Claude Code refactor cost you again.</div>
+                <div class="code-block" style="margin-bottom: 0;">
+                    <span class="c"># At the end of the day, just run:</span><br>
+                    guardian_runtime analytics<br><br>
+                    <span class="c"># Or see all-time history:</span><br>
+                    guardian_runtime analytics --all
                 </div>
             </div>
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                <div class="terminal" style="margin-top: 0; height: 100%; border: 1px solid rgba(0, 255, 136, 0.3);">
+                    <span class="prompt">$ </span><span class="cmd">guardian_runtime analytics</span>
+                    <br><br>
+                    <span class="output" style="color: var(--green); font-weight:bold;">⛨ GuardianRuntime Session
+                        Analytics (Today)</span><br>
+                    <span class="output">──────────────────────────────────────────────</span><br><br>
+                    <span class="output" style="color: var(--cyan); font-weight:bold;">Claude Code</span><br>
+                    <span class="output">Cost: $2.3100</span><br>
+                    <span class="output">Requests: 54</span><br>
+                    <span class="output">Blocked: <span style="color: var(--red);">3 (3
+                            secret_detected)</span></span><br>
+                    <span class="output">Tokens: 82,000</span>
+                </div>
+            </div>
+        </div>
         </div>
     </section>
 
