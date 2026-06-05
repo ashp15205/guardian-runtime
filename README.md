@@ -24,6 +24,20 @@
 
 ---
 
+## 📖 Table of Contents
+- [🛑 The Problem: Developers are Flying Blind](#-the-problem-developers-are-flying-blind)
+- [🟢 The Solution: A Developer-First Local Firewall](#-the-solution-a-developer-first-local-firewall)
+- [⚡ Key Features](#-key-features)
+- [🏗 Architecture](#-architecture)
+- [🚀 Quickstart](#-quickstart)
+- [🛑 What happens when Guardian blocks a request?](#-what-happens-when-guardian-blocks-a-request)
+- [⚙️ Advanced Configuration (Optional)](#️-advanced-configuration-optional)
+- [🔍 Output Auditing (Non-Blocking)](#-output-auditing-non-blocking)
+- [📈 CLI Tools & Dashboard](#-cli-tools--dashboard)
+- [📜 License](#-license)
+
+---
+
 ## 🛑 The Problem: Developers are Flying Blind
 
 1. **The Cost Risk:** CLI coding agents (Claude Code, Cursor, Aider) run autonomously. If they get stuck in an infinite retry loop or parse a massive log file, you wake up to a **$50 API bill**. You have zero visibility into session costs until the bill arrives.
