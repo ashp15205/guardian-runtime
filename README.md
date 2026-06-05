@@ -364,4 +364,4 @@ agents:
 
 ## 📜 License
 
-Released under the **MIT License** — free to use, modify, and distribute. Zero tracking, zero cloud dependencies. Your code is yours.
+Released under the **MIT License**. <br/>Zero tracking, zero cloud dependencies. Your code is yours.
