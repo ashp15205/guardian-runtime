@@ -93,3 +93,29 @@ def test_proactive_guidance_for_large_input():
     assert result.original_tokens > 4000
     assert len(result.guidance) > 0
     assert "convert_document" in result.guidance[0]
+
+
+def test_caveman_mode_injects_system_prompt():
+    config = OptimizerConfig(enabled=True, caveman_mode=True)
+    optimizer = InputOptimizer(config)
+    
+    # Test 1: No system prompt originally
+    messages = [{"role": "user", "content": "Write me a function."}]
+    result = optimizer.optimize(messages)
+    
+    assert len(result.optimized_messages) == 2
+    assert result.optimized_messages[0]["role"] == "system"
+    assert "intelligent caveman" in result.optimized_messages[0]["content"]
+    assert "caveman_mode_enabled" in result.actions_taken
+    
+    # Test 2: Existing system prompt gets appended
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Write me a function."}
+    ]
+    result2 = optimizer.optimize(messages)
+    
+    assert len(result2.optimized_messages) == 2
+    assert result2.optimized_messages[0]["role"] == "system"
+    assert result2.optimized_messages[0]["content"].startswith("You are a helpful assistant.")
+    assert "intelligent caveman" in result2.optimized_messages[0]["content"]

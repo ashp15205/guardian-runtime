@@ -1220,8 +1220,12 @@
                         THE GUARDIAN SOLUTION
                     </div>
                     <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
-                        <strong>Hard FinOps Budgets:</strong> Tracks every token locally. Set a strict $5.00/day limit.
-                        Passively compresses prompts to save 20-60% on costs.
+                        <strong>Hard Budgets & Caveman Mode:</strong> Tracks every token locally with a strict $5.00/day limit. Use <i>Caveman Mode</i> to drastically slash expensive output tokens while maintaining full technical accuracy.
+                        <div class="code-block" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--text-dim);">
+                            <span style="color: var(--amber);">optimizer:</span><br>
+                            &nbsp;&nbsp;<span style="color: var(--amber);">enabled:</span> <span style="color: var(--cyan);">true</span><br>
+                            &nbsp;&nbsp;<span style="color: var(--amber);">caveman_mode:</span> <span style="color: var(--cyan);">true</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1793,14 +1797,13 @@
                         into pure Markdown.</div>
                     <div class="code-block" style="margin-bottom: 0;">
                         <span class="c"># Simply pass any PDF or DOCX file to the CLI:</span><br>
-                        guardian_runtime convert financial_report.pdf --out clean_report.md
+                        guardian_runtime convert &lt;path/to/input.pdf&gt; --out &lt;path/to/output.md&gt;
                     </div>
                 </div>
                 <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
                     <div class="terminal"
                         style="margin-top: 0; height: 100%; border: 1px solid rgba(0, 255, 136, 0.3);">
-                        <span class="prompt">$ </span><span class="cmd">guardian_runtime convert financial_report.pdf
-                            --out clean_report.md</span>
+                        <span class="prompt">$ </span><span class="cmd">guardian_runtime convert &lt;path/to/input.pdf&gt; --out &lt;path/to/output.md&gt;</span>
                         <br><br>
                         <span class="output" style="color: var(--green); font-weight:bold;">⛨ GuardianRuntime Document
                             Converter</span><br>
@@ -1910,10 +1913,9 @@
                 </div>
                 <div class="terminal"
                     style="border-radius: 0; border: none; border-top: 1px solid var(--border-bright); margin: 0; max-width: 100%; box-shadow: none;">
-                    <span class="prompt">$ </span><span class="cmd">guardian_runtime convert report.pdf -o
-                        clean.md</span><br><br>
+                    <span class="prompt">$ </span><span class="cmd">guardian_runtime convert &lt;path/to/input.pdf&gt; --out &lt;path/to/output.md&gt;</span><br><br>
                     <span class="output">✓ Conversion Complete!</span><br>
-                    <span class="output"> • Original File: report.pdf</span><br>
+                    <span class="output"> • Original File: input.pdf</span><br>
                     <span class="output"> • Token Count: 14,205</span><br>
                     <span class="output"> • Saved to: clean.md</span><br>
                 </div>
@@ -2016,8 +2018,7 @@
                                 health of the local installation.</div>
                         </div>
                         <div>
-                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime
-                                clean</div>
+                            <div style="font-family: var(--mono); color: #fff; margin-bottom: 8px;">guardian_runtime clean</div>
                             <div style="font-family: var(--body); font-size: 13px; color: var(--text-dim);">Deletes your
                                 entire ~/.guardian_runtime directory. Use this to permanently delete local analytics,
                                 logs, and custom policies.</div>

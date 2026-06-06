@@ -226,6 +226,11 @@ class OptimizerConfig(BaseModel):
         default=0.80, ge=0.0, le=1.0,
         description="Warn when input tokens reach this % of max_input_tokens"
     )
+    caveman_mode: bool = Field(
+        default=False,
+        description="Injects a system prompt forcing the LLM to output extreme shorthand, drastically reducing output tokens while maintaining accuracy."
+    )
+
 
 
 # ---------------------------------------------------------------------------

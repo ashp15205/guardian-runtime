@@ -78,46 +78,36 @@ Guardian Runtime is a **local-first security middleware and FinOps firewall**. I
 
 Guardian intercepts traffic at the network layer or via SDK, passing it through a strict verification pipeline before it ever reaches the cloud.
 
-```mermaid
-sequenceDiagram
-    participant User as Developer / Agent
-    participant Proxy as Guardian Runtime (Local)
-    participant Cloud as LLM Provider (OpenAI/Anthropic)
-
-    User->>Proxy: Sends prompt with codebase context
-    
-    rect rgb(30, 41, 59)
-        Note over Proxy: 1. Input Guard (Security)
-        Proxy->>Proxy: Scan for AWS Keys, .env secrets
-        Proxy->>Proxy: Scan for PII (Regex + ML)
-        alt Threat Detected
-            Proxy-->>User: 🚨 HTTP 400: Request Blocked Locally
-        end
-    end
-    
-    rect rgb(15, 23, 42)
-        Note over Proxy: 2. Token Optimizer (FinOps)
-        Proxy->>Proxy: Compress redundant whitespace
-        Proxy->>Proxy: Convert PDFs to clean Markdown
-    end
-    
-    rect rgb(30, 41, 59)
-        Note over Proxy: 3. Budget Controller (FinOps)
-        Proxy->>Proxy: Check against $5.00 daily limit
-        alt Budget Exceeded
-            Proxy-->>User: 💸 HTTP 400: Daily Budget Exceeded
-        end
-    end
-
-    Proxy->>Cloud: Send Cleaned & Optimized Request
-    Cloud-->>Proxy: LLM Response
-
-    rect rgb(15, 23, 42)
-        Note over Proxy: 4. Output Guard (Auditor)
-        Proxy->>Proxy: Audit response for hallucinated secrets
-    end
-
-    Proxy-->>User: Safe Response Delivered
+```text
+  Agent / Dev                 Guardian Runtime                   Cloud LLM
+       │                             │                               │
+       │  1. Prompt + Context        │                               │
+       │ ──────────────────────────▶ │                               │
+       │                             │                               │
+       │                             │ [Security Firewall]           │
+       │                             │ ├─ Scan AWS Keys / Secrets    │
+       │                             │ └─ Block if Threat Detected ──┼─ (Drops Request)
+       │                             │                               │
+       │                             │ [Token Optimizer]             │
+       │                             │ ├─ Compress Whitespace        │
+       │                             │ └─ Caveman Mode (Output Trim) │
+       │                             │                               │
+       │                             │ [FinOps Budget]               │
+       │                             │ ├─ Check Daily Spend Limit    │
+       │                             │ └─ Block if $5 Limit Hit ─────┼─ (Drops Request)
+       │                             │                               │
+       │                             │  2. Sanitized Prompt          │
+       │                             │ ────────────────────────────▶ │
+       │                             │                               │
+       │                             │  3. LLM Response              │
+       │                             │ ◀──────────────────────────── │
+       │                             │                               │
+       │                             │ [Output Guard]                │
+       │                             │ └─ Audit for Hallucinations   │
+       │                             │                               │
+       │  4. Safe Response           │                               │
+       │ ◀────────────────────────── │                               │
+       │                             │                               │
 ```
 
 ---
@@ -231,7 +221,7 @@ response = llm.invoke("Hello, Guardian!")
 **How to use:**
 Use the built-in CLI to strip out formatting bloat and compress documents into pure Markdown *before* manually uploading them.
 ```bash
-guardian_runtime convert massive_report.pdf --out cleaned_report.md
+guardian_runtime convert <path/to/input.pdf> --out <path/to/output.md>
 ```
 *You can now upload `cleaned_report.md` to ChatGPT, saving huge amounts of context space and preventing hallucination.*
 
@@ -277,14 +267,14 @@ Converts massive PDF, DOCX, and XLSX files into highly compressed, token-optimiz
 
 **Example Usage:**
 ```bash
-$ guardian_runtime convert massive_financial_report.pdf --out clean_report.md
+$ guardian_runtime convert <path/to/input_file> --out <path/to/output_file.md>
 ⛨ GuardianRuntime Document Converter
-Processing: massive_financial_report.pdf...
+Processing: input_file...
 
 ✓ Conversion Complete!
-  • Original File:  massive_financial_report.pdf
+  • Original File:  input_file
   • Token Count:    14,205
-  • Saved to:       clean_report.md
+  • Saved to:       output_file.md
 ```
 
 ### `guardian_runtime scan <text>` (Manual Threat Verification)
@@ -349,6 +339,10 @@ agents:
     cost:
       daily_budget: 5.00        # Instantly block if daily spend exceeds $5.00
       max_input_tokens: 20000   # Block massive context windows to save money
+      
+    optimizer:
+      enabled: true
+      caveman_mode: true        # Slashes output tokens by forcing terse shorthand
 ```
 
 ---

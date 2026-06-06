@@ -67,6 +67,25 @@ class InputOptimizer:
                 optimized = system_msgs + other_msgs
                 actions.append("history_trim")
 
+        # 5. Caveman Mode (Output Token Reduction)
+        if self.config.caveman_mode:
+            caveman_prompt = (
+                "You must respond like a highly intelligent caveman. Use as few words as possible. "
+                "No pleasantries. No filler. Omit all unnecessary grammar and transitions. "
+                "Maintain 100% technical accuracy. Only output the exact code or command needed. Brain big, mouth small."
+            )
+            # Find system prompt and append, or insert new one at index 0
+            system_msgs = [m for m in optimized if m["role"] == "system"]
+            if system_msgs:
+                # Modifying the first system message found
+                for m in optimized:
+                    if m["role"] == "system":
+                        m["content"] = f"{m['content']}\n\n{caveman_prompt}"
+                        break
+            else:
+                optimized.insert(0, {"role": "system", "content": caveman_prompt})
+            actions.append("caveman_mode_enabled")
+
         # Calculate results
         optimized_tokens = count_messages_tokens(optimized, model)
         savings_pct = 0.0
