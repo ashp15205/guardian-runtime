@@ -67,14 +67,16 @@ class LocalStorage:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         if not self.usage_file.exists():
             return 0.0
-        try:
-            with open(self.usage_file, encoding="utf-8") as f:
-                usage = json.load(f)
-            if usage.get("date") != today:
+        
+        with FileLock(str(self.usage_file) + ".lock", timeout=5):
+            try:
+                with open(self.usage_file, encoding="utf-8") as f:
+                    usage = json.load(f)
+                if usage.get("date") != today:
+                    return 0.0
+                return float(usage.get("spend_usd", 0.0))
+            except json.JSONDecodeError:
                 return 0.0
-            return float(usage.get("spend_usd", 0.0))
-        except json.JSONDecodeError:
-            return 0.0
 
     def record_request(self, tool: str, cost_usd: float, tokens: int, blocked: bool, block_reason: str | None = None) -> None:
         """Append a single request event to the history log for analytics."""
@@ -104,36 +106,37 @@ class LocalStorage:
         if not self.history_file.exists():
             return analytics
             
-        with open(self.history_file, "r", encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                
-                # Filter by date if provided
-                if date_filter and not event.get("timestamp", "").startswith(date_filter):
-                    continue
+        with FileLock(str(self.history_file) + ".lock", timeout=5):
+            with open(self.history_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    try:
+                        event = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
                     
-                tool = event.get("tool", "Unknown")
-                if tool not in analytics:
-                    analytics[tool] = {
-                        "cost": 0.0,
-                        "requests": 0,
-                        "blocked": 0,
-                        "tokens": 0,
-                        "block_reasons": {}
-                    }
-                
-                analytics[tool]["requests"] += 1
-                analytics[tool]["cost"] += event.get("cost_usd", 0.0)
-                analytics[tool]["tokens"] += event.get("tokens", 0)
-                
-                if event.get("blocked"):
-                    analytics[tool]["blocked"] += 1
-                    reason = event.get("block_reason") or "Unknown"
-                    analytics[tool]["block_reasons"][reason] = analytics[tool]["block_reasons"].get(reason, 0) + 1
+                    # Filter by date if provided
+                    if date_filter and not event.get("timestamp", "").startswith(date_filter):
+                        continue
+                        
+                    tool = event.get("tool", "Unknown")
+                    if tool not in analytics:
+                        analytics[tool] = {
+                            "cost": 0.0,
+                            "requests": 0,
+                            "blocked": 0,
+                            "tokens": 0,
+                            "block_reasons": {}
+                        }
                     
+                    analytics[tool]["requests"] += 1
+                    analytics[tool]["cost"] += event.get("cost_usd", 0.0)
+                    analytics[tool]["tokens"] += event.get("tokens", 0)
+                    
+                    if event.get("blocked"):
+                        analytics[tool]["blocked"] += 1
+                        reason = event.get("block_reason") or "Unknown"
+                        analytics[tool]["block_reasons"][reason] = analytics[tool]["block_reasons"].get(reason, 0) + 1
+                        
         return analytics

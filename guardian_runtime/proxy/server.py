@@ -277,15 +277,17 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                             blocked=result.blocked,
                             block_reason=block_reason
                         )
-                        chunk_dict = {
-                            "id": base_id,
-                            "object": "chat.completion.chunk",
-                            "created": created,
-                            "model": model,
-                            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
-                        }
-                        yield f"data: {_json.dumps(chunk_dict)}\n\n"
-                        yield "data: [DONE]\n\n"
+                        
+                        if not result.blocked:
+                            chunk_dict = {
+                                "id": base_id,
+                                "object": "chat.completion.chunk",
+                                "created": created,
+                                "model": model,
+                                "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+                            }
+                            yield f"data: {_json.dumps(chunk_dict)}\n\n"
+                            yield "data: [DONE]\n\n"
                         break
 
                     text = chunk_or_result
@@ -425,11 +427,12 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                             block_reason=block_reason
                         )
                         
-                        block_stop = {"type": "content_block_stop", "index": 0}
-                        yield f"event: content_block_stop\ndata: {_json.dumps(block_stop)}\n\n"
-                        msg_delta = {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": None}}
-                        yield f"event: message_delta\ndata: {_json.dumps(msg_delta)}\n\n"
-                        yield f"event: message_stop\ndata: {_json.dumps({'type': 'message_stop'})}\n\n"
+                        if not result.blocked:
+                            block_stop = {"type": "content_block_stop", "index": 0}
+                            yield f"event: content_block_stop\ndata: {_json.dumps(block_stop)}\n\n"
+                            msg_delta = {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": None}}
+                            yield f"event: message_delta\ndata: {_json.dumps(msg_delta)}\n\n"
+                            yield f"event: message_stop\ndata: {_json.dumps({'type': 'message_stop'})}\n\n"
                         break
 
                     text = chunk_or_result

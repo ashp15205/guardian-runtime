@@ -37,7 +37,7 @@ Guardian acts as a local token ledger. You can set a strict daily budget (e.g., 
 
 While building the FinOps layer, I realized something: **Context windows are bloated, and LLMs talk way too much.**
 
-Many developers use simple prompt engineering to force short responses (sometimes called "caveman mode"), but that only solves half the problem. In version `1.1.2`, I introduced an advanced feature called **Terse Mode**.
+Many developers use simple prompt engineering to force short responses (sometimes called "caveman mode"), but that only solves half the problem. In version `1.1.3`, I introduced an advanced feature called **Terse Mode**.
 
 When you enable `terse_mode: true` in your Guardian policy, it operates simultaneously on both sides of the network pipeline:
 1. **Input Optimization:** Before your prompt ever leaves your machine, Guardian strips out redundant whitespace and trims excessive conversation history.
@@ -84,7 +84,7 @@ At the end of the day, just run `guardian_runtime analytics` to see exactly how 
 
 If you are building with AI agents, you need local guardrails. Check out the project below:
 - 🌐 **Website:** [ashp15205.github.io/guardian-runtime](https://ashp15205.github.io/guardian-runtime/)
-- 📦 **PyPI:** [pypi.org/project/guardian-runtime](https://pypi.org/project/guardian-runtime/1.1.2/)
+- 📦 **PyPI:** [pypi.org/project/guardian-runtime](https://pypi.org/project/guardian-runtime/1.1.3/)
 - 💻 **GitHub:** [github.com/ashp15205/guardian-runtime](https://github.com/ashp15205/guardian-runtime)
 
 *If you found this useful, I’d love a star on GitHub or your thoughts in the comments!*
