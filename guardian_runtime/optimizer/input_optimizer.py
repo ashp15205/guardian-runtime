@@ -70,9 +70,10 @@ class InputOptimizer:
         # 5. Terse Mode (Output Token Reduction)
         if self.config.terse_mode:
             terse_prompt = (
-                "You must respond in a terse, shorthand manner. Use as few words as possible. "
-                "No pleasantries. No filler. Omit all unnecessary grammar and transitions. "
-                "Maintain 100% technical accuracy. Only output the exact code or command needed. Be extremely concise."
+                "You are a highly efficient technical assistant. Be concise and direct. "
+                "Provide brief, clear reasoning alongside the required code. "
+                "Do not use conversational filler, pleasantries, or repetitive summaries. "
+                "Maintain 100% technical accuracy while minimizing unnecessary wordiness."
             )
             # Find system prompt and append, or insert new one at index 0
             system_msgs = [m for m in optimized if m["role"] == "system"]

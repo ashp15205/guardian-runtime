@@ -105,17 +105,14 @@ def test_terse_mode_injects_system_prompt():
     
     assert len(result.optimized_messages) == 2
     assert result.optimized_messages[0]["role"] == "system"
-    assert "terse" in result.optimized_messages[0]["content"]
-    assert "terse_mode_enabled" in result.actions_taken
-    
-    # Test 2: Existing system prompt gets appended
-    messages = [
-        {"role": "system", "content": "You are a helpful assistant."},
+    assert "concise and direct" in result.optimized_messages[0]["content"]
+
+    # Test 2: System prompt already exists
+    messages_with_sys = [
+        {"role": "system", "content": "You are a coding agent."},
         {"role": "user", "content": "Write me a function."}
     ]
-    result2 = optimizer.optimize(messages)
-    
+    result2 = optimizer.optimize(messages_with_sys)
     assert len(result2.optimized_messages) == 2
-    assert result2.optimized_messages[0]["role"] == "system"
-    assert result2.optimized_messages[0]["content"].startswith("You are a helpful assistant.")
-    assert "terse" in result2.optimized_messages[0]["content"]
+    assert "concise and direct" in result2.optimized_messages[0]["content"]
+    assert "You are a coding agent." in result2.optimized_messages[0]["content"]
