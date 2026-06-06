@@ -90,7 +90,7 @@ Guardian intercepts traffic at the network layer or via SDK, passing it through 
        │                             │                               │
        │                             │ [Token Optimizer]             │
        │                             │ ├─ Compress Whitespace        │
-       │                             │ └─ Terse Mode (Output Trim) │
+       │                             │ └─ Terse Mode (Output Trim)   │
        │                             │                               │
        │                             │ [FinOps Budget]               │
        │                             │ ├─ Check Daily Spend Limit    │
