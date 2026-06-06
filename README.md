@@ -103,7 +103,7 @@ Guardian intercepts traffic at the network layer or via SDK, passing it through 
        │                             │ ◀──────────────────────────── │
        │                             │                               │
        │                             │ [Output Guard]                │
-       │                             │ └─ Audit for Hallucinations   │
+       │                             │  Audit for Leaked PII/Secrets │
        │                             │                               │
        │  4. Safe Response           │                               │
        │ ◀────────────────────────── │                               │
