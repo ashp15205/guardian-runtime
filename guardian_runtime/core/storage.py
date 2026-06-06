@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import json
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+
+from filelock import FileLock
 
 GUARDIAN_RUNTIME_DIR = Path.home() / ".guardian_runtime"
 USAGE_FILE = GUARDIAN_RUNTIME_DIR / "usage.json"
@@ -20,40 +23,44 @@ class LocalStorage:
 
     def increment_usage(self) -> int:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        usage = {"date": today, "checks": 0, "spend_usd": 0.0}
-
-        if self.usage_file.exists():
-            try:
-                with open(self.usage_file, encoding="utf-8") as f:
-                    usage = json.load(f)
-                if usage.get("date") != today:
-                    usage = {"date": today, "checks": 0, "spend_usd": 0.0}
-            except json.JSONDecodeError:
-                pass
-
-        usage["checks"] = int(usage.get("checks", 0)) + 1
         self.base_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.usage_file, "w", encoding="utf-8") as f:
-            json.dump(usage, f, indent=2)
+        
+        with FileLock(str(self.usage_file) + ".lock", timeout=5):
+            usage = {"date": today, "checks": 0, "spend_usd": 0.0}
+            if self.usage_file.exists():
+                try:
+                    with open(self.usage_file, encoding="utf-8") as f:
+                        usage = json.load(f)
+                    if usage.get("date") != today:
+                        usage = {"date": today, "checks": 0, "spend_usd": 0.0}
+                except json.JSONDecodeError:
+                    pass
+
+            usage["checks"] = int(usage.get("checks", 0)) + 1
+            with open(self.usage_file, "w", encoding="utf-8") as f:
+                json.dump(usage, f, indent=2)
+                
         return usage["checks"]
 
     def add_spend(self, amount_usd: float) -> float:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        usage = {"date": today, "checks": 0, "spend_usd": 0.0}
-
-        if self.usage_file.exists():
-            try:
-                with open(self.usage_file, encoding="utf-8") as f:
-                    usage = json.load(f)
-                if usage.get("date") != today:
-                    usage = {"date": today, "checks": 0, "spend_usd": 0.0}
-            except json.JSONDecodeError:
-                pass
-
-        usage["spend_usd"] = float(usage.get("spend_usd", 0.0)) + amount_usd
         self.base_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.usage_file, "w", encoding="utf-8") as f:
-            json.dump(usage, f, indent=2)
+        
+        with FileLock(str(self.usage_file) + ".lock", timeout=5):
+            usage = {"date": today, "checks": 0, "spend_usd": 0.0}
+            if self.usage_file.exists():
+                try:
+                    with open(self.usage_file, encoding="utf-8") as f:
+                        usage = json.load(f)
+                    if usage.get("date") != today:
+                        usage = {"date": today, "checks": 0, "spend_usd": 0.0}
+                except json.JSONDecodeError:
+                    pass
+
+            usage["spend_usd"] = float(usage.get("spend_usd", 0.0)) + amount_usd
+            with open(self.usage_file, "w", encoding="utf-8") as f:
+                json.dump(usage, f, indent=2)
+                
         return usage["spend_usd"]
 
     def get_daily_spend(self) -> float:
@@ -72,16 +79,22 @@ class LocalStorage:
     def record_request(self, tool: str, cost_usd: float, tokens: int, blocked: bool, block_reason: str | None = None) -> None:
         """Append a single request event to the history log for analytics."""
         self.base_dir.mkdir(parents=True, exist_ok=True)
-        event = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "tool": tool,
-            "cost_usd": cost_usd,
-            "tokens": tokens,
-            "blocked": blocked,
-            "block_reason": block_reason
-        }
-        with open(self.history_file, "a", encoding="utf-8") as f:
-            f.write(json.dumps(event) + "\n")
+        
+        with FileLock(str(self.history_file) + ".lock", timeout=5):
+            if self.history_file.exists() and self.history_file.stat().st_size > 10 * 1024 * 1024:
+                rotated_file = self.history_file.with_name(self.history_file.name + ".1")
+                shutil.move(self.history_file, rotated_file)
+
+            event = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "tool": tool,
+                "cost_usd": cost_usd,
+                "tokens": tokens,
+                "blocked": blocked,
+                "block_reason": block_reason
+            }
+            with open(self.history_file, "a", encoding="utf-8") as f:
+                f.write(json.dumps(event) + "\n")
 
     def get_analytics(self, date_filter: str | None = None) -> dict[str, dict]:
         """Aggregate history events by tool.

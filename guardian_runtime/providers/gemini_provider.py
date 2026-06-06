@@ -102,3 +102,71 @@ class GeminiProvider:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
         )
+
+    def stream(
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        **kwargs: Any,
+    ) -> Any:
+        client = self._get_client()
+
+        # Extract system instruction
+        system_parts = [
+            m["content"] for m in messages
+            if m.get("role") == "system" and m.get("content")
+        ]
+        system_instruction = "\n".join(system_parts) or None
+
+        # Build contents for non-system messages
+        contents = []
+        for message in messages:
+            role = message.get("role")
+            content = message.get("content")
+            if role not in ("user", "assistant") or not content:
+                continue
+            gemini_role = "user" if role == "user" else "model"
+            contents.append(
+                genai_types.Content(
+                    role=gemini_role,
+                    parts=[genai_types.Part(text=content)]
+                )
+            )
+
+        if not contents:
+            contents = [genai_types.Content(
+                role="user",
+                parts=[genai_types.Part(text="")]
+            )]
+
+        config = genai_types.GenerateContentConfig(
+            system_instruction=system_instruction,
+        )
+
+        response_stream = client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=config,
+        )
+
+        content = ""
+        input_tokens = None
+        output_tokens = None
+        last_chunk = None
+
+        for chunk in response_stream:
+            last_chunk = chunk
+            if chunk.text:
+                content += chunk.text
+                yield chunk.text
+
+        if last_chunk and getattr(last_chunk, "usage_metadata", None):
+            input_tokens = getattr(last_chunk.usage_metadata, "prompt_token_count", None)
+            output_tokens = getattr(last_chunk.usage_metadata, "candidates_token_count", None)
+
+        return ProviderResult(
+            content=content,
+            raw_response=None,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+        )

@@ -193,24 +193,6 @@ class GuardianRuntimeEngine:
                 self._session_spend.get(session_id, 0.0) + estimated_cost
             )
 
-        if not output_result.allowed:
-            response = GuardianRuntimeResponse(
-                content=DEFAULT_BLOCK_MESSAGE,
-                blocked=True,
-                violations=violations,
-                model=model_name,
-                provider=provider_name,
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-                estimated_cost_usd=estimated_cost,
-                optimization=optimization_meta,
-                raw_response=result.raw_response,
-            )
-            self._finalize(response, agent_id, session_id)
-            if raise_on_block:
-                raise GuardianRuntimeBlockedError(response)
-            return response
-
         response = GuardianRuntimeResponse(
             content=content,
             blocked=False,
@@ -225,6 +207,179 @@ class GuardianRuntimeEngine:
         )
         self._finalize(response, agent_id, session_id)
         return response
+
+    def stream(
+        self,
+        model: str | None = None,
+        messages: list[dict[str, Any]] | None = None,
+        agent_id: str = "default",
+        session_id: str | None = None,
+        provider: str | None = None,
+        raise_on_block: bool = True,
+        **kwargs: Any,
+    ) -> Any:
+        if messages is None:
+            messages = []
+
+        agent_policy = self.policy.get_agent(agent_id)
+        violations: list[Violation] = []
+
+        provider_name = self._resolve_provider_name(agent_policy, provider)
+        model_name = model or self._resolve_model(agent_policy, provider_name)
+
+        input_tokens = count_messages_tokens(messages, model_name)
+        
+        optimization_meta = None
+        if agent_policy.optimizer and agent_policy.optimizer.enabled:
+            optimizer = InputOptimizer(agent_policy.optimizer)
+            opt_result = optimizer.optimize(messages, model_name)
+            messages = opt_result.optimized_messages
+            input_tokens = opt_result.optimized_tokens
+            optimization_meta = {
+                "original_tokens": opt_result.original_tokens,
+                "optimized_tokens": opt_result.optimized_tokens,
+                "savings_pct": opt_result.savings_pct,
+                "actions_taken": opt_result.actions_taken,
+                "estimated_cost_saved": opt_result.estimated_cost_saved,
+                "guidance": opt_result.guidance,
+            }
+            if opt_result.guidance:
+                for g in opt_result.guidance:
+                    self.logger.log_event("optimizer_guidance", agent_id, session_id, [], {"message": g})
+                    
+        cost_config = agent_policy.cost
+        max_input = cost_config.max_input_tokens if cost_config else None
+        daily_budget = cost_config.daily_budget if cost_config else None
+        
+        if max_input is not None and input_tokens > max_input:
+            violations.append(
+                Violation(
+                    type="token_limit",
+                    severity="high",
+                    detail=f"Input tokens ({input_tokens}) exceed limit ({max_input})",
+                    action="blocked",
+                    metadata={"input_tokens": input_tokens, "limit": max_input},
+                )
+            )
+            
+        if daily_budget is not None:
+            current_spend = self.storage.get_daily_spend()
+            estimated_input_cost = estimate_cost(input_tokens, 0, model_name)
+            if current_spend + estimated_input_cost > daily_budget:
+                violations.append(
+                    Violation(
+                        type="budget_exceeded",
+                        severity="critical",
+                        detail=f"Daily budget of ${daily_budget:.2f} exceeded. Current spend: ${current_spend:.2f}. Update 'daily_budget' in policy.yaml to continue.",
+                        action="blocked",
+                        metadata={"current_spend": current_spend, "budget": daily_budget},
+                    )
+                )
+
+        if any(v.action == "blocked" for v in violations):
+            response = self._blocked_response(
+                violations,
+                model_name,
+                input_tokens=input_tokens,
+                provider=provider_name,
+            )
+            self._finalize(response, agent_id, session_id)
+            yield f"[GUARDIAN BLOCKED] {violations[0].detail}"
+            yield response
+            return
+
+        input_text = messages_to_text(messages)
+        input_result = self.input_guard.check(input_text, agent_policy)
+        violations.extend(input_result.violations)
+
+        if not input_result.allowed:
+            # Handle interactive mode
+            if self.policy.interactive_mode == InteractiveMode.WARN_ASK:
+                if self._interactive_allow(input_result.violations, provider_name):
+                    input_result = type(input_result)(
+                        allowed=True,
+                        violations=[],
+                        processed_text=input_result.processed_text,
+                    )
+                    violations = [v for v in violations if v not in input_result.violations]
+                else:
+                    response = self._blocked_response(
+                        violations,
+                        model_name,
+                        input_tokens=input_tokens,
+                        provider=provider_name,
+                    )
+                    self._finalize(response, agent_id, session_id)
+                    yield f"[GUARDIAN BLOCKED] {violations[0].detail}"
+                    yield response
+                    return
+            else:
+                response = self._blocked_response(
+                    violations,
+                    model_name,
+                    input_tokens=input_tokens,
+                    provider=provider_name,
+                )
+                self._finalize(response, agent_id, session_id)
+                yield f"[GUARDIAN BLOCKED] {violations[0].detail}"
+                yield response
+                return
+
+        llm_messages = messages
+        if input_result.processed_text is not None:
+            llm_messages = self._apply_redacted_input(messages, input_result.processed_text)
+
+        chat_provider = self._get_provider(provider_name)
+        llm_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if k not in ("provider", "raise_on_block")
+        }
+        
+        stream_generator = chat_provider.stream(model_name, llm_messages, **llm_kwargs)
+        
+        result = None
+        try:
+            while True:
+                chunk = next(stream_generator)
+                yield chunk
+        except StopIteration as e:
+            result = e.value
+            
+        if not result:
+            return
+
+        content = result.content
+        if result.output_tokens is not None:
+            output_tokens = result.output_tokens
+        else:
+            output_tokens = count_tokens(content, model_name)
+        if result.input_tokens is not None:
+            input_tokens = result.input_tokens
+
+        output_result = self.output_guard.check(content, agent_policy)
+        violations.extend(output_result.violations)
+
+        estimated_cost = estimate_cost(input_tokens, output_tokens, model_name)
+        if session_id:
+            self._session_spend[session_id] = (
+                self._session_spend.get(session_id, 0.0) + estimated_cost
+            )
+
+        response = GuardianRuntimeResponse(
+            content=content,
+            blocked=False,
+            violations=[v for v in violations if v.action == "flagged"],
+            model=model_name,
+            provider=provider_name,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            estimated_cost_usd=estimated_cost,
+            optimization=optimization_meta,
+            raw_response=result.raw_response,
+        )
+        self._finalize(response, agent_id, session_id)
+        yield response
 
     def get_cost_report(self, agent_id: str) -> dict:
         """Return local cost report for the given agent."""

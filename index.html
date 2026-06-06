@@ -1122,6 +1122,7 @@
             <li><a href="#features">FEATURES</a></li>
             <li><a href="#quickstart">QUICKSTART</a></li>
             <li><a href="#integration">INTEGRATIONS</a></li>
+            <li><a href="https://medium.com/p/a48537e1b020" target="_blank" rel="noopener noreferrer">ARTICLE</a></li>
         </ul>
         <div style="display: flex; gap: 16px;">
             <a href="https://buymeacoffee.com/ashishp05" target="_blank" rel="noopener noreferrer" class="nav-cta"
@@ -1137,7 +1138,7 @@
     <div class="status-bar">
         <div class="status-item"><span class="status-dot"></span>SYSTEM ONLINE</div>
         <div class="status-item">FREE &amp; OPEN SOURCE</div>
-        <div class="status-item">v1.1.1</div>
+        <div class="status-item">v1.1.2</div>
         <div class="status-item" id="threat-counter">USERS: <span id="count"
                 style="color:var(--green); margin-left: 6px;">0</span></div>
         <a href="https://github.com/ashp15205/guardian-runtime" target="_blank" rel="noopener noreferrer"
@@ -1170,7 +1171,7 @@
         <div class="terminal">
             <span class="prompt">$ </span><span class="cmd">pip install "guardian_runtime[all]"</span>
             <br>
-            <span class="output">✓ Successfully installed guardian_runtime-1.1.1</span>
+            <span class="output">✓ Successfully installed guardian_runtime-1.1.2</span>
             <br><br>
             <span class="prompt">$ </span><span class="cmd">guardian_runtime proxy --port 8080</span>
             <br>
@@ -1221,9 +1222,10 @@
                         THE GUARDIAN SOLUTION
                     </div>
                     <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
-                        <strong>Hard Budgets & Dual-Layer Compression:</strong> Enforce strict local token budgets
-                        (e.g., $5.00/day). For further optimization, enable <i>Terse Mode</i>—a dual-layer compression
-                        engine that aggressively optimizes input context and forces concise LLM outputs. In real-world
+                        <strong>Hard Budgets & Output Brevity Enforcement:</strong> Enforce strict local token budgets
+                        (e.g., $5.00/day). For further optimization, enable <i>Terse Mode</i>—an output brevity
+                        enforcement engine that aggressively optimizes input context and forces concise LLM outputs via
+                        system prompt injection. In real-world
                         benchmarks, Terse Mode reduces output API costs by 40–70% without sacrificing technical
                         accuracy.
                         <div class="code-block"
@@ -1262,7 +1264,8 @@
                     <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
                         <strong>Zero-Latency Secret Scanners:</strong> Guardian operates as a local reverse proxy,
                         scanning every outbound payload in milliseconds. If an API key or proprietary secret is
-                        detected, the request is instantly destroyed before it ever touches the network. This guarantees zero-trust protection for your environment variables.
+                        detected, the request is instantly destroyed before it ever touches the network. This guarantees
+                        zero-trust protection for your environment variables.
                         <div class="code-block"
                             style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--text-dim);">
                             <span style="color: var(--amber);">security:</span><br>
@@ -1297,7 +1300,8 @@
                     </div>
                     <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
                         <strong>Local PII & Anonymization Engine:</strong> Built-in Regex and local ML scanners act as a
-                        last line of defense, proactively detecting and redacting sensitive user data. It automatically masks data so you can safely use public LLMs without risking regulatory fines.
+                        last line of defense, proactively detecting and redacting sensitive user data. It automatically
+                        masks data so you can safely use public LLMs without risking regulatory fines.
                         <div class="code-block"
                             style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--text-dim);">
                             <span style="color: var(--amber);">compliance:</span><br>
@@ -1374,7 +1378,8 @@
                 <div class="pipe-name">User Input</div>
             </div>
             <div class="pipe-arrow">──▶</div>
-            <div class="pipe-node pipe-guard" data-tooltip="Executes: 1. Secret Guard | 2. Dual Engine Optimizer | 3. Budget Auth">
+            <div class="pipe-node pipe-guard"
+                data-tooltip="Executes: 1. Secret Guard | 2. Dual Engine Optimizer | 3. Budget Auth">
                 <div class="corner-tl"></div>
                 <div class="corner-tr"></div>
                 <div class="corner-bl"></div>
@@ -1390,7 +1395,8 @@
                 <div class="pipe-name">LLM API</div>
             </div>
             <div class="pipe-arrow">◀──▶</div>
-            <div class="pipe-node pipe-guard" data-tooltip="Scans LLM responses for leaked PII/Secrets & logs exact token costs">
+            <div class="pipe-node pipe-guard"
+                data-tooltip="Scans LLM responses for leaked PII/Secrets & logs exact token costs">
                 <div class="corner-tl"></div>
                 <div class="corner-tr"></div>
                 <div class="corner-bl"></div>
@@ -2063,6 +2069,8 @@
     <footer class="footer">
         <div class="footer-copy">© 2026 GUARDIAN RUNTIME — MIT LICENSE</div>
         <div class="footer-links" style="display:flex; gap:16px; align-items:center;">
+            <a href="https://medium.com/p/a48537e1b020" target="_blank" rel="noopener noreferrer"
+                style="color:var(--amber); font-weight:bold; text-decoration:none;">📝 Article</a>
             <a href="https://buymeacoffee.com/ashishp05" target="_blank" rel="noopener noreferrer"
                 style="color:#FFDD00; font-weight:bold; text-decoration:none;">☕ Buy Me A Coffee</a>
             <a href="https://pypi.org/project/guardian-runtime/" target="_blank" rel="noopener noreferrer"

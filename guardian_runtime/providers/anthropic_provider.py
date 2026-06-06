@@ -72,6 +72,48 @@ class AnthropicProvider:
             output_tokens=getattr(usage, "output_tokens", None) if usage else None,
         )
 
+    def stream(
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        **kwargs: Any,
+    ) -> Any:
+        system_text, chat_messages = self._split_messages(messages)
+        max_tokens = int(kwargs.pop("max_tokens", 1024))
+        reserved = {"provider", "raise_on_block"}
+        llm_kwargs = {k: v for k, v in kwargs.items() if k not in reserved}
+
+        request: dict[str, Any] = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "messages": chat_messages,
+            **llm_kwargs,
+        }
+        if system_text:
+            request["system"] = system_text
+
+        content = ""
+        input_tokens = None
+        output_tokens = None
+        
+        with self.client.messages.stream(**request) as stream:
+            for text in stream.text_stream:
+                content += text
+                yield text
+            
+            # The anthropic sdk stream manager provides the final message object
+            final_message = stream.get_final_message()
+            if final_message and getattr(final_message, "usage", None):
+                input_tokens = getattr(final_message.usage, "input_tokens", None)
+                output_tokens = getattr(final_message.usage, "output_tokens", None)
+
+        return ProviderResult(
+            content=content,
+            raw_response=None,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+        )
+
     @staticmethod
     def _split_messages(
         messages: list[dict[str, Any]],

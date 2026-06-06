@@ -56,3 +56,39 @@ class OpenAIProvider:
             input_tokens=usage.prompt_tokens if usage else None,
             output_tokens=usage.completion_tokens if usage else None,
         )
+
+    def stream(
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        **kwargs: Any,
+    ) -> Any:
+        client = self._get_client()
+        reserved = {"provider", "raise_on_block"}
+        llm_kwargs = {k: v for k, v in kwargs.items() if k not in reserved}
+        llm_kwargs.pop("stream_options", None)
+        
+        completion = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            stream=True,
+            stream_options={"include_usage": True},
+            **llm_kwargs,
+        )
+        
+        content = ""
+        usage = None
+        for chunk in completion:
+            if chunk.choices and chunk.choices[0].delta.content:
+                text = chunk.choices[0].delta.content
+                content += text
+                yield text
+            if getattr(chunk, "usage", None):
+                usage = chunk.usage
+                
+        return ProviderResult(
+            content=content,
+            raw_response=None,
+            input_tokens=usage.prompt_tokens if usage else None,
+            output_tokens=usage.completion_tokens if usage else None,
+        )

@@ -1,8 +1,13 @@
 """Per-model cost tables and cost estimation."""
 from __future__ import annotations
 
-# Cost per 1,000 tokens in USD
-MODEL_COST_PER_1K: dict[str, dict[str, float]] = {
+import os
+import yaml
+from pathlib import Path
+from filelock import FileLock
+
+# Default Cost per 1,000 tokens in USD
+DEFAULT_MODEL_COST_PER_1K: dict[str, dict[str, float]] = {
     "gpt-4o": {"input": 0.005, "output": 0.015},
     "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
     "gpt-4-turbo": {"input": 0.01, "output": 0.03},
@@ -17,6 +22,25 @@ MODEL_COST_PER_1K: dict[str, dict[str, float]] = {
     "gemini-2.0-flash": {"input": 0.0001, "output": 0.0004},
     "gemini-2.0-flash-lite": {"input": 0.0, "output": 0.0},
 }
+
+GUARDIAN_RUNTIME_DIR = Path.home() / ".guardian_runtime"
+PRICING_FILE = GUARDIAN_RUNTIME_DIR / "pricing.yaml"
+
+def _load_pricing() -> dict[str, dict[str, float]]:
+    GUARDIAN_RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+    with FileLock(str(PRICING_FILE) + ".lock", timeout=5):
+        if not PRICING_FILE.exists():
+            with open(PRICING_FILE, "w", encoding="utf-8") as f:
+                yaml.safe_dump(DEFAULT_MODEL_COST_PER_1K, f, default_flow_style=False)
+            return DEFAULT_MODEL_COST_PER_1K
+        
+        try:
+            with open(PRICING_FILE, "r", encoding="utf-8") as f:
+                return yaml.safe_load(f) or DEFAULT_MODEL_COST_PER_1K
+        except Exception:
+            return DEFAULT_MODEL_COST_PER_1K
+
+MODEL_COST_PER_1K = _load_pricing()
 
 
 def estimate_cost(input_tokens: int, output_tokens: int = 0, model: str = "gpt-4o") -> float:

@@ -28,6 +28,14 @@ class ChatProvider(Protocol):
     ) -> ProviderResult:
         """Run chat completion and return normalized text + optional token usage."""
 
+    def stream(
+        self,
+        model: str,
+        messages: list[dict[str, Any]],
+        **kwargs: Any,
+    ) -> Any:
+        """Yield text chunks and return ProviderResult at the end."""
+
 
 DEFAULT_MODELS: dict[str, str] = {
     "openai": "gpt-4o-mini",

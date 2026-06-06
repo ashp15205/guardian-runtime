@@ -68,7 +68,7 @@ Guardian Runtime is a **local-first security middleware and FinOps firewall**. I
 
 | The Problem | How Guardian Solves It |
 | :--- | :--- |
-| **Cost Runaways** | **Hard FinOps Budgets & Optimization:** Tracks every token you spend locally. You can set a strict "$5.00 per day" limit. Advanced **Terse Mode** compresses both input context and output responses. In benchmarks across real developer prompts, it reduces output tokens by 40–70% while maintaining full technical accuracy. |
+| **Cost Runaways** | **Hard FinOps Budgets & Optimization:** Tracks every token you spend locally. You can set a strict "$5.00 per day" limit. Advanced **Terse Mode** aggressively optimizes input context and provides output brevity enforcement via system prompt injection. In benchmarks across real developer prompts, it reduces output tokens by 40–70% while maintaining full technical accuracy. |
 | **Data Exfiltration** | **Zero-Latency Secret Scanners:** Scans every prompt for API keys, AWS credentials, and secrets *locally*. If it detects a secret, it instantly drops the request before it reaches the internet. |
 | **Compliance** | **Local PII Blocking:** Regex and ML scanners prevent PII from leaving your machine. |
 

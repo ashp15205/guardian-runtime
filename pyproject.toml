@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "guardian-runtime"
-version = "1.1.1"
+version = "1.1.2"
 description = "Local-first runtime governance layer for AI systems"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -33,6 +33,7 @@ dependencies = [
   "click>=8.0",
   "fastapi>=0.100",
   "uvicorn>=0.23",
+  "filelock>=3.0",
 ]
 
 [project.optional-dependencies]

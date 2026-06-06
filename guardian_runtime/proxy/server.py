@@ -237,6 +237,85 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
 
         engine = _get_guardian_runtime()
         
+        tool = _identify_tool(request)
+        
+        if stream:
+            async def _sse():
+                import json as _json
+                import uuid, time
+                from starlette.concurrency import run_in_threadpool
+                from guardian_runtime.core.models import GuardianRuntimeResponse
+
+                sync_gen = engine.stream(
+                    model=model,
+                    messages=messages,
+                    provider="openai",
+                    raise_on_block=False,
+                )
+                
+                base_id = f"chatcmpl-guardian_runtime-{uuid.uuid4().hex[:8]}"
+                created = int(time.time())
+
+                while True:
+                    try:
+                        chunk_or_result = await run_in_threadpool(next, sync_gen)
+                    except StopIteration:
+                        break
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        yield f"data: {_json.dumps({'error': str(e)})}\n\n"
+                        break
+
+                    if isinstance(chunk_or_result, GuardianRuntimeResponse):
+                        result = chunk_or_result
+                        block_reason = result.violations[0].type if result.blocked and result.violations else None
+                        storage.record_request(
+                            tool=tool,
+                            cost_usd=result.estimated_cost_usd or 0.0,
+                            tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+                            blocked=result.blocked,
+                            block_reason=block_reason
+                        )
+                        chunk_dict = {
+                            "id": base_id,
+                            "object": "chat.completion.chunk",
+                            "created": created,
+                            "model": model,
+                            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+                        }
+                        yield f"data: {_json.dumps(chunk_dict)}\n\n"
+                        yield "data: [DONE]\n\n"
+                        break
+
+                    text = chunk_or_result
+                    if text.startswith("[GUARDIAN BLOCKED]"):
+                        chunk_dict = {
+                            "id": base_id,
+                            "object": "chat.completion.chunk",
+                            "created": created,
+                            "model": model,
+                            "choices": [{"index": 0, "delta": {"role": "assistant", "content": text}, "finish_reason": "stop"}],
+                        }
+                        yield f"data: {_json.dumps(chunk_dict)}\n\n"
+                        yield "data: [DONE]\n\n"
+                        continue
+
+                    chunk_dict = {
+                        "id": base_id,
+                        "object": "chat.completion.chunk",
+                        "created": created,
+                        "model": model,
+                        "choices": [{"index": 0, "delta": {"role": "assistant", "content": text}, "finish_reason": None}],
+                    }
+                    yield f"data: {_json.dumps(chunk_dict)}\n\n"
+
+            return StreamingResponse(
+                _sse(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
         try:
             result = await run_in_threadpool(
                 engine.complete,
@@ -253,7 +332,6 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
             result = None
             is_error = True
             
-        tool = _identify_tool(request)
         if not is_error and result:
             block_reason = result.violations[0].type if result.blocked and result.violations else None
             storage.record_request(
@@ -268,37 +346,6 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 response_body = _block_response_openai(result.violations, model)
             else:
                 response_body = _success_openai(result, model)
-
-        if stream:
-            # Emit a single chunk then [DONE] — satisfies streaming clients
-            def _sse():
-                import json as _json
-                content = response_body["choices"][0]["message"]["content"]
-                chunk = {
-                    "id": response_body["id"],
-                    "object": "chat.completion.chunk",
-                    "created": response_body["created"],
-                    "model": response_body["model"],
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {"role": "assistant", "content": content},
-                            "finish_reason": None,
-                        }
-                    ],
-                }
-                yield f"data: {_json.dumps(chunk)}\n\n"
-                # Final chunk with finish_reason
-                chunk["choices"][0]["delta"] = {}
-                chunk["choices"][0]["finish_reason"] = "stop"
-                yield f"data: {_json.dumps(chunk)}\n\n"
-                yield "data: [DONE]\n\n"
-
-            return StreamingResponse(
-                _sse(),
-                media_type="text/event-stream",
-                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-            )
 
         return JSONResponse(content=response_body, status_code=500 if is_error else 200)
 
@@ -321,6 +368,89 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
 
         engine = _get_guardian_runtime()
         
+        tool = _identify_tool(request)
+        
+        if stream:
+            async def _sse():
+                import json as _json
+                import uuid
+                from starlette.concurrency import run_in_threadpool
+                from guardian_runtime.core.models import GuardianRuntimeResponse
+
+                sync_gen = engine.stream(
+                    model=model,
+                    messages=messages,
+                    provider="anthropic",
+                    raise_on_block=False,
+                )
+                
+                msg_id = f"msg_guardian_runtime-{uuid.uuid4().hex[:8]}"
+
+                start_event = {
+                    "type": "message_start",
+                    "message": {
+                        "id": msg_id,
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [],
+                        "model": model,
+                        "stop_reason": None,
+                        "usage": {"input_tokens": 0, "output_tokens": 0},
+                    },
+                }
+                yield f"event: message_start\ndata: {_json.dumps(start_event)}\n\n"
+                
+                block_start = {"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}
+                yield f"event: content_block_start\ndata: {_json.dumps(block_start)}\n\n"
+
+                while True:
+                    try:
+                        chunk_or_result = await run_in_threadpool(next, sync_gen)
+                    except StopIteration:
+                        break
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        yield f"event: error\ndata: {_json.dumps({'error': {'type': 'api_error', 'message': str(e)}})}\n\n"
+                        break
+
+                    if isinstance(chunk_or_result, GuardianRuntimeResponse):
+                        result = chunk_or_result
+                        block_reason = result.violations[0].type if result.blocked and result.violations else None
+                        storage.record_request(
+                            tool=tool,
+                            cost_usd=result.estimated_cost_usd or 0.0,
+                            tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+                            blocked=result.blocked,
+                            block_reason=block_reason
+                        )
+                        
+                        block_stop = {"type": "content_block_stop", "index": 0}
+                        yield f"event: content_block_stop\ndata: {_json.dumps(block_stop)}\n\n"
+                        msg_delta = {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": None}}
+                        yield f"event: message_delta\ndata: {_json.dumps(msg_delta)}\n\n"
+                        yield f"event: message_stop\ndata: {_json.dumps({'type': 'message_stop'})}\n\n"
+                        break
+
+                    text = chunk_or_result
+                    delta = {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": text}}
+                    yield f"event: content_block_delta\ndata: {_json.dumps(delta)}\n\n"
+                    
+                    if text.startswith("[GUARDIAN BLOCKED]"):
+                        # Finish up early
+                        block_stop = {"type": "content_block_stop", "index": 0}
+                        yield f"event: content_block_stop\ndata: {_json.dumps(block_stop)}\n\n"
+                        msg_delta = {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": None}}
+                        yield f"event: message_delta\ndata: {_json.dumps(msg_delta)}\n\n"
+                        yield f"event: message_stop\ndata: {_json.dumps({'type': 'message_stop'})}\n\n"
+                        continue
+
+            return StreamingResponse(
+                _sse(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
         try:
             result = await run_in_threadpool(
                 engine.complete,
@@ -337,7 +467,6 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
             result = None
             is_error = True
             
-        tool = _identify_tool(request)
         if not is_error and result:
             block_reason = result.violations[0].type if result.blocked and result.violations else None
             storage.record_request(
@@ -352,45 +481,6 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 response_body = _block_response_anthropic(result.violations, model)
             else:
                 response_body = _success_anthropic(result, model)
-
-        if stream:
-            def _sse():
-                import json as _json
-                # Anthropic streaming format
-                start_event = {
-                    "type": "message_start",
-                    "message": {
-                        "id": response_body["id"],
-                        "type": "message",
-                        "role": "assistant",
-                        "content": [],
-                        "model": response_body["model"],
-                        "stop_reason": None,
-                        "usage": response_body["usage"],
-                    },
-                }
-                yield f"event: message_start\ndata: {_json.dumps(start_event)}\n\n"
-
-                content_text = response_body["content"][0]["text"]
-                block_start = {"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}
-                yield f"event: content_block_start\ndata: {_json.dumps(block_start)}\n\n"
-
-                delta = {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": content_text}}
-                yield f"event: content_block_delta\ndata: {_json.dumps(delta)}\n\n"
-
-                block_stop = {"type": "content_block_stop", "index": 0}
-                yield f"event: content_block_stop\ndata: {_json.dumps(block_stop)}\n\n"
-
-                msg_delta = {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": None}}
-                yield f"event: message_delta\ndata: {_json.dumps(msg_delta)}\n\n"
-
-                yield f"event: message_stop\ndata: {_json.dumps({'type': 'message_stop'})}\n\n"
-
-            return StreamingResponse(
-                _sse(),
-                media_type="text/event-stream",
-                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-            )
 
         return JSONResponse(content=response_body, status_code=500 if is_error else 200)
 
