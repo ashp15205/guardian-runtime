@@ -95,8 +95,8 @@ def test_proactive_guidance_for_large_input():
     assert "convert_document" in result.guidance[0]
 
 
-def test_caveman_mode_injects_system_prompt():
-    config = OptimizerConfig(enabled=True, caveman_mode=True)
+def test_terse_mode_injects_system_prompt():
+    config = OptimizerConfig(enabled=True, terse_mode=True)
     optimizer = InputOptimizer(config)
     
     # Test 1: No system prompt originally
@@ -105,8 +105,8 @@ def test_caveman_mode_injects_system_prompt():
     
     assert len(result.optimized_messages) == 2
     assert result.optimized_messages[0]["role"] == "system"
-    assert "intelligent caveman" in result.optimized_messages[0]["content"]
-    assert "caveman_mode_enabled" in result.actions_taken
+    assert "terse" in result.optimized_messages[0]["content"]
+    assert "terse_mode_enabled" in result.actions_taken
     
     # Test 2: Existing system prompt gets appended
     messages = [
@@ -118,4 +118,4 @@ def test_caveman_mode_injects_system_prompt():
     assert len(result2.optimized_messages) == 2
     assert result2.optimized_messages[0]["role"] == "system"
     assert result2.optimized_messages[0]["content"].startswith("You are a helpful assistant.")
-    assert "intelligent caveman" in result2.optimized_messages[0]["content"]
+    assert "terse" in result2.optimized_messages[0]["content"]

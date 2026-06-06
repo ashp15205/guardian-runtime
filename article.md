@@ -1,86 +1,79 @@
-# Why I Built a Local Firewall for My AI Agents
+# Why I Built a Local Firewall for AI Agents (And How "Terse Mode" Cuts My API Bill)
 
-*How to stop autonomous coding tools from leaking your AWS keys and burning your API budgets.*
+Autonomous coding agents like **Claude Code**, **Aider**, and **Cursor** are fundamentally changing how we build software. You can point an agent at a broken codebase, go make coffee, and come back to a perfectly refactored system. 
 
-It's 2:00 AM. You've asked Claude Code to refactor your authentication module while you grab coffee.
+It’s magical. **Until it isn’t.**
 
-You come back 20 minutes later. The agent got stuck in a recursive loop fixing a syntax error. It retried 400 times. You just burned $85 of API budget.
+As I started heavily integrating these tools into my workflow, I realized I was flying completely blind. These agents have unrestricted read access to my local file system and they talk directly to cloud LLMs (like OpenAI or Anthropic). 
 
-Then you check the logs. It ingested your `.env.local` for context. Your production `AWS_SECRET_ACCESS_KEY` was sent, in plaintext, to Anthropic's servers.
+This introduces two terrifying problems:
 
-If you build with AI agents, you've felt some version of this panic. We give these tools autonomous access to our codebases — but have zero control over what they actually send over the network.
+1. **The FinOps Risk:** Agents run in autonomous loops. If an agent gets stuck retrying a complex bug, it will happily burn through tokens. You can wake up to a **$100 API bill overnight** and you have zero visibility until the invoice arrives.
+2. **The Security Risk:** If you accidentally leave an `AWS_SECRET_KEY` in a `.env` file, the agent will silently upload it to a third-party LLM as context. Observability tools only tell you about the leak *after* the credentials have reached the cloud.
 
-That's exactly why I built **Guardian Runtime**.
-
-*Guardian Runtime acts as an intercept proxy, showing you exactly what your agents are sending and blocking threats in real-time.*
-
----
-
-## The Dual Threat of Autonomous AI
-
-Modern AI coding agents introduce two risks that traditional security tools weren't built to handle:
-
-### 1. The FinOps Risk: Infinite Loops
-When an agent hits a failing test, it retries. And retries. And retries. With a 100,000-token context window, every retry costs real money. A simple bug spirals into a massive bill because there's no hard spending limit on the agent itself.
-
-### 2. The Security Risk: Silent Secret Leaks
-Agents need broad context to work. They read your entire workspace. If an engineer leaves a Stripe key or a database password anywhere in the codebase, the agent silently scoops it up and sends it to OpenAI or Anthropic's servers — a serious security and compliance risk.
+I needed a way to control these agents *before* their requests left my machine. So, I built **Guardian Runtime**.
 
 ---
 
-## Guardian Runtime: A Local AI Firewall
+## What is Guardian Runtime?
 
-We can't rely on LLM providers to solve this. We can't modify the source code of proprietary tools.
+[Guardian Runtime](https://ashp15205.github.io/guardian-runtime/) is a **local-first security middleware and FinOps firewall**. 
 
-We need a middleman.
+It runs entirely on your local machine and intercepts LLM traffic *before* it hits the internet. You just start the proxy, point your agent to `localhost:8080`, and Guardian instantly protects your infrastructure.
 
-[Guardian Runtime](https://ashp15205.github.io/guardian-runtime/) is an open-source, local HTTP proxy that sits between your AI tools and the internet. Every prompt passes through it before leaving your machine. Every response passes through it before reaching your screen.
+Here is how it solves the two biggest problems in agentic development:
 
-### How it works
+### 1. Zero-Latency Secret Scanners 🔒
+Guardian actively scans every single outgoing prompt for API keys, AWS credentials, and PII using regex and local ML models. 
 
-Instead of pointing your tools at Anthropic or OpenAI directly, you point them at Guardian on localhost. When your agent makes an API call, Guardian intercepts it and runs two checks:
+If Claude Code tries to upload a `.env` file, Guardian **instantly drops the request locally** and returns a graceful error to the agent. The secret never touches the internet.
 
-**1. Secret & PII Scanning**
-Guardian scans the outgoing prompt locally using pattern matching and optional Microsoft Presidio ML models. If it detects an AWS key, a credit card number, or personal data — it drops the request instantly. The agent receives a clean explanation of what was blocked. Nothing left your machine.
-
-**2. Hard Budget Limits**
-Guardian calculates the exact token cost of the request *before* it's sent using `tiktoken`. If it pushes you over your daily limit, the request is blocked. No surprise bills.
+### 2. Hard FinOps Budgets 💸
+Guardian acts as a local token ledger. You can set a strict daily budget (e.g., `$5.00/day`). If a runaway agent hits that limit, Guardian cleanly cuts off internet access to the LLM, saving your wallet.
 
 ---
 
-## Zero Configuration Required
+## Enter "Terse Mode" 🛡️
 
+While building the FinOps layer, I realized something: **LLMs talk way too much.**
+
+When an autonomous agent asks an LLM for a code fix, it doesn't need polite conversational filler. It doesn't need to hear: *"Certainly! I can help you with that problem. Here is the refactored code..."* 
+
+Output tokens are incredibly expensive (often 3x to 5x more expensive than input tokens). So, in version `1.1.0`, I introduced a feature called **Terse Mode**.
+
+When you enable `terse_mode: true` in your Guardian policy, the engine intercepts your prompt and secretly injects a strict instruction forcing the LLM to reply in terse shorthand. No pleasantries. No transitions. Just raw, technically accurate output. 
+
+By aggressively trimming the LLM's "mouth", Terse Mode drastically slashes your expensive output tokens while keeping the "brain" fully intact.
+
+---
+
+## How to Try It
+
+Guardian Runtime is completely open-source, requires zero configuration to start, and runs locally.
+
+**Installation:**
 ```bash
-# Install
-pip install "guardian-runtime[anthropic]"
+pip install "guardian_runtime[all]"
+```
 
-# Start the firewall
+**Start the Proxy:**
+```bash
 guardian_runtime proxy --port 8080
+```
 
-# Point Claude Code at it
+**Use it with Claude Code:**
+```bash
 export ANTHROPIC_BASE_URL=http://localhost:8080
 claude
 ```
 
-Done. No API keys, no cloud accounts, no YAML files to start.
-
-> ✅ Fully supported: Claude Code, Aider. Cursor support in progress.
-
-To see exactly what was intercepted and what you've spent:
-```bash
-guardian_runtime analytics
-```
+At the end of the day, just run `guardian_runtime analytics` to see exactly how much your agents cost you and how many threats were blocked!
 
 ---
 
-## Taking Back Control
+If you are building with AI agents, you need local guardrails. Check out the project below:
+- 🌐 **Website:** [ashp15205.github.io/guardian-runtime](https://ashp15205.github.io/guardian-runtime/)
+- 📦 **PyPI:** [pypi.org/project/guardian-runtime](https://pypi.org/project/guardian-runtime/1.1.0/)
+- 💻 **GitHub:** [github.com/ashp15205/guardian-runtime](https://github.com/ashp15205/guardian-runtime)
 
-The future of software is autonomous agents. But autonomy without governance is a security breach waiting to happen.
-
-Guardian Runtime is free, open-source, and runs entirely on your machine. Your logs never leave your laptop.
-
-If you're building with AI agents — take 60 seconds to lock down your environment.
-
-👉 **Website** [ashp15205.github.io/guardian-runtime/](https://ashp15205.github.io/guardian-runtime/)
-👉 **GitHub:** [ashp15205/guardian-runtime](https://github.com/ashp15205/guardian-runtime)
-👉 **Install:** `pip install guardian-runtime`
+*If you found this useful, I’d love a star on GitHub or your thoughts in the comments!*

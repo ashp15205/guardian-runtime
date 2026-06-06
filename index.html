@@ -1220,11 +1220,11 @@
                         THE GUARDIAN SOLUTION
                     </div>
                     <div style="font-family: var(--body); font-size: 14px; color: #fff; line-height: 1.5;">
-                        <strong>Hard Budgets & Caveman Mode:</strong> Tracks every token locally with a strict $5.00/day limit. Use <i>Caveman Mode</i> to drastically slash expensive output tokens while maintaining full technical accuracy.
+                        <strong>Hard Budgets & Terse Mode:</strong> Tracks every token locally with a strict $5.00/day limit. Use <i>Terse Mode</i> to drastically slash expensive output tokens while maintaining full technical accuracy.
                         <div class="code-block" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--text-dim);">
                             <span style="color: var(--amber);">optimizer:</span><br>
                             &nbsp;&nbsp;<span style="color: var(--amber);">enabled:</span> <span style="color: var(--cyan);">true</span><br>
-                            &nbsp;&nbsp;<span style="color: var(--amber);">caveman_mode:</span> <span style="color: var(--cyan);">true</span>
+                            &nbsp;&nbsp;<span style="color: var(--amber);">terse_mode:</span> <span style="color: var(--cyan);">true</span>
                         </div>
                     </div>
                 </div>
@@ -1623,7 +1623,7 @@
                 </h3>
                 <p style="color: var(--text-dim); font-size: 14px; line-height: 1.6;">
                     <strong>Zero crashes.</strong> In Proxy mode, Guardian cleanly returns a standard <code
-                        style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: var(--red);">HTTP 400/403</code>
+                        style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: var(--red);">Local Error</code>
                     error. This ensures CLI agents display an error message gracefully instead of crashing their
                     process.<br><br>
                     In SDK mode, it raises a standard Python Exception.

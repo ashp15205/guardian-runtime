@@ -68,7 +68,7 @@ Guardian Runtime is a **local-first security middleware and FinOps firewall**. I
 
 | The Problem | How Guardian Solves It |
 | :--- | :--- |
-| **Cost Runaways** | **Hard FinOps Budgets & Optimization:** Tracks every token you spend locally. You can set a strict "$5.00 per day" limit. Passively compresses prompts and injects **Caveman Mode** to drastically slash expensive output tokens. |
+| **Cost Runaways** | **Hard FinOps Budgets & Optimization:** Tracks every token you spend locally. You can set a strict "$5.00 per day" limit. Passively compresses prompts and injects **Terse Mode** to drastically slash expensive output tokens. |
 | **Data Exfiltration** | **Zero-Latency Secret Scanners:** Scans every prompt for API keys, AWS credentials, and secrets *locally*. If it detects a secret, it instantly drops the request before it reaches the internet. |
 | **Compliance** | **Local PII Blocking:** Regex and ML scanners prevent PII from leaving your machine. |
 
@@ -90,7 +90,7 @@ Guardian intercepts traffic at the network layer or via SDK, passing it through 
        │                             │                               │
        │                             │ [Token Optimizer]             │
        │                             │ ├─ Compress Whitespace        │
-       │                             │ └─ Caveman Mode (Output Trim) │
+       │                             │ └─ Terse Mode (Output Trim) │
        │                             │                               │
        │                             │ [FinOps Budget]               │
        │                             │ ├─ Check Daily Spend Limit    │
@@ -342,7 +342,7 @@ agents:
       
     optimizer:
       enabled: true
-      caveman_mode: true        # Slashes output tokens by forcing terse shorthand
+      terse_mode: true          # Slashes output tokens by forcing terse shorthand
 ```
 
 ---
@@ -354,7 +354,7 @@ agents:
 * **If using the Python SDK:** It surfaces instantly in your standard Python server logs or terminal.
 
 **How is it blocked?**
-* **Proxy Mode:** Guardian returns a graceful `HTTP 400` error with a clear message. This ensures CLI agents display a clean error message in their chat interface instead of crashing or freezing your session.
+* **Proxy Mode:** Guardian returns a graceful error with a clear message. This ensures CLI agents display a clean error message in their chat interface instead of crashing or freezing your session.
 * **SDK Mode:** Guardian raises a `GuardianRuntimeBlockedError` exception that can be cleanly caught.
 
 **Example Block Message:**
