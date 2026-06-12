@@ -47,7 +47,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     app = FastAPI(
         title="Guardian Runtime API Proxy",
         description="Local-first interceptor for OpenAI-compatible and Gemini APIs",
-        version="1.1.3",
+        version="1.1.4",
         docs_url="/docs",
         redoc_url=None,
     )
@@ -218,7 +218,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         """Health check — verify the proxy is running."""
         return {
             "status": "ok",
-            "version": "1.1.3",
+            "version": "1.1.4",
             "policy": policy_path,
             "agents": list(policy.agents.keys()),
         }

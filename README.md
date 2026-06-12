@@ -120,7 +120,7 @@ Guardian Runtime acts as an HTTP proxy or a native Python SDK, meaning it integr
 - **Terminal Agents:** Claude Code, Aider, GitHub Copilot CLI
 - **Frameworks:** LangChain, AutoGen, LlamaIndex, CrewAI
 - **LLM Providers:** OpenAI, Anthropic, Google Gemini (via OpenAI compatibility layer)
-- **Supported Models:** Claude Fable 5, Claude Opus 4.8, GPT-4o, Gemini
+- **Supported Models:** Claude Fable 5, Claude Opus 4.8, GPT-5.5, Gemini 3.5
 
 ---
 
