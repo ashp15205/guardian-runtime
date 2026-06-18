@@ -1,7 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Guardian_Runtime-v1.2.0-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="v1.2.0">
   <img src="https://img.shields.io/github/stars/ashp15205/guardian-runtime?style=for-the-badge&logo=github&color=gold" alt="GitHub Stars">
-  <img src="https://img.shields.io/pypi/v/guardian-runtime.svg?style=for-the-badge&logo=python&logoColor=white" alt="PyPI">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT">
   <img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=for-the-badge&logo=python" alt="Python">
 </p>
@@ -35,17 +34,17 @@ Guardian Runtime is a **local HTTP proxy** that runs entirely on your own machin
          │                             │                              │
          │  Prompt + Files             │                              │
          │ ──────────────────────────▶ │                              │
-         │                             │  🔑 Secret Scanner           │
-         │                             │  👤 PII Detector             │
-         │                             │  📄 Doc Converter (PDF→MD)   │
-         │                             │  ⚡ Token Counter            │
-         │                             │  💸 Budget Guard             │
-         │                             │  🛡️ Jailbreak Detector       │
+         │                             │    Secret Scanner            │
+         │                             │    PII Detector              │
+         │                             │    Doc Converter (PDF→MD)    │
+         │                             │    Token Counter             │
+         │                             │    Budget Guard              │
+         │                             │    Jailbreak Detector        │
          │                             │                              │
-         │  [BLOCKED] ◀────────────── │  ✗ Threat found              │
+         │  [BLOCKED] ◀──────────────  │  ✗ Threat found              │
          │  "line 3: AWS key. y/n?"    │                              │
          │                             │ ───────────────────────────▶ │
-         │  Safe Response ◀─────────── │ ◀─────────────────────────── │
+         │ Optimized Response ◀─────── │ ◀──────────────────────────  │
 ```
 
 **All data stays on your machine.** Your API keys live in a local `.env` file. All logs write to `~/.guardian_runtime/`. Nothing leaves without clearance.
@@ -98,15 +97,15 @@ Agent / Dev                  Guardian Runtime (local)              Cloud LLM
      │                              │ └─ Report exact line number      │
      │                              │                                  │
      │                              │ [Interactive Block]              │
-     │  "line 3: secret. y/n?" ◀── │  Ask user before dropping        │
+     │  "line 3: secret. y/n?" ◀──  │  Ask user before dropping        │
      │                              │                                  │
      │                              │ [Token Optimizer]                │
      │                              │ ├─ tiktoken counting             │
-     │                              │ ├─ Whitespace normalization       │
-     │                              │ └─ Terse Mode injection           │
+     │                              │ ├─ Whitespace normalization      │
+     │                              │ └─ Terse Mode injection          │
      │                              │                                  │
      │                              │ [FinOps Budget Guard]            │
-     │                              │ └─ Block if daily_budget exceeded │
+     │                              │ └ Block if daily_budget exceeded │
      │                              │                                  │
      │                              │  2. Clean, verified prompt       │
      │                              │ ────────────────────────────────▶│
@@ -117,7 +116,7 @@ Agent / Dev                  Guardian Runtime (local)              Cloud LLM
      │                              │ [Output Guard]                   │
      │                              │  Audit response for leaks        │
      │                              │                                  │
-     │  4. Safe Response            │                                  │
+     │  4. Optimzied Response       │                                  │
      │◀──────────────────────────── │                                  │
 ```
 
