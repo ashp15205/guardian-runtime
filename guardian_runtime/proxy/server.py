@@ -28,6 +28,7 @@ from starlette.concurrency import run_in_threadpool
 
 from guardian_runtime.core.policy import load_policy, Policy
 from guardian_runtime.core.storage import LocalStorage
+from guardian_runtime.core.file_interceptor import FileInterceptor
 
 # ---------------------------------------------------------------------------
 # App factory — called with the loaded policy so tests can inject mocks
@@ -42,6 +43,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         policy = Policy()
 
     storage = LocalStorage()
+    file_interceptor = FileInterceptor()
 
 
     app = FastAPI(
@@ -86,13 +88,15 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     def _block_response_openai(violations: list, model: str) -> dict:
         """Format a GuardianRuntime block as a valid OpenAI chat.completion response."""
         types = ", ".join(sorted({v.type for v in violations}))
-        details = "; ".join(v.detail for v in violations[:3])
+        
+        detail_lines = [v.detail for v in violations[:3]]
+        details = "; ".join(detail_lines)
+        
         content = (
-            f"[GUARDIAN_RUNTIME BLOCKED] Your request was intercepted by GuardianRuntime Runtime "
-            f"and was NOT forwarded to the LLM.\n\n"
+            f"[GUARDIAN_RUNTIME BLOCKED] Your request was intercepted by GuardianRuntime Runtime.\n\n"
             f"Violation type(s): {types}\n"
             f"Detail: {details}\n\n"
-            f"Fix the issue and retry. Run `guardian_runtime logs --tail 5` to see the full log entry."
+            f"If you want to proceed anyway, type 'y/n' in your next message."
         )
         return {
             "id": f"chatcmpl-guardian_runtime-{uuid.uuid4().hex[:8]}",
@@ -119,13 +123,15 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     def _block_response_anthropic(violations: list, model: str) -> dict:
         """Format a GuardianRuntime block as a valid Anthropic messages response."""
         types = ", ".join(sorted({v.type for v in violations}))
-        details = "; ".join(v.detail for v in violations[:3])
+        
+        detail_lines = [v.detail for v in violations[:3]]
+        details = "; ".join(detail_lines)
+        
         content = (
-            f"[GUARDIAN_RUNTIME BLOCKED] Your request was intercepted by GuardianRuntime Runtime "
-            f"and was NOT forwarded to the LLM.\n\n"
+            f"[GUARDIAN_RUNTIME BLOCKED] Your request was intercepted by GuardianRuntime Runtime.\n\n"
             f"Violation type(s): {types}\n"
             f"Detail: {details}\n\n"
-            f"Fix the issue and retry. Run `guardian_runtime logs --tail 5` to see the full log entry."
+            f"If you want to proceed anyway, type 'y/n' in your next message."
         )
         return {
             "id": f"msg_guardian_runtime_{uuid.uuid4().hex[:8]}",
@@ -209,6 +215,92 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
             },
         }
 
+    def _parse_gemini_messages(body: dict) -> list:
+        messages = []
+        sys_inst = body.get("systemInstruction")
+        if sys_inst and isinstance(sys_inst, dict):
+            parts = sys_inst.get("parts", [])
+            text = "".join([p.get("text", "") for p in parts if "text" in p])
+            if text:
+                messages.append({"role": "system", "content": text})
+
+        for content in body.get("contents", []):
+            role = content.get("role", "user")
+            # Gemini uses "model", Guardian uses "assistant"
+            if role == "model":
+                role = "assistant"
+                
+            parts = []
+            for part in content.get("parts", []):
+                if "text" in part:
+                    parts.append({"type": "text", "text": part["text"]})
+                elif "inlineData" in part:
+                    parts.append({
+                        "type": "document",
+                        "source": {
+                            "type": "base64",
+                            "media_type": part["inlineData"].get("mimeType", ""),
+                            "data": part["inlineData"].get("data", "")
+                        }
+                    })
+            if parts:
+                messages.append({"role": role, "content": parts})
+        return messages
+
+    def _block_response_gemini(violations: list) -> dict:
+        types = ", ".join(sorted({v.type for v in violations}))
+        detail_lines = [v.detail for v in violations[:3]]
+        details = "; ".join(detail_lines)
+        
+        content = (
+            f"[GUARDIAN_RUNTIME BLOCKED] Your request was intercepted by GuardianRuntime Runtime.\n\n"
+            f"Violation type(s): {types}\n"
+            f"Detail: {details}\n\n"
+            f"If you want to proceed anyway, type 'y/n' in your next message."
+        )
+        return {
+            "candidates": [
+                {
+                    "content": {"parts": [{"text": content}], "role": "model"},
+                    "finishReason": "STOP",
+                    "index": 0
+                }
+            ],
+            "usageMetadata": {"promptTokenCount": 0, "candidatesTokenCount": 0, "totalTokenCount": 0},
+            "guardian_runtime": {
+                "blocked": True,
+                "violations": [{"type": v.type, "severity": v.severity, "detail": v.detail} for v in violations]
+            }
+        }
+
+    def _success_gemini(guardian_runtime_response) -> dict:
+        return {
+            "candidates": [
+                {
+                    "content": {"parts": [{"text": guardian_runtime_response.content}], "role": "model"},
+                    "finishReason": "STOP",
+                    "index": 0
+                }
+            ],
+            "usageMetadata": {
+                "promptTokenCount": guardian_runtime_response.input_tokens or 0,
+                "candidatesTokenCount": guardian_runtime_response.output_tokens or 0,
+                "totalTokenCount": (guardian_runtime_response.input_tokens or 0) + (guardian_runtime_response.output_tokens or 0)
+            }
+        }
+
+    def _provider_down_response_gemini(error_msg: str) -> dict:
+        content = f"[GUARDIAN_RUNTIME ERROR] {error_msg}"
+        return {
+            "candidates": [
+                {
+                    "content": {"parts": [{"text": content}], "role": "model"},
+                    "finishReason": "STOP",
+                    "index": 0
+                }
+            ]
+        }
+
     # ------------------------------------------------------------------
     # GET /health
     # ------------------------------------------------------------------
@@ -223,10 +315,51 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
             "agents": list(policy.agents.keys()),
         }
 
+    @app.get("/stats")
+    async def stats():
+        """Return today's session summary."""
+        return storage.get_today_stats()
+
     # ------------------------------------------------------------------
     # POST /v1/chat/completions  (OpenAI-compatible)
     # Used by: Aider, Cursor, GitHub Copilot CLI, LiteLLM, OpenAI SDK
     # ------------------------------------------------------------------
+
+    def _is_override(msgs: list) -> bool:
+        if len(msgs) < 2:
+            return False
+            
+        last_msg = msgs[-1]
+        prev_msg = msgs[-2]
+        
+        if last_msg.get("role") != "user":
+            return False
+            
+        content = last_msg.get("content", "")
+        if isinstance(content, list):
+            texts = [b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"]
+            text_str = "\n".join(texts).strip().lower()
+        else:
+            text_str = str(content).strip().lower()
+            
+        if text_str not in ["y", "yes", "n", "no"]:
+            return False
+            
+        # If user types "n" or "no", we do not override, we let the scanner block it again or process normally.
+        if text_str in ["n", "no"]:
+            return False
+            
+        if prev_msg.get("role") != "assistant":
+            return False
+            
+        prev_content = prev_msg.get("content", "")
+        if isinstance(prev_content, list):
+            prev_texts = [b.get("text", "") for b in prev_content if isinstance(b, dict) and b.get("type") == "text"]
+            prev_text_str = "\n".join(prev_texts)
+        else:
+            prev_text_str = str(prev_content)
+            
+        return "[GUARDIAN_RUNTIME BLOCKED]" in prev_text_str
 
     @app.post("/v1/chat/completions")
     async def openai_chat_completions(request: Request):
@@ -235,9 +368,27 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         model: str = body.get("model", "gpt-4o")
         stream: bool = body.get("stream", False)
 
-        engine = _get_guardian_runtime()
-        
         tool = _identify_tool(request)
+        
+        is_override = _is_override(messages)
+        if is_override:
+            # Strip the block message and the user's override message to resume previous context
+            messages = messages[:-2]
+            
+        intercept_result = None
+        if not is_override:
+            intercept_result = file_interceptor.process_messages(messages)
+            messages = intercept_result.messages
+            if intercept_result.violations:
+                storage.record_request(
+                    tool=tool, cost_usd=0.0, tokens=0, blocked=True, 
+                    block_reason=intercept_result.violations[0].type,
+                    file_converted=False, 
+                    secrets_blocked=len([v for v in intercept_result.violations if v.type == "secret"])
+                )
+                return JSONResponse(content=_block_response_openai(intercept_result.violations, model), status_code=200)
+
+        engine = _get_guardian_runtime()
         
         if stream:
             async def _sse():
@@ -251,6 +402,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                     messages=messages,
                     provider="openai",
                     raise_on_block=False,
+                    skip_input_guard=is_override,
                 )
                 
                 base_id = f"chatcmpl-guardian_runtime-{uuid.uuid4().hex[:8]}"
@@ -275,7 +427,9 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                             cost_usd=result.estimated_cost_usd or 0.0,
                             tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
                             blocked=result.blocked,
-                            block_reason=block_reason
+                            block_reason=block_reason,
+                            file_converted=intercept_result.conversions > 0 if intercept_result else False,
+                            secrets_blocked=len([v for v in result.violations if v.type == "secret"])
                         )
                         
                         if not result.blocked:
@@ -301,7 +455,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                         }
                         yield f"data: {_json.dumps(chunk_dict)}\n\n"
                         yield "data: [DONE]\n\n"
-                        continue
+                        break  # Bug fix: was 'continue' — loop must stop after sending block
 
                     chunk_dict = {
                         "id": base_id,
@@ -325,6 +479,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 messages=messages,
                 provider="openai",
                 raise_on_block=False,
+                skip_input_guard=is_override,
             )
             is_error = False
         except Exception as e:
@@ -341,7 +496,9 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 cost_usd=result.estimated_cost_usd or 0.0,
                 tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
                 blocked=result.blocked,
-                block_reason=block_reason
+                block_reason=block_reason,
+                file_converted=intercept_result.conversions > 0 if intercept_result else False,
+                secrets_blocked=len([v for v in result.violations if v.type == "secret"])
             )
 
             if result.blocked:
@@ -368,9 +525,27 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
         if system:
             messages = [{"role": "system", "content": system}] + messages
 
-        engine = _get_guardian_runtime()
-        
         tool = _identify_tool(request)
+        
+        is_override = _is_override(messages)
+        if is_override:
+            # Strip the block message and the user's override message
+            messages = messages[:-2]
+            
+        intercept_result = None
+        if not is_override:
+            intercept_result = file_interceptor.process_messages(messages)
+            messages = intercept_result.messages
+            if intercept_result.violations:
+                storage.record_request(
+                    tool=tool, cost_usd=0.0, tokens=0, blocked=True, 
+                    block_reason=intercept_result.violations[0].type,
+                    file_converted=False, 
+                    secrets_blocked=len([v for v in intercept_result.violations if v.type == "secret"])
+                )
+                return JSONResponse(content=_block_response_anthropic(intercept_result.violations, model), status_code=200)
+
+        engine = _get_guardian_runtime()
         
         if stream:
             async def _sse():
@@ -384,6 +559,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                     messages=messages,
                     provider="anthropic",
                     raise_on_block=False,
+                    skip_input_guard=is_override,
                 )
                 
                 msg_id = f"msg_guardian_runtime-{uuid.uuid4().hex[:8]}"
@@ -424,7 +600,9 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                             cost_usd=result.estimated_cost_usd or 0.0,
                             tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
                             blocked=result.blocked,
-                            block_reason=block_reason
+                            block_reason=block_reason,
+                            file_converted=intercept_result.conversions > 0 if intercept_result else False,
+                            secrets_blocked=len([v for v in result.violations if v.type == "secret"])
                         )
                         
                         if not result.blocked:
@@ -436,17 +614,19 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                         break
 
                     text = chunk_or_result
-                    delta = {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": text}}
-                    yield f"event: content_block_delta\ndata: {_json.dumps(delta)}\n\n"
-                    
+                    # Bug fix: check BEFORE yielding so block text doesn't appear as a regular delta
                     if text.startswith("[GUARDIAN BLOCKED]"):
-                        # Finish up early
+                        delta = {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": text}}
+                        yield f"event: content_block_delta\ndata: {_json.dumps(delta)}\n\n"
                         block_stop = {"type": "content_block_stop", "index": 0}
                         yield f"event: content_block_stop\ndata: {_json.dumps(block_stop)}\n\n"
                         msg_delta = {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": None}}
                         yield f"event: message_delta\ndata: {_json.dumps(msg_delta)}\n\n"
                         yield f"event: message_stop\ndata: {_json.dumps({'type': 'message_stop'})}\n\n"
-                        continue
+                        break  # Bug fix: was 'continue' — loop must stop after sending block
+
+                    delta = {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": text}}
+                    yield f"event: content_block_delta\ndata: {_json.dumps(delta)}\n\n"
 
             return StreamingResponse(
                 _sse(),
@@ -461,6 +641,7 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 messages=messages,
                 provider="anthropic",
                 raise_on_block=False,
+                skip_input_guard=is_override,
             )
             is_error = False
         except Exception as e:
@@ -477,7 +658,9 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 cost_usd=result.estimated_cost_usd or 0.0,
                 tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
                 blocked=result.blocked,
-                block_reason=block_reason
+                block_reason=block_reason,
+                file_converted=intercept_result.conversions > 0 if intercept_result else False,
+                secrets_blocked=len([v for v in result.violations if v.type == "secret"])
             )
 
             if result.blocked:
@@ -486,6 +669,166 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
                 response_body = _success_anthropic(result, model)
 
         return JSONResponse(content=response_body, status_code=500 if is_error else 200)
+
+    # ------------------------------------------------------------------
+    # POST /v1beta/models/{model}:generateContent (Gemini-compatible)
+    # Used by: Native Gemini CLI, Google GenAI SDK
+    # ------------------------------------------------------------------
+
+    @app.post("/v1beta/models/{model}:generateContent")
+    async def gemini_generate_content(request: Request, model: str):
+        body: dict[str, Any] = await request.json()
+        messages = _parse_gemini_messages(body)
+
+        tool = _identify_tool(request)
+        if "gemini" not in tool.lower() and "google" not in tool.lower():
+             tool = "Gemini CLI / SDK"
+             
+        is_override = _is_override(messages)
+        if is_override:
+            messages = messages[:-2]
+            
+        intercept_result = None
+        if not is_override:
+            intercept_result = file_interceptor.process_messages(messages)
+            messages = intercept_result.messages
+            if intercept_result.violations:
+                storage.record_request(
+                    tool=tool, cost_usd=0.0, tokens=0, blocked=True, 
+                    block_reason=intercept_result.violations[0].type,
+                    file_converted=False, 
+                    secrets_blocked=len([v for v in intercept_result.violations if v.type == "secret"])
+                )
+                return JSONResponse(content=_block_response_gemini(intercept_result.violations), status_code=200)
+
+        engine = _get_guardian_runtime()
+        
+        try:
+            result = await run_in_threadpool(
+                engine.complete,
+                model=model,
+                messages=messages,
+                provider="gemini",
+                raise_on_block=False,
+                skip_input_guard=is_override,
+            )
+            is_error = False
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            response_body = _provider_down_response_gemini(str(e))
+            result = None
+            is_error = True
+            
+        if not is_error and result:
+            block_reason = result.violations[0].type if result.blocked and result.violations else None
+            storage.record_request(
+                tool=tool,
+                cost_usd=result.estimated_cost_usd or 0.0,
+                tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+                blocked=result.blocked,
+                block_reason=block_reason,
+                file_converted=intercept_result.conversions > 0 if intercept_result else False,
+                secrets_blocked=len([v for v in result.violations if v.type == "secret"])
+            )
+
+            if result.blocked:
+                response_body = _block_response_gemini(result.violations)
+            else:
+                response_body = _success_gemini(result)
+
+        return JSONResponse(content=response_body, status_code=500 if is_error else 200)
+
+    @app.post("/v1beta/models/{model}:streamGenerateContent")
+    async def gemini_stream_generate_content(request: Request, model: str):
+        body: dict[str, Any] = await request.json()
+        messages = _parse_gemini_messages(body)
+
+        tool = _identify_tool(request)
+        if "gemini" not in tool.lower() and "google" not in tool.lower():
+             tool = "Gemini CLI / SDK"
+             
+        is_override = _is_override(messages)
+        if is_override:
+            messages = messages[:-2]
+            
+        intercept_result = None
+        if not is_override:
+            intercept_result = file_interceptor.process_messages(messages)
+            messages = intercept_result.messages
+            if intercept_result.violations:
+                storage.record_request(
+                    tool=tool, cost_usd=0.0, tokens=0, blocked=True, 
+                    block_reason=intercept_result.violations[0].type,
+                    file_converted=False, 
+                    secrets_blocked=len([v for v in intercept_result.violations if v.type == "secret"])
+                )
+                return JSONResponse(content=_block_response_gemini(intercept_result.violations), status_code=200)
+
+        engine = _get_guardian_runtime()
+        
+        async def _sse():
+            import json as _json
+            from starlette.concurrency import run_in_threadpool
+            from guardian_runtime.core.models import GuardianRuntimeResponse
+
+            sync_gen = engine.stream(
+                model=model,
+                messages=messages,
+                provider="gemini",
+                raise_on_block=False,
+                skip_input_guard=is_override,
+            )
+            
+            while True:
+                try:
+                    chunk_or_result = await run_in_threadpool(next, sync_gen)
+                except StopIteration:
+                    break
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    yield f"data: {_json.dumps(_provider_down_response_gemini(str(e)))}\n\n"
+                    break
+
+                if isinstance(chunk_or_result, GuardianRuntimeResponse):
+                    result = chunk_or_result
+                    block_reason = result.violations[0].type if result.blocked and result.violations else None
+                    storage.record_request(
+                        tool=tool,
+                        cost_usd=result.estimated_cost_usd or 0.0,
+                        tokens=(result.input_tokens or 0) + (result.output_tokens or 0),
+                        blocked=result.blocked,
+                        block_reason=block_reason,
+                        file_converted=intercept_result.conversions > 0 if intercept_result else False,
+                        secrets_blocked=len([v for v in result.violations if v.type == "secret"])
+                    )
+                    
+                    if result.blocked:
+                        yield f"data: {_json.dumps(_block_response_gemini(result.violations))}\n\n"
+                        
+                    break
+
+                text = chunk_or_result
+                if text.startswith("[GUARDIAN BLOCKED]"):
+                    break  # Bug fix: was 'continue' — loop must stop, GuardianRuntimeResponse follows and has the violations
+
+                chunk_dict = {
+                    "candidates": [
+                        {
+                            "content": {"parts": [{"text": text}], "role": "model"},
+                            "finishReason": None,
+                            "index": 0
+                        }
+                    ]
+                }
+                yield f"data: {_json.dumps(chunk_dict)}\n\n"
+
+        return StreamingResponse(
+            _sse(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     return app
 

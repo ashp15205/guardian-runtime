@@ -13,6 +13,8 @@ class Violation:
     severity: str  # low, medium, high, critical
     detail: str
     action: str = "blocked"
+    line_number: Optional[int] = None
+    trigger_string: Optional[str] = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

@@ -47,14 +47,30 @@ class InputOptimizer:
         if self.config.whitespace_normalization:
             changed = False
             for m in optimized:
-                original_text = m["content"]
-                # Collapse 3+ newlines to 2
-                text = re.sub(r'\n{3,}', '\n\n', original_text)
-                # Strip trailing spaces on lines
-                text = re.sub(r'[ \t]+$', '', text, flags=re.MULTILINE)
-                if text != original_text:
-                    m["content"] = text
-                    changed = True
+                original_content = m["content"]
+                
+                if isinstance(original_content, str):
+                    text = re.sub(r'\n{3,}', '\n\n', original_content)
+                    text = re.sub(r'[ \t]+$', '', text, flags=re.MULTILINE)
+                    if text != original_content:
+                        m["content"] = text
+                        changed = True
+                elif isinstance(original_content, list):
+                    new_content = []
+                    for part in original_content:
+                        if isinstance(part, dict) and part.get("type") == "text" and "text" in part:
+                            original_text = part["text"]
+                            text = re.sub(r'\n{3,}', '\n\n', original_text)
+                            text = re.sub(r'[ \t]+$', '', text, flags=re.MULTILINE)
+                            if text != original_text:
+                                new_part = dict(part)
+                                new_part["text"] = text
+                                new_content.append(new_part)
+                                changed = True
+                                continue
+                        new_content.append(part)
+                    if changed:
+                        m["content"] = new_content
             if changed:
                 actions.append("whitespace_normalization")
 

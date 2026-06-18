@@ -67,6 +67,5 @@ test_config.json
 *.pem
 *.key
 
-# Internal planning and changelog files
-CHANGELOG.md
+# Internal planning files only (CHANGELOG is public)
 guardian-clean.zip

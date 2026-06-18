@@ -61,8 +61,10 @@ class InputGuard:
                     Violation(
                         type=v_type,
                         severity=severity,
-                        detail=f"Detected {match.pii_type.value} in input",
+                        detail=f"Detected {match.pii_type.value} on line {match.line_number}",
                         action=action,
+                        line_number=match.line_number,
+                        trigger_string=match.matched_text,
                         metadata={
                             "pii_type": match.pii_type.value,
                             "confidence": match.confidence,

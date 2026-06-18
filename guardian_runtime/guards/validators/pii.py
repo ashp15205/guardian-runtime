@@ -63,6 +63,7 @@ class PIIMatch:
     start: int
     end: int
     confidence: float
+    line_number: int
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +287,7 @@ class PIIDetector:
                             start=r.start,
                             end=r.end,
                             confidence=r.score,
+                            line_number=text.count('\n', 0, r.start) + 1,
                         )
                     )
 
@@ -303,6 +305,7 @@ class PIIDetector:
                         start=m.start(),
                         end=m.end(),
                         confidence=0.9,
+                        line_number=text.count('\n', 0, m.start()) + 1,
                     )
                 )
 
@@ -335,6 +338,7 @@ class PIIDetector:
                         start=m.start(),
                         end=m.end(),
                         confidence=confidence,
+                        line_number=text.count('\n', 0, m.start()) + 1,
                     )
                 )
 
@@ -357,6 +361,7 @@ class PIIDetector:
                         start=m.start(),
                         end=m.end(),
                         confidence=confidence,
+                        line_number=text.count('\n', 0, m.start()) + 1,
                     )
                 )
 

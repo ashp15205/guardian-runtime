@@ -37,13 +37,8 @@ def count_messages_tokens(messages: list[dict], model: str = "gpt-4o") -> int:
     use_estimate = any(m in model.lower() for m in non_openai)
 
     if use_estimate:
-        total = sum(
-            _word_estimate(v)
-            for msg in messages
-            for v in msg.values()
-            if isinstance(v, str)
-        )
-        return total + len(messages) * 4 + 2
+        text_content = messages_to_text(messages)
+        return _word_estimate(text_content) + len(messages) * 4 + 2
 
     try:
         import tiktoken
@@ -55,19 +50,20 @@ def count_messages_tokens(messages: list[dict], model: str = "gpt-4o") -> int:
         tokens = 0
         for message in messages:
             tokens += 4
-            for value in message.values():
-                if isinstance(value, str):
-                    tokens += len(encoding.encode(value))
+            content = message.get("content")
+            if isinstance(content, str):
+                tokens += len(encoding.encode(content))
+            elif isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        text_val = block.get("text")
+                        if isinstance(text_val, str):
+                            tokens += len(encoding.encode(text_val))
         tokens += 2
         return tokens
     except Exception:
-        total = sum(
-            _word_estimate(v)
-            for msg in messages
-            for v in msg.values()
-            if isinstance(v, str)
-        )
-        return total + len(messages) * 4 + 2
+        text_content = messages_to_text(messages)
+        return _word_estimate(text_content) + len(messages) * 4 + 2
 
 
 def messages_to_text(messages: list[dict]) -> str:
@@ -77,4 +73,10 @@ def messages_to_text(messages: list[dict]) -> str:
         content = message.get("content")
         if isinstance(content, str) and content.strip():
             parts.append(content)
+        elif isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and block.get("type") == "text":
+                    text_val = block.get("text")
+                    if isinstance(text_val, str) and text_val.strip():
+                        parts.append(text_val)
     return "\n".join(parts)

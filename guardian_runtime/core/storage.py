@@ -10,7 +10,7 @@ from filelock import FileLock
 
 GUARDIAN_RUNTIME_DIR = Path.home() / ".guardian_runtime"
 USAGE_FILE = GUARDIAN_RUNTIME_DIR / "usage.json"
-HISTORY_FILE = GUARDIAN_RUNTIME_DIR / "history.jsonl"
+HISTORY_FILE = GUARDIAN_RUNTIME_DIR / "logs" / "events.jsonl"
 
 
 class LocalStorage:
@@ -19,7 +19,7 @@ class LocalStorage:
     def __init__(self, base_dir: Path | None = None) -> None:
         self.base_dir = base_dir or GUARDIAN_RUNTIME_DIR
         self.usage_file = self.base_dir / "usage.json"
-        self.history_file = self.base_dir / "history.jsonl"
+        self.history_file = self.base_dir / "logs" / "events.jsonl"
 
     def increment_usage(self) -> int:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -78,9 +78,12 @@ class LocalStorage:
             except json.JSONDecodeError:
                 return 0.0
 
-    def record_request(self, tool: str, cost_usd: float, tokens: int, blocked: bool, block_reason: str | None = None) -> None:
+    def record_request(
+        self, tool: str, cost_usd: float, tokens: int, blocked: bool, block_reason: str | None = None,
+        file_converted: bool = False, secrets_blocked: int = 0
+    ) -> None:
         """Append a single request event to the history log for analytics."""
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+        self.history_file.parent.mkdir(parents=True, exist_ok=True)
         
         with FileLock(str(self.history_file) + ".lock", timeout=5):
             if self.history_file.exists() and self.history_file.stat().st_size > 10 * 1024 * 1024:
@@ -93,7 +96,9 @@ class LocalStorage:
                 "cost_usd": cost_usd,
                 "tokens": tokens,
                 "blocked": blocked,
-                "block_reason": block_reason
+                "block_reason": block_reason,
+                "file_converted": file_converted,
+                "secrets_blocked": secrets_blocked
             }
             with open(self.history_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(event) + "\n")
@@ -140,3 +145,45 @@ class LocalStorage:
                         analytics[tool]["block_reasons"][reason] = analytics[tool]["block_reasons"].get(reason, 0) + 1
                         
         return analytics
+
+    def get_today_stats(self) -> dict:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        total_cost = 0.0
+        total_tokens = 0
+        blocked_count = 0
+        conversions = 0
+
+        if not self.history_file.exists():
+            return {
+                "total_cost": total_cost,
+                "total_tokens": total_tokens,
+                "blocked_count": blocked_count,
+                "conversions": conversions
+            }
+            
+        with FileLock(str(self.history_file) + ".lock", timeout=5):
+            with open(self.history_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    try:
+                        event = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    
+                    if not event.get("timestamp", "").startswith(today):
+                        continue
+                        
+                    total_cost += event.get("cost_usd", 0.0)
+                    total_tokens += event.get("tokens", 0)
+                    if event.get("blocked"):
+                        blocked_count += 1
+                    if event.get("file_converted"):
+                        conversions += 1
+                        
+        return {
+            "total_cost": round(total_cost, 6),
+            "total_tokens": total_tokens,
+            "blocked_count": blocked_count,
+            "conversions": conversions
+        }

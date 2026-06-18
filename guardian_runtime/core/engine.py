@@ -4,7 +4,7 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-from guardian_runtime.core.models import GuardianRuntimeBlockedError, GuardianRuntimeResponse, Violation
+from guardian_runtime.core.models import GuardianRuntimeBlockedError, GuardianRuntimeResponse, Violation, GuardCheckResult
 from guardian_runtime.core.policy import InteractiveMode, LLMProvider, Policy
 from guardian_runtime.core.storage import LocalStorage
 from guardian_runtime.finops.cost_calculator import estimate_cost
@@ -50,6 +50,7 @@ class GuardianRuntimeEngine:
         session_id: str | None = None,
         provider: str | None = None,
         raise_on_block: bool = True,
+        skip_input_guard: bool = False,
         **kwargs: Any,
     ) -> GuardianRuntimeResponse:
         """Full governed LLM call. Returns GuardianRuntimeResponse."""
@@ -126,9 +127,12 @@ class GuardianRuntimeEngine:
                 raise GuardianRuntimeBlockedError(response)
             return response
 
-        input_text = messages_to_text(messages)
-        input_result = self.input_guard.check(input_text, agent_policy)
-        violations.extend(input_result.violations)
+        if skip_input_guard:
+            input_result = GuardCheckResult(allowed=True, violations=[])
+        else:
+            input_text = messages_to_text(messages)
+            input_result = self.input_guard.check(input_text, agent_policy)
+            violations.extend(input_result.violations)
 
         if not input_result.allowed:
             # --- Interactive (warn-and-ask) mode for local development ---
@@ -172,7 +176,7 @@ class GuardianRuntimeEngine:
         llm_kwargs = {
             k: v
             for k, v in kwargs.items()
-            if k not in ("provider", "raise_on_block")
+            if k not in ("provider", "raise_on_block", "skip_input_guard")
         }
         result = chat_provider.complete(model_name, llm_messages, **llm_kwargs)
 
@@ -216,6 +220,7 @@ class GuardianRuntimeEngine:
         session_id: str | None = None,
         provider: str | None = None,
         raise_on_block: bool = True,
+        skip_input_guard: bool = False,
         **kwargs: Any,
     ) -> Any:
         if messages is None:
@@ -288,9 +293,12 @@ class GuardianRuntimeEngine:
             yield response
             return
 
-        input_text = messages_to_text(messages)
-        input_result = self.input_guard.check(input_text, agent_policy)
-        violations.extend(input_result.violations)
+        if skip_input_guard:
+            input_result = GuardCheckResult(allowed=True, violations=[])
+        else:
+            input_text = messages_to_text(messages)
+            input_result = self.input_guard.check(input_text, agent_policy)
+            violations.extend(input_result.violations)
 
         if not input_result.allowed:
             # Handle interactive mode
@@ -333,7 +341,7 @@ class GuardianRuntimeEngine:
         llm_kwargs = {
             k: v
             for k, v in kwargs.items()
-            if k not in ("provider", "raise_on_block")
+            if k not in ("provider", "raise_on_block", "skip_input_guard")
         }
         
         stream_generator = chat_provider.stream(model_name, llm_messages, **llm_kwargs)
