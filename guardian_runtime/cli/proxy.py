@@ -28,7 +28,13 @@ import click
     default=False,
     help="Enable auto-reload on policy file changes (dev mode).",
 )
-def proxy_command(port: int, host: str, policy: str | None, reload: bool):
+@click.option(
+    "--open-dashboard", "-d",
+    is_flag=True,
+    default=False,
+    help="Automatically open the web dashboard in your browser.",
+)
+def proxy_command(port: int, host: str, policy: str | None, reload: bool, open_dashboard: bool):
     """
     Start the GuardianRuntime local proxy server.
 
@@ -66,7 +72,7 @@ def proxy_command(port: int, host: str, policy: str | None, reload: bool):
     click.echo(f"  ─────────────────────────────────────────")
     click.echo(f"  Listening on : http://{host}:{port}")
     click.echo(f"  Policy       : {policy_display}")
-    click.echo(f"  Dashboard    : guardian_runtime dashboard (run in another terminal)")
+    click.echo(f"  Dashboard    : http://{host}:{port}/dashboard")
     click.echo(f"")
     click.echo(f"  Agent setup:")
     click.echo(f"    Claude Code  →  ANTHROPIC_BASE_URL=http://localhost:{port} claude")
@@ -74,6 +80,15 @@ def proxy_command(port: int, host: str, policy: str | None, reload: bool):
     click.echo(f"    Cursor       →  Settings → API Base → http://localhost:{port}")
     click.echo(f"")
     click.echo(f"  Press Ctrl+C to stop.\n")
+
+    if open_dashboard:
+        import threading
+        import time
+        import webbrowser
+        def _open():
+            time.sleep(1.2)
+            webbrowser.open(f"http://{host}:{port}/dashboard")
+        threading.Thread(target=_open, daemon=True).start()
 
     # Set env var so the module-level app in server.py picks up the policy
     if policy_arg:

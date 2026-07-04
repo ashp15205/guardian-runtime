@@ -242,11 +242,11 @@ Guardian Runtime includes a built-in, premium web dashboard to visualize your lo
 - **Privacy-first**: Fully offline and runs entirely on your local machine with a beautiful, responsive dark-mode UI.
 
 **How to access it:**
-1. Start the proxy server:
+1. Start the proxy server with the auto-open flag:
    ```bash
-   guardian_runtime proxy --port 8080
+   guardian_runtime proxy --port 8080 -d
    ```
-2. Open your web browser and navigate to:
+2. Or manually navigate to:
    👉 **[http://localhost:8080/dashboard](http://localhost:8080/dashboard)**
 
 ---
