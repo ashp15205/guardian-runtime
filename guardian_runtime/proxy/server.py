@@ -23,7 +23,7 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse
 from starlette.concurrency import run_in_threadpool
 
 from guardian_runtime.core.policy import load_policy, Policy
@@ -319,6 +319,20 @@ def create_proxy_app(policy_path: str | None = None) -> FastAPI:
     async def stats():
         """Return today's session summary."""
         return storage.get_today_stats()
+
+    @app.get("/dashboard", response_class=HTMLResponse)
+    async def get_dashboard():
+        """Serve the beautiful analytics dashboard."""
+        import pathlib
+        html_path = pathlib.Path(__file__).parent / "dashboard.html"
+        if not html_path.exists():
+            return HTMLResponse("Dashboard HTML not found.", status_code=404)
+        return HTMLResponse(html_path.read_text(encoding="utf-8"))
+
+    @app.get("/api/time_series")
+    async def get_time_series(days: int = 7):
+        """Return time series data for the dashboard chart."""
+        return storage.get_time_series(days=days)
 
     # ------------------------------------------------------------------
     # POST /v1/chat/completions  (OpenAI-compatible)

@@ -187,3 +187,51 @@ class LocalStorage:
             "blocked_count": blocked_count,
             "conversions": conversions
         }
+
+    def get_time_series(self, days: int = 7) -> list[dict]:
+        """Return daily aggregated stats for the last N days."""
+        from datetime import timedelta
+        
+        today_date = datetime.now(timezone.utc)
+        
+        series = {}
+        for i in range(days - 1, -1, -1):
+            date_str = (today_date - timedelta(days=i)).strftime("%Y-%m-%d")
+            series[date_str] = {
+                "date": date_str,
+                "cost": 0.0,
+                "tokens": 0,
+                "blocked": 0,
+                "requests": 0
+            }
+
+        if not self.history_file.exists():
+            return list(series.values())
+
+        with FileLock(str(self.history_file) + ".lock", timeout=5):
+            with open(self.history_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    try:
+                        event = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    
+                    timestamp_str = event.get("timestamp", "")
+                    if not timestamp_str or len(timestamp_str) < 10:
+                        continue
+                        
+                    event_date = timestamp_str[:10]
+                    
+                    if event_date in series:
+                        series[event_date]["cost"] += event.get("cost_usd", 0.0)
+                        series[event_date]["tokens"] += event.get("tokens", 0)
+                        if event.get("blocked"):
+                            series[event_date]["blocked"] += 1
+                        series[event_date]["requests"] += 1
+                        
+        for day in series.values():
+            day["cost"] = round(day["cost"], 6)
+
+        return list(series.values())
