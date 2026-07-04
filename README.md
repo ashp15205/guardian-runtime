@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Guardian_Runtime-v1.2.0-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="v1.2.0">
+  <img src="https://img.shields.io/badge/Guardian_Runtime-v1.3.0-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="v1.3.0">
   <img src="https://img.shields.io/github/stars/ashp15205/guardian-runtime?style=for-the-badge&logo=github&color=gold" alt="GitHub Stars">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT">
   <img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=for-the-badge&logo=python" alt="Python">

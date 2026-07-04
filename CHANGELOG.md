@@ -6,6 +6,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.3.0] - 2026-07-04
+
+### Added
+- **Local Analytics Web Dashboard** — A premium, offline-first dashboard accessible via `http://localhost:8080/dashboard`. 
+  - Real-time KPIs for tokens, cost, threats blocked, and docs converted.
+  - Interactive dual-axis charts to monitor proxy usage over time.
+  - Auto-open browser via `guardian_runtime proxy --port 8080 -d` or `--open-dashboard` flag.
+
+---
+
 ## [1.2.0] - 2026-06-18
 
 ### Added
