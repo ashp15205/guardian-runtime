@@ -232,6 +232,25 @@ Type y/n in your next message to proceed or cancel.
 
 ---
 
+## 📈 Local Analytics Web Dashboard
+
+Guardian Runtime includes a built-in, premium web dashboard to visualize your local AI usage over time, entirely offline. 
+
+**What it provides:**
+- **Real-time KPIs**: Track Total Cost (Today), Tokens Processed, Threats Blocked, and Docs Converted.
+- **Visual Analytics**: Interactive dual-axis charts showing token consumption vs. blocked requests over a 7-day period.
+- **Privacy-first**: Fully offline and runs entirely on your local machine with a beautiful, responsive dark-mode UI.
+
+**How to access it:**
+1. Start the proxy server:
+   ```bash
+   guardian_runtime proxy --port 8080
+   ```
+2. Open your web browser and navigate to:
+   👉 **[http://localhost:8080/dashboard](http://localhost:8080/dashboard)**
+
+---
+
 ## Use Cases
 
 ### Terminal Agents (Claude Code, Aider)
