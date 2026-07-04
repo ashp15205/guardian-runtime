@@ -1,315 +1,844 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guardian Runtime Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: '#0f172a',
-                        card: '#1e293b',
-                        accent: '#3b82f6',
-                        success: '#10b981',
-                        danger: '#ef4444',
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Guardian Runtime — Dashboard</title>
+    <meta name="description" content="Guardian Runtime local analytics dashboard. Monitor cost, tokens, and threats blocked in real-time.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-deep:      #080d1a;
+            --bg-mid:       #0d1524;
+            --card-bg:      rgba(15, 23, 42, 0.75);
+            --card-border:  rgba(99, 179, 237, 0.12);
+            --card-glow:    rgba(59, 130, 246, 0.08);
+            --blue:         #3b82f6;
+            --blue-light:   #60a5fa;
+            --cyan:         #22d3ee;
+            --green:        #10b981;
+            --emerald:      #34d399;
+            --purple:       #a78bfa;
+            --red:          #f87171;
+            --yellow:       #fbbf24;
+            --text-primary: #f0f6ff;
+            --text-muted:   #64748b;
+            --text-soft:    #94a3b8;
+        }
+
+        html, body {
+            height: 100%;
+            min-height: 100vh;
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%);
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* ===================== BACKGROUND ===================== */
+        body {
+            background-image:
+                radial-gradient(ellipse 80% 60% at 70% -10%, rgba(59,130,246,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at -10% 80%, rgba(16,185,129,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99,102,241,0.06) 0%, transparent 60%);
             background-attachment: fixed;
         }
+
+        /* Animated grid overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===================== LAYOUT ===================== */
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===================== CARD ===================== */
         .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 1.25rem;
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.35),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         }
         .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.6);
+            transform: translateY(-3px);
+            box-shadow:
+                0 8px 40px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(59,130,246,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+
+        /* ===================== HEADER ===================== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+        }
+        .header-left {}
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 0.35rem;
         }
         .gradient-text {
-            background: linear-gradient(135deg, #60a5fa, #34d399);
+            background: linear-gradient(135deg, var(--blue-light) 0%, var(--emerald) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .pulse-ring {
+        .header-sub {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* ===================== GITHUB STAR BUTTON ===================== */
+        .gh-star-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            border-radius: 0.625rem;
+            overflow: hidden;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow:
+                0 2px 12px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.07);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+        }
+        .gh-star-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow:
+                0 6px 24px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(99, 179, 237, 0.35),
+                inset 0 1px 0 rgba(255,255,255,0.12);
+            border-color: rgba(99, 179, 237, 0.4);
+        }
+        .gh-star-btn:active {
+            transform: translateY(0) scale(0.99);
+        }
+        .gh-star-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--text-primary);
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        .gh-star-left svg {
+            width: 1.1rem;
+            height: 1.1rem;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+        .gh-star-right {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(20, 30, 50, 0.95);
+            color: var(--yellow);
+        }
+        .gh-star-right svg {
+            width: 0.9rem;
+            height: 0.9rem;
+            fill: var(--yellow);
+            transition: transform 0.3s ease;
+        }
+        .gh-star-btn:hover .gh-star-right svg {
+            transform: rotate(72deg) scale(1.2);
+        }
+        .gh-star-count {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        /* ===================== KPI CARDS ===================== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 1024px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .kpi-grid { grid-template-columns: 1fr; } }
+
+        .kpi-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::after {
+            content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            bottom: 0; left: 0;
+            width: 100%; height: 3px;
+            border-radius: 0 0 1.25rem 1.25rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .kpi-card:hover::after { opacity: 1; }
+        .kpi-card.blue::after   { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+        .kpi-card.purple::after { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
+        .kpi-card.red::after    { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+        .kpi-card.green::after  { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+
+        .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .kpi-label { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
+        .kpi-icon {
+            width: 2.25rem; height: 2.25rem;
+            border-radius: 0.6rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .kpi-icon svg { width: 1.1rem; height: 1.1rem; }
+        .kpi-icon.blue   { background: rgba(59,130,246,0.15); color: var(--blue-light); }
+        .kpi-icon.purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+        .kpi-icon.red    { background: rgba(248,113,113,0.15); color: var(--red); }
+        .kpi-icon.green  { background: rgba(16,185,129,0.15); color: var(--green); }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+        .kpi-sub { font-size: 0.73rem; color: var(--text-muted); margin-top: 0.35rem; }
+
+        /* ===================== CHARTS ===================== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+
+        .chart-card { padding: 1.5rem; }
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-soft);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title::before {
+            content: '';
+            width: 3px; height: 1rem;
+            background: linear-gradient(to bottom, var(--blue), var(--cyan));
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .chart-wrap { position: relative; height: 280px; }
+
+        /* Doughnut */
+        .donut-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 1.5rem;
+        }
+        .donut-canvas-wrap { position: relative; width: 180px; height: 180px; }
+        .donut-center {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .donut-center-num { font-size: 1.75rem; font-weight: 800; }
+        .donut-center-lbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 0.15rem; }
+
+        .legend-row { display: flex; gap: 1.25rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-soft); }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ===================== FOOTER ===================== */
+        .footer {
+            margin-top: auto;
+            padding-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .footer-divider {
             width: 100%;
-            height: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(99,179,237,0.2), transparent);
+            margin-bottom: 0.5rem;
+        }
+        .footer-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .footer-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Buy Me a Coffee button */
+        .bmc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 0.625rem;
+            background: linear-gradient(135deg, #ffdd00, #f9a825);
+            color: #1a1400;
+            font-weight: 700;
+            font-size: 0.83rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: 0 2px 12px rgba(255,200,0,0.3);
+        }
+        .bmc-btn:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 6px 24px rgba(255,200,0,0.45);
+            filter: brightness(1.08);
+        }
+        .bmc-btn:active { transform: translateY(0) scale(0.98); }
+        .bmc-btn svg { width: 1rem; height: 1rem; }
+
+        /* Docs website link */
+        .docs-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 0.625rem;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text-soft);
+            font-weight: 600;
+            font-size: 0.83rem;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .docs-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            color: var(--blue-light);
+            border-color: rgba(96,165,250,0.4);
+            box-shadow: 0 6px 24px rgba(59,130,246,0.2);
+        }
+        .docs-btn svg { width: 1rem; height: 1rem; transition: transform 0.2s; }
+        .docs-btn:hover svg { transform: rotate(-15deg); }
+
+        /* Footer GitHub star (same button component) */
+        .footer-gh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            border-radius: 0.625rem;
+            overflow: hidden;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .footer-gh-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 0 1px rgba(99,179,237,0.3);
+            border-color: rgba(99,179,237,0.35);
+        }
+
+        /* Refresh badge */
+        .refresh-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .refresh-dot {
+            width: 6px; height: 6px;
             border-radius: 50%;
-            border: 2px solid rgba(16, 185, 129, 0.5);
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            z-index: -1;
+            background: var(--green);
+            animation: blink 2.5s ease-in-out infinite;
         }
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
         }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(99,179,237,0.2); border-radius: 3px; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen p-6 md:p-12">
-    <div class="max-w-7xl mx-auto">
-        
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
+<body>
+<div class="page-wrapper">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-left">
+            <h1 class="header-title">⛨ Guardian <span class="gradient-text">Runtime</span></h1>
+            <p class="header-sub">Local Privacy &amp; Cost Optimization &mdash; Analytics Dashboard</p>
+        </div>
+        <!-- GitHub Star Counter -->
+        <a id="gh-star-link"
+           href="https://github.com/ashp15205/guardian-runtime"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="gh-star-btn"
+           title="Star on GitHub">
+            <span class="gh-star-left">
+                <!-- GitHub Icon -->
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                    0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+                    -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+                    -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0
+                    .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82
+                    2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65
+                    3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                Star
+            </span>
+            <span class="gh-star-right">
+                <!-- Star icon -->
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416
+                    1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766
+                    1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75
+                    0 018 .25z"/>
+                </svg>
+                <span class="gh-star-count" id="header-star-count">—</span>
+            </span>
+        </a>
+    </header>
+
+    <!-- ===== KPI CARDS ===== -->
+    <div class="kpi-grid" style="margin-bottom:1.5rem;">
+
+        <div class="glass-card kpi-card blue">
+            <div class="kpi-top">
+                <span class="kpi-label">Total Cost (Today)</span>
+                <div class="kpi-icon blue">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
             <div>
-                <h1 class="text-4xl font-bold tracking-tight mb-2">Guardian <span class="gradient-text">Runtime</span></h1>
-                <p class="text-slate-400">Local Privacy & Cost Optimization Dashboard</p>
-            </div>
-            <div class="mt-4 md:mt-0 flex items-center gap-3">
-                <div class="relative w-3 h-3">
-                    <div class="absolute inset-0 bg-success rounded-full"></div>
-                    <div class="pulse-ring"></div>
-                </div>
-                <span class="text-sm font-medium text-slate-300">Proxy Active (Port 8080)</span>
-            </div>
-        </header>
-
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            <!-- Cost KPI -->
-            <div class="glass-card p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-slate-400 font-medium">Total Cost (Today)</h3>
-                    <div class="p-2 bg-blue-500/10 rounded-lg">
-                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="text-3xl font-bold text-white mb-1" id="kpi-cost">$0.00</h2>
-                    <p class="text-xs text-slate-400">Tracked in session history</p>
-                </div>
-            </div>
-
-            <!-- Tokens KPI -->
-            <div class="glass-card p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-slate-400 font-medium">Tokens Processed</h3>
-                    <div class="p-2 bg-purple-500/10 rounded-lg">
-                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="text-3xl font-bold text-white mb-1" id="kpi-tokens">0</h2>
-                    <p class="text-xs text-slate-400">Total input/output tokens</p>
-                </div>
-            </div>
-
-            <!-- Blocked KPI -->
-            <div class="glass-card p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-slate-400 font-medium">Threats Blocked</h3>
-                    <div class="p-2 bg-red-500/10 rounded-lg">
-                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="text-3xl font-bold text-red-400 mb-1" id="kpi-blocked">0</h2>
-                    <p class="text-xs text-slate-400">Secrets & PII stopped locally</p>
-                </div>
-            </div>
-
-            <!-- Documents KPI -->
-            <div class="glass-card p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-slate-400 font-medium">Docs Converted</h3>
-                    <div class="p-2 bg-green-500/10 rounded-lg">
-                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="text-3xl font-bold text-white mb-1" id="kpi-docs">0</h2>
-                    <p class="text-xs text-slate-400">PDFs/DOCXs parsed to Markdown</p>
-                </div>
+                <div class="kpi-value" id="kpi-cost" style="color:var(--blue-light);">$0.0000</div>
+                <div class="kpi-sub">API spend tracked locally</div>
             </div>
         </div>
 
-        <!-- Charts Area -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            <!-- Main Chart -->
-            <div class="glass-card p-6 lg:col-span-2">
-                <h3 class="text-lg font-semibold mb-6">Usage Over Time (Last 7 Days)</h3>
-                <div class="relative h-[300px] w-full">
-                    <canvas id="mainChart"></canvas>
+        <div class="glass-card kpi-card purple">
+            <div class="kpi-top">
+                <span class="kpi-label">Tokens Processed</span>
+                <div class="kpi-icon purple">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
             </div>
-
-            <!-- Secondary Stats -->
-            <div class="glass-card p-6 flex flex-col">
-                <h3 class="text-lg font-semibold mb-6">System Status</h3>
-                <div class="flex-grow flex flex-col justify-center items-center">
-                    <div class="relative w-48 h-48">
-                        <canvas id="doughnutChart"></canvas>
-                        <div class="absolute inset-0 flex items-center justify-center flex-col">
-                            <span class="text-2xl font-bold text-white" id="total-reqs">0</span>
-                            <span class="text-xs text-slate-400">Requests</span>
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <div class="kpi-value" id="kpi-tokens" style="color:var(--purple);">0</div>
+                <div class="kpi-sub">Total input + output tokens</div>
             </div>
         </div>
-        
+
+        <div class="glass-card kpi-card red">
+            <div class="kpi-top">
+                <span class="kpi-label">Threats Blocked</span>
+                <div class="kpi-icon red">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+            </div>
+            <div>
+                <div class="kpi-value" id="kpi-blocked" style="color:var(--red);">0</div>
+                <div class="kpi-sub">Secrets &amp; PII stopped locally</div>
+            </div>
+        </div>
+
+        <div class="glass-card kpi-card green">
+            <div class="kpi-top">
+                <span class="kpi-label">Docs Converted</span>
+                <div class="kpi-icon green">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+            </div>
+            <div>
+                <div class="kpi-value" id="kpi-docs" style="color:var(--green);">0</div>
+                <div class="kpi-sub">PDFs / DOCXs → Markdown</div>
+            </div>
+        </div>
+
     </div>
 
-    <script>
-        // Chart configuration
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.font.family = "'Inter', sans-serif";
-        
-        let mainChartInstance = null;
-        let doughnutChartInstance = null;
+    <!-- ===== CHARTS ===== -->
+    <div class="charts-grid">
+        <!-- Line Chart -->
+        <div class="glass-card chart-card">
+            <div class="section-title">Usage Over Time (Last 7 Days)</div>
+            <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+        </div>
 
-        async function fetchAnalytics() {
-            try {
-                // Fetch today's summary
-                const statsRes = await fetch('/stats');
-                const stats = await statsRes.json();
-                
-                document.getElementById('kpi-cost').textContent = '$' + (stats.total_cost || 0).toFixed(4);
-                document.getElementById('kpi-tokens').textContent = (stats.total_tokens || 0).toLocaleString();
-                document.getElementById('kpi-blocked').textContent = stats.blocked_count || 0;
-                document.getElementById('kpi-docs').textContent = stats.conversions || 0;
+        <!-- Doughnut -->
+        <div class="glass-card chart-card" style="display:flex;flex-direction:column;">
+            <div class="section-title">Request Breakdown</div>
+            <div class="donut-wrap">
+                <div class="donut-canvas-wrap">
+                    <canvas id="doughnutChart"></canvas>
+                    <div class="donut-center">
+                        <span class="donut-center-num" id="total-reqs">0</span>
+                        <span class="donut-center-lbl">Requests</span>
+                    </div>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div>Allowed</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div>Blocked</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                // Fetch time series
-                const seriesRes = await fetch('/api/time_series');
-                const seriesData = await seriesRes.json();
-                
-                renderMainChart(seriesData);
-                renderDoughnutChart(seriesData);
-            } catch (err) {
-                console.error("Failed to load analytics:", err);
-            }
-        }
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-divider"></div>
 
-        function renderMainChart(data) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            
-            const labels = data.map(d => d.date);
-            const tokens = data.map(d => d.tokens);
-            
-            if (mainChartInstance) mainChartInstance.destroy();
-            
-            mainChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Tokens Processed',
-                            data: tokens,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#1e293b',
-                            pointBorderColor: '#3b82f6',
-                            pointHoverBackgroundColor: '#3b82f6',
-                            pointHoverBorderColor: '#fff',
-                            fill: true,
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f8fafc',
-                            bodyColor: '#cbd5e1',
-                            borderColor: 'rgba(255,255,255,0.1)',
-                            borderWidth: 1,
-                            padding: 10,
-                            displayColors: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-                            ticks: { maxTicksLimit: 6 }
-                        },
-                        x: {
-                            grid: { display: false, drawBorder: false }
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index',
-                    },
-                }
+        <!-- Action buttons -->
+        <div class="footer-actions">
+            <!-- Buy Me a Coffee -->
+            <a href="https://buymeacoffee.com/ashishp05" target="_blank" rel="noopener noreferrer" class="bmc-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.414-.047.832-.125 1.241-.2 1.028-1.validatedCode 1.17-1.957 1.33a14.256 14.256 0 01-3.589.34c-1.279 0-2.558-.093-3.835-.217-.576-.056-1.153-.12-1.726-.209-.346-.054-.692-.116-1.037-.184-.285-.056-.573-.115-.77-.38-.157-.208-.177-.49-.148-.745l.029-.248c.021-.166.05-.33.08-.497.07-.394.14-.78.213-1.162.161-.862.319-1.727.488-2.588.169-.86.344-1.716.524-2.573.09-.426.18-.85.266-1.277.085-.43.167-.86.25-1.29z"/></svg>
+                Buy Me a Coffee
+            </a>
+
+            <!-- Website / Docs -->
+            <a href="https://ashp15205.github.io/guardian-runtime/" target="_blank" rel="noopener noreferrer" class="docs-btn">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                ashp15205.github.io/guardian-runtime
+            </a>
+
+            <!-- Footer GitHub Star -->
+            <a id="footer-gh-link"
+               href="https://github.com/ashp15205/guardian-runtime"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="footer-gh-btn"
+               title="Star on GitHub">
+                <span class="gh-star-left" style="padding:0.45rem 0.8rem;">
+                    <svg viewBox="0 0 16 16" style="width:1rem;height:1rem;fill:currentColor;">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+                        -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+                        -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0
+                        .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82
+                        2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65
+                        3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    Star on GitHub
+                </span>
+                <span class="gh-star-right" style="padding:0.45rem 0.7rem;">
+                    <svg viewBox="0 0 16 16" style="width:0.9rem;height:0.9rem;fill:var(--yellow);transition:transform 0.3s ease;">
+                        <path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416
+                        1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766
+                        1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75
+                        0 018 .25z"/>
+                    </svg>
+                    <span class="gh-star-count" id="footer-star-count">—</span>
+                </span>
+            </a>
+        </div>
+
+        <!-- Refresh indicator -->
+        <div class="refresh-badge">
+            <div class="refresh-dot"></div>
+            <span>Auto-refreshing every 30 seconds</span>
+        </div>
+
+        <p class="footer-text">Guardian Runtime v1.2.0 &nbsp;·&nbsp; All data stays on your machine &nbsp;·&nbsp; MIT License</p>
+    </footer>
+
+</div><!-- end page-wrapper -->
+
+<script>
+    /* =================== CONFIG =================== */
+    const GITHUB_REPO = 'ashp15205/guardian-runtime';
+    const REFRESH_MS   = 30000;
+
+    /* =================== CHART DEFAULTS =================== */
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    let mainChartInst = null;
+    let donutChartInst = null;
+
+    /* =================== GITHUB STAR COUNT =================== */
+    async function fetchStars() {
+        try {
+            const r = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
+                headers: { 'Accept': 'application/vnd.github.v3+json' }
             });
+            if (!r.ok) return;
+            const { stargazers_count } = await r.json();
+            const fmt = stargazers_count >= 1000
+                ? (stargazers_count / 1000).toFixed(1) + 'k'
+                : String(stargazers_count);
+            document.getElementById('header-star-count').textContent = fmt;
+            document.getElementById('footer-star-count').textContent  = fmt;
+        } catch (e) {
+            // Silently handle CORS / rate-limit — show dash
         }
+    }
 
-        function renderDoughnutChart(data) {
-            const ctx = document.getElementById('doughnutChart').getContext('2d');
-            
-            const totalBlocked = data.reduce((acc, curr) => acc + curr.blocked, 0);
-            const totalAllowed = data.reduce((acc, curr) => acc + curr.requests, 0) - totalBlocked;
-            
-            document.getElementById('total-reqs').textContent = (totalAllowed + totalBlocked).toLocaleString();
-            
-            if (doughnutChartInstance) doughnutChartInstance.destroy();
-            
-            doughnutChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Allowed', 'Blocked'],
-                    datasets: [{
-                        data: [totalAllowed, totalBlocked],
-                        backgroundColor: ['#3b82f6', '#ef4444'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${context.label}: ${context.raw}`;
-                                }
-                            }
+    /* =================== ANALYTICS =================== */
+    async function fetchAnalytics() {
+        try {
+            const [statsRes, seriesRes] = await Promise.all([
+                fetch('/stats'),
+                fetch('/api/time_series')
+            ]);
+
+            if (statsRes.ok) {
+                const stats = await statsRes.json();
+                document.getElementById('kpi-cost').textContent    = '$' + (stats.total_cost || 0).toFixed(4);
+                document.getElementById('kpi-tokens').textContent  = (stats.total_tokens || 0).toLocaleString();
+                document.getElementById('kpi-blocked').textContent = stats.blocked_count || 0;
+                document.getElementById('kpi-docs').textContent    = stats.conversions || 0;
+            }
+
+            if (seriesRes.ok) {
+                const series = await seriesRes.json();
+                renderLineChart(series);
+                renderDonut(series);
+            }
+        } catch (e) {
+            console.warn('[guardian-runtime dashboard] Failed to load analytics:', e);
+        }
+    }
+
+    /* =================== LINE CHART =================== */
+    function renderLineChart(data) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const labels = data.map(d => d.date);
+        const tokens  = data.map(d => d.tokens);
+        const blocked = data.map(d => d.blocked);
+
+        if (mainChartInst) mainChartInst.destroy();
+
+        mainChartInst = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Tokens',
+                        data: tokens,
+                        borderColor: '#3b82f6',
+                        backgroundColor: createGradient(ctx, 'rgba(59,130,246,0.25)', 'rgba(59,130,246,0)'),
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0d1524',
+                        pointBorderColor: '#3b82f6',
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#3b82f6',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2,
+                        fill: true,
+                        tension: 0.45,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Blocked',
+                        data: blocked,
+                        borderColor: '#f87171',
+                        backgroundColor: createGradient(ctx, 'rgba(248,113,113,0.2)', 'rgba(248,113,113,0)'),
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0d1524',
+                        pointBorderColor: '#f87171',
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#f87171',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2,
+                        fill: true,
+                        tension: 0.45,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            boxWidth: 10, boxHeight: 10,
+                            borderRadius: 5,
+                            useBorderRadius: true,
+                            padding: 12,
+                            font: { size: 11, weight: '500' }
                         }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(8,13,26,0.95)',
+                        titleColor: '#f0f6ff',
+                        bodyColor: '#94a3b8',
+                        borderColor: 'rgba(99,179,237,0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: true,
+                        boxWidth: 8, boxHeight: 8,
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+                        ticks: { maxTicksLimit: 5, font: { size: 11 } },
+                        title: { display: true, text: 'Tokens', font: { size: 10, weight: '500' }, color: '#3b82f6' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: { drawOnChartArea: false },
+                        ticks: { maxTicksLimit: 5, font: { size: 11 }, precision: 0 },
+                        title: { display: true, text: 'Blocked', font: { size: 10, weight: '500' }, color: '#f87171' }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { size: 11 } }
                     }
                 }
-            });
-        }
+            }
+        });
+    }
 
-        // Initialize
-        fetchAnalytics();
-        
-        // Refresh every 30 seconds
-        setInterval(fetchAnalytics, 30000);
-    </script>
+    function createGradient(ctx, colorTop, colorBottom) {
+        const canvas = ctx.canvas;
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, colorTop);
+        gradient.addColorStop(1, colorBottom);
+        return gradient;
+    }
+
+    /* =================== DONUT CHART =================== */
+    function renderDonut(data) {
+        const ctx = document.getElementById('doughnutChart').getContext('2d');
+        const totalBlocked = data.reduce((a, c) => a + c.blocked, 0);
+        const totalReqs    = data.reduce((a, c) => a + c.requests, 0);
+        const totalAllowed = totalReqs - totalBlocked;
+
+        document.getElementById('total-reqs').textContent = totalReqs.toLocaleString();
+
+        if (donutChartInst) donutChartInst.destroy();
+
+        donutChartInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Allowed', 'Blocked'],
+                datasets: [{
+                    data: [Math.max(0, totalAllowed), totalBlocked],
+                    backgroundColor: ['#3b82f6', '#f87171'],
+                    borderColor: ['rgba(59,130,246,0.3)', 'rgba(248,113,113,0.3)'],
+                    borderWidth: 2,
+                    hoverOffset: 8,
+                    hoverBorderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '78%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(8,13,26,0.95)',
+                        titleColor: '#f0f6ff',
+                        bodyColor: '#94a3b8',
+                        borderColor: 'rgba(99,179,237,0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString()}` }
+                    }
+                }
+            }
+        });
+    }
+
+    /* =================== FOOTER HOVER FX =================== */
+    document.querySelectorAll('.footer-gh-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            const star = btn.querySelector('.gh-star-right svg');
+            if (star) star.style.transform = 'rotate(72deg) scale(1.2)';
+        });
+        btn.addEventListener('mouseleave', () => {
+            const star = btn.querySelector('.gh-star-right svg');
+            if (star) star.style.transform = '';
+        });
+    });
+
+    /* =================== INIT =================== */
+    fetchStars();
+    fetchAnalytics();
+    setInterval(fetchAnalytics, REFRESH_MS);
+    // Refresh stars every 5 minutes
+    setInterval(fetchStars, 5 * 60 * 1000);
+</script>
 </body>
 </html>
