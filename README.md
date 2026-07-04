@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Guardian_Runtime-v1.2.0-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="v1.2.0">
+  <img src="https://img.shields.io/badge/Guardian_Runtime-v1.3.0-00ff88?style=for-the-badge&logo=shield&logoColor=black" alt="v1.3.0">
   <img src="https://img.shields.io/github/stars/ashp15205/guardian-runtime?style=for-the-badge&logo=github&color=gold" alt="GitHub Stars">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT">
   <img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=for-the-badge&logo=python" alt="Python">
@@ -229,6 +229,25 @@ Type y/n in your next message to proceed or cancel.
 
 - Type **`y`** → Guardian bypasses the scanner for that single request only.
 - Type **`n`** → Block holds. The secret never leaves your machine.
+
+---
+
+## 📈 Local Analytics Web Dashboard
+
+Guardian Runtime includes a built-in, premium web dashboard to visualize your local AI usage over time, entirely offline. 
+
+**What it provides:**
+- **Real-time KPIs**: Track Total Cost (Today), Tokens Processed, Threats Blocked, and Docs Converted.
+- **Visual Analytics**: Interactive dual-axis charts showing token consumption vs. blocked requests over a 7-day period.
+- **Privacy-first**: Fully offline and runs entirely on your local machine with a beautiful, responsive dark-mode UI.
+
+**How to access it:**
+1. Start the proxy server with the auto-open flag:
+   ```bash
+   guardian_runtime proxy --port 8080 -d
+   ```
+2. Or manually navigate to:
+   👉 **[http://localhost:8080/dashboard](http://localhost:8080/dashboard)**
 
 ---
 
