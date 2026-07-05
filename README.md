@@ -16,11 +16,7 @@
 
 <p align="center">
   <a href="https://star-history.com/#ashp15205/guardian-runtime&Date">
-   <picture>
-     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date&theme=dark" />
-     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
-     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
-   </picture>
+    <img src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" alt="Star History Chart">
   </a>
 </p>
 
