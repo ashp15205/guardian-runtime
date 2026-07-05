@@ -5,17 +5,6 @@
   <img src="https://img.shields.io/pypi/pyversions/guardian-runtime.svg?style=for-the-badge&logo=python" alt="Python">
 </p>
 
-
-## Star History
-
-<a href="https://star-history.com/#ashp15205/guardian-runtime&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
- </picture>
-</a>
-
 <h1 align="center">Guardian Runtime</h1>
 
 <p align="center">
