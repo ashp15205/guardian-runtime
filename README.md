@@ -26,6 +26,16 @@
 
 
 <p align="center">
+  <a href="https://star-history.com/#ashp15205/guardian-runtime&Date">
+   <picture>
+     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date&theme=dark" />
+     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
+     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
+   </picture>
+  </a>
+</p>
+
+<p align="center">
   <a href="https://buymeacoffee.com/ashishp05"><img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"></a>
 </p>
 
@@ -342,18 +352,6 @@ agents:
       terse_mode: true              # Cuts output tokens 40–70%
       max_history_messages: 20      # Trim old chat history
 ```
-
----
-
-## Star History
-
-<a href="https://star-history.com/#ashp15205/guardian-runtime&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
- </picture>
-</a>
 
 ---
 
