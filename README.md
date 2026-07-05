@@ -13,6 +13,16 @@
   It also tracks your API spending to prevent surprise bills, all without slowing you down.</strong>
 </p>
 
+## Star History
+
+<a href="https://www.star-history.com/?type=date&repos=ashp15205%2Fguardian-runtime">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ashp15205/guardian-runtime&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ashp15205/guardian-runtime&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ashp15205/guardian-runtime&type=date&legend=top-left" />
+ </picture>
+</a>
+
 <p align="center">
   <a href="https://buymeacoffee.com/ashishp05"><img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"></a>
 </p>
