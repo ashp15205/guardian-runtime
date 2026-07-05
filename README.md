@@ -345,6 +345,18 @@ agents:
 
 ---
 
+## Star History
+
+<a href="https://star-history.com/#ashp15205/guardian-runtime&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" />
+ </picture>
+</a>
+
+---
+
 ## License
 
 Released under the **MIT License**. Zero tracking. Zero cloud dependencies. Your code is yours.
