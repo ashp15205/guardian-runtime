@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://star-history.com/#ashp15205/guardian-runtime&Date">
-    <img src="https://api.star-history.com/svg?repos=ashp15205/guardian-runtime&type=Date" alt="Star History Chart">
+    <img src="star-history-202675.png" alt="Star History Chart">
   </a>
 </p>
 
